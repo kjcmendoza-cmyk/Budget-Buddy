@@ -450,22 +450,22 @@
             flex-shrink: 0;
         }
 
-        /* --- UPDATED SAFE TO SPEND LAYOUT FIX --- */
+        /* --- SAFE TO SPEND LAYOUT --- */
         .safe-spend-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: 0.85rem;
-            gap: 15px; /* Added proper spacing */
+            gap: 15px;
         }
         .safe-left {
-            flex: 0 0 35%; /* Ensure it has a base size */
+            flex: 0 0 35%;
             min-width: 0; 
         }
         .safe-left .amount { font-size: clamp(1.2rem, 4.5vw, 1.75rem); font-weight: 800; color: var(--primary-green); }
         
         .safe-right {
-            flex: 1; /* Allow right side to grow securely */
+            flex: 1;
             min-width: 0;
             display: flex;
             justify-content: flex-end;
@@ -478,18 +478,17 @@
             background: var(--primary-green-light);
             padding: 8px 12px;
             border-radius: 16px;
-            width: 100%; /* Take available space */
+            width: 100%;
         }
         .mascot-bubble { 
             font-size: 0.75rem; 
             color: var(--primary-green-dark); 
             font-weight: 600; 
             line-height: 1.2;
-            flex: 1; /* allow bubble text to wrap without pushing */
+            flex: 1;
             word-wrap: break-word; 
         }
         .mascot-icon { font-size: 1.5rem; flex-shrink: 0; }
-        /* --- END FIX --- */
 
         .section-header {
             display: flex;
@@ -2152,7 +2151,7 @@
                 }
             },
 
-            /* Existing Authentication & Core Logic */
+            /* Authentication & Core Logic */
             pressPin(digit) {
                 if (this.state.enteredPin.length < 4) {
                     this.state.enteredPin += digit;
@@ -2264,7 +2263,6 @@
                             alert("Firebase Sign In Error: " + err.message);
                         }
                     } else {
-                        // Local fallback mode
                         if (email.toLowerCase() === this.state.userEmail.toLowerCase() && pass === this.state.userPassword) {
                             this.state.isLoggedIn = true;
                             this.saveState();
@@ -2482,7 +2480,6 @@
             updateHomeUI() {
                 this.recalculateDailyLimit();
                 
-                // Trigger dynamic integrations
                 this.evaluateStreak();
                 this.generatePeerInsights();
                 this.updateMascot();
@@ -2629,7 +2626,6 @@
                 
                 this.saveState();
 
-                // Dynamically evaluate interactions post-transaction
                 this.evaluateStreak();
                 this.updateMascot();
                 this.generateTip();
@@ -2645,129 +2641,392 @@
                 const purchaseAmtEl = document.getElementById('afford-purchase-amt');
                 const newBalEl = document.getElementById('afford-new-bal');
                 
-                if(currentBalEl) currentBalEl.textContent = this.formatPeso(this.state.balance);
-                if(purchaseAmtEl) purchaseAmtEl.textContent = `−${this.formatPeso(price)}`;
-                
-                const newBal = this.state.balance - price;
-                if(newBalEl) newBalEl.textContent = this.formatPeso(newBal);
-                
+                if (currentBalEl) currentBalEl.textContent = this.formatPeso(this.state.balance);
+                if (purchaseAmtEl) purchaseAmtEl.textContent = `−${this.formatPeso(price)}`;
+
+                const newBalance = Math.max(0, this.state.balance - price);
+                if (newBalEl) newBalEl.textContent = this.formatPeso(newBalance);
+
+                const currentDailyLimit = this.state.dailyLimit;
+                const daysLeft = Math.max(1, this.state.remainingDays);
+                const afterDailyLimit = Math.max(0, Math.round(newBalance / daysLeft));
+
                 const beforeLimitEl = document.getElementById('afford-before-limit');
                 const afterLimitEl = document.getElementById('afford-after-limit');
-                const resultMsg = document.getElementById('afford-result-msg');
-                
-                if(beforeLimitEl) beforeLimitEl.textContent = this.formatPeso(this.state.dailyLimit);
-                
-                if(price > 0 && this.state.remainingDays > 0) {
-                    const afterLimit = Math.max(0, Math.round(newBal / this.state.remainingDays));
-                    if(afterLimitEl) afterLimitEl.textContent = this.formatPeso(afterLimit);
-                    
-                    if (resultMsg) {
-                        if (newBal < 0) {
-                            resultMsg.textContent = "Warning: This purchase exceeds your total balance!";
-                            resultMsg.className = "result-msg warning";
-                        } else if (afterLimit < (this.state.dailyLimit * 0.5)) {
-                            resultMsg.textContent = "This will significantly reduce your daily budget. Think twice!";
-                            resultMsg.className = "result-msg warning";
-                        } else {
-                            resultMsg.textContent = "You can afford this and stay on track!";
-                            resultMsg.className = "result-msg";
-                        }
-                    }
+                if (beforeLimitEl) beforeLimitEl.textContent = this.formatPeso(currentDailyLimit);
+                if (afterLimitEl) afterLimitEl.textContent = this.formatPeso(afterDailyLimit);
+
+                const resultMsgEl = document.getElementById('afford-result-msg');
+                if (!resultMsgEl) return;
+
+                if (price === 0) {
+                    resultMsgEl.className = 'result-msg';
+                    resultMsgEl.textContent = "Enter an item and price to check your budget impact.";
+                } else if (price > this.state.balance) {
+                    resultMsgEl.className = 'result-msg warning';
+                    resultMsgEl.textContent = "🚨 This purchase exceeds your total available money!";
+                } else if (afterDailyLimit < currentDailyLimit * 0.5) {
+                    resultMsgEl.className = 'result-msg warning';
+                    resultMsgEl.textContent = `⚠️ Warning: Buying this drops your daily safe spending from ${this.formatPeso(currentDailyLimit)} to ${this.formatPeso(afterDailyLimit)}.`;
                 } else {
-                    if(afterLimitEl) afterLimitEl.textContent = this.formatPeso(this.state.dailyLimit);
-                    if(resultMsg) {
-                        resultMsg.textContent = "Enter an item and price to check your budget impact.";
-                        resultMsg.className = "result-msg";
-                    }
+                    resultMsgEl.className = 'result-msg';
+                    resultMsgEl.textContent = `✅ Good to go! You can comfortably afford this item and keep ${this.formatPeso(afterDailyLimit)}/day.`;
                 }
             },
 
-            openModal(id) {
-                const modal = document.getElementById(id);
-                if(modal) modal.classList.add('active');
+            updateGoalsUI() {
+                const listEl = document.getElementById('goals-list');
+                const totalSavedEl = document.getElementById('goals-total-saved');
+                const badgesContainer = document.getElementById('badges-container');
+                
+                if (!listEl) return;
+                listEl.innerHTML = '';
+
+                let grandTotalSaved = 0;
+
+                this.state.goals.forEach(goal => {
+                    grandTotalSaved += goal.current;
+                    const pct = Math.min(100, Math.round((goal.current / goal.target) * 100));
+                    const html = `
+                        <div class="goal-card">
+                            <div class="goal-header">
+                                <span class="goal-title">${goal.name}</span>
+                                <div class="goal-icon" style="color:${goal.color}"><i class="fa-solid ${goal.icon || 'fa-bullseye'}"></i></div>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: ${pct}%; background: ${goal.color}"></div>
+                            </div>
+                            <div class="goal-stats">
+                                <span>Saved: ${this.formatPeso(goal.current)}</span>
+                                <span>Target: ${this.formatPeso(goal.target)} (${pct}%)</span>
+                            </div>
+                            <div class="goal-actions">
+                                <button class="delete-btn" onclick="app.deleteGoal(${goal.id})" title="Delete Goal"><i class="fa-solid fa-trash"></i></button>
+                                <button onclick="app.openAddFundsModal(${goal.id})" style="background: ${goal.color}; color: white; border: none; padding: 6px 12px; border-radius: 10px; font-family:'Nunito'; font-size:0.75rem; font-weight:700; cursor:pointer;">+ Add Funds</button>
+                            </div>
+                        </div>
+                    `;
+                    listEl.insertAdjacentHTML('beforeend', html);
+                });
+
+                if (totalSavedEl) totalSavedEl.textContent = this.formatPeso(grandTotalSaved);
+
+                if (badgesContainer) {
+                    badgesContainer.innerHTML = '';
+                    this.state.badges.forEach(b => {
+                        const badgeHtml = `
+                            <div class="badge-box ${b.unlocked ? 'unlocked' : ''}">
+                                <div class="badge-icon">${b.icon}</div>
+                                <div style="font-size: 0.7rem; font-weight: 800;">${b.name}</div>
+                                <div style="font-size: 0.6rem; color: var(--text-gray);">${b.unlocked ? 'Unlocked' : 'Locked'}</div>
+                            </div>
+                        `;
+                        badgesContainer.insertAdjacentHTML('beforeend', badgeHtml);
+                    });
+                }
             },
 
-            closeModal(id) {
-                const modal = document.getElementById(id);
-                if(modal) modal.classList.remove('active');
+            openAddGoalModal() {
+                document.getElementById('new-goal-name').value = '';
+                document.getElementById('new-goal-target').value = '';
+                this.openModal('modal-add-goal');
             },
-
-            openAddGoalModal() { this.openModal('modal-add-goal'); },
-            openEditNameModal() { this.openModal('modal-edit-name'); },
-            openEditAllowanceModal() { this.openModal('modal-edit-allowance'); },
 
             confirmAddGoal() {
-                const name = document.getElementById('new-goal-name').value;
+                const name = document.getElementById('new-goal-name').value.trim();
                 const target = parseFloat(document.getElementById('new-goal-target').value);
-                if(name && target) {
-                    this.state.goals.push({
-                        id: Date.now(),
-                        name: name,
-                        target: target,
-                        current: 0,
-                        icon: 'fa-star',
-                        color: 'var(--primary-green)',
-                        lightColor: 'var(--primary-green-light)'
-                    });
+
+                if (!name || isNaN(target) || target <= 0) {
+                    alert("Please enter a valid goal name and target amount.");
+                    return;
+                }
+
+                this.state.goals.push({
+                    id: Date.now(),
+                    name: name,
+                    target: target,
+                    current: 0,
+                    icon: 'fa-bullseye',
+                    color: 'var(--primary-green)',
+                    lightColor: 'var(--primary-green-light)'
+                });
+
+                this.saveState();
+                this.updateGoalsUI();
+                this.closeModal('modal-add-goal');
+                this.showToast("Goal created successfully!");
+            },
+
+            openAddFundsModal(goalId) {
+                this.state.activeGoalId = goalId;
+                const goal = this.state.goals.find(g => g.id === goalId);
+                if (!goal) return;
+
+                document.getElementById('funds-target-name').textContent = `Targeting: ${goal.name}`;
+                document.getElementById('add-funds-amount').value = '';
+                this.openModal('modal-add-funds');
+            },
+
+            confirmAddFunds() {
+                const amt = parseFloat(document.getElementById('add-funds-amount').value);
+                if (isNaN(amt) || amt <= 0) {
+                    alert("Please enter a valid amount.");
+                    return;
+                }
+
+                const goal = this.state.goals.find(g => g.id === this.state.activeGoalId);
+                if (goal) {
+                    goal.current += amt;
                     this.saveState();
                     this.updateGoalsUI();
-                    this.closeModal('modal-add-goal');
-                    this.showToast('New goal added!');
+                    this.closeModal('modal-add-funds');
+                    this.showToast(`Added ${this.formatPeso(amt)} to ${goal.name}!`);
                 }
+            },
+
+            deleteGoal(goalId) {
+                if (confirm("Are you sure you want to delete this goal?")) {
+                    this.state.goals = this.state.goals.filter(g => g.id !== goalId);
+                    this.saveState();
+                    this.updateGoalsUI();
+                    this.showToast("Goal deleted.");
+                }
+            },
+
+            scheduleNewExpense() {
+                const name = document.getElementById('sched-name').value.trim();
+                const date = document.getElementById('sched-date').value.trim();
+                const amt = parseFloat(document.getElementById('sched-amount').value);
+
+                if (!name || !date || isNaN(amt) || amt <= 0) {
+                    alert("Please fill in all scheduled cost fields properly.");
+                    return;
+                }
+
+                this.state.upcomingExpenses.push({
+                    id: Date.now(),
+                    name: name,
+                    date: date,
+                    amount: amt,
+                    icon: 'fa-calendar-check'
+                });
+
+                document.getElementById('sched-name').value = '';
+                document.getElementById('sched-date').value = '';
+                document.getElementById('sched-amount').value = '';
+
+                this.saveState();
+                this.updateUpcomingUI();
+                this.showToast("Scheduled expense added!");
+            },
+
+            renderInsightsCharts() {
+                if (typeof Chart === 'undefined') return;
+
+                const burnCtx = document.getElementById('burnRateChart');
+                if (burnCtx) {
+                    if (this.charts.burnRate) this.charts.burnRate.destroy();
+                    this.charts.burnRate = new Chart(burnCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['W1', 'W2', 'W3', 'W4'],
+                            datasets: [
+                                {
+                                    label: 'Actual Balance',
+                                    data: [2000, 1600, 1450, 1100],
+                                    borderColor: '#10b981',
+                                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                    fill: true,
+                                    tension: 0.3
+                                },
+                                {
+                                    label: 'Ideal Pace',
+                                    data: [2000, 1500, 1000, 500],
+                                    borderColor: '#94a3b8',
+                                    borderDash: [5, 5],
+                                    fill: false,
+                                    tension: 0
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { display: false },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+
+                const donutCtx = document.getElementById('categoryDonutChart');
+                if (donutCtx) {
+                    if (this.charts.donut) this.charts.donut.destroy();
+                    
+                    const catTotals = {};
+                    this.state.recentExpenses.forEach(exp => {
+                        catTotals[exp.category] = (catTotals[exp.category] || 0) + exp.amount;
+                    });
+
+                    const labels = Object.keys(catTotals).length ? Object.keys(catTotals) : ['Food', 'Transport', 'Coffee', 'School'];
+                    const data = Object.keys(catTotals).length ? Object.values(catTotals) : [400, 200, 150, 100];
+                    const colors = ['#10b981', '#3b82f6', '#f97316', '#8b5cf6', '#ef4444', '#64748b'];
+
+                    this.charts.donut = new Chart(donutCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: data,
+                                backgroundColor: colors,
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            cutout: '70%'
+                        }
+                    });
+
+                    const catList = document.getElementById('category-breakdown-list');
+                    if (catList) {
+                        catList.innerHTML = '';
+                        labels.forEach((cat, idx) => {
+                            const val = data[idx];
+                            const pillHtml = `
+                                <div class="cat-pill-item">
+                                    <div class="cat-pill-left">
+                                        <div class="cat-pill-dot" style="background: ${colors[idx % colors.length]}"></div>
+                                        <span>${cat}</span>
+                                    </div>
+                                    <span style="font-weight: 800;">${this.formatPeso(val)}</span>
+                                </div>
+                            `;
+                            catList.insertAdjacentHTML('beforeend', pillHtml);
+                        });
+                    }
+                }
+
+                const barCtx = document.getElementById('dailyBarChart');
+                if (barCtx) {
+                    if (this.charts.bar) this.charts.bar.destroy();
+                    this.charts.bar = new Chart(barCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+                            datasets: [{
+                                data: [40, 35, 60, 45, 80, 30, 25],
+                                backgroundColor: [
+                                    '#10b981', '#10b981', '#ef4444', '#10b981', '#ef4444', '#10b981', '#10b981'
+                                ],
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { display: false },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+            },
+
+            openEditNameModal() {
+                document.getElementById('edit-name-input').value = this.state.userName || '';
+                this.openModal('modal-edit-name');
             },
 
             confirmEditName() {
-                const name = document.getElementById('edit-name-input').value;
-                if(name) {
-                    this.state.userName = name;
-                    this.saveState();
-                    this.updateHomeUI();
-                    this.closeModal('modal-edit-name');
+                const newName = document.getElementById('edit-name-input').value.trim();
+                if (!newName) {
+                    alert("Please enter a valid name.");
+                    return;
                 }
+                this.state.userName = newName;
+                this.saveState();
+                this.updateHomeUI();
+                this.closeModal('modal-edit-name');
+                this.showToast("Profile name updated!");
+            },
+
+            openEditAllowanceModal() {
+                document.getElementById('edit-allowance-amount').value = this.state.balance || '';
+                if (this.state.targetAllowanceDate) {
+                    const d = new Date(this.state.targetAllowanceDate);
+                    if (!isNaN(d.getTime())) {
+                        document.getElementById('edit-allowance-date').value = d.toISOString().split('T')[0];
+                    }
+                }
+                this.openModal('modal-edit-allowance');
             },
 
             confirmEditAllowance() {
                 const amt = parseFloat(document.getElementById('edit-allowance-amount').value);
-                const date = document.getElementById('edit-allowance-date').value;
-                if(amt && date) {
-                    this.state.balance = amt;
-                    this.state.targetAllowanceDate = new Date(date).toISOString();
-                    this.saveState();
-                    this.updateHomeUI();
-                    this.closeModal('modal-edit-allowance');
-                    this.showToast('Allowance updated successfully!');
+                const dateVal = document.getElementById('edit-allowance-date').value;
+
+                if (isNaN(amt) || amt < 0) {
+                    alert("Please enter a valid allowance amount.");
+                    return;
                 }
+
+                this.state.balance = amt;
+                if (dateVal) {
+                    this.state.targetAllowanceDate = new Date(dateVal).toISOString();
+                }
+
+                this.recalculateDailyLimit();
+                this.saveState();
+                this.updateHomeUI();
+                this.closeModal('modal-edit-allowance');
+                this.showToast("Allowance & cycle updated!");
             },
 
             toggleNotifications() {
                 this.state.notificationsEnabled = !this.state.notificationsEnabled;
                 document.getElementById('notif-toggle').classList.toggle('active', this.state.notificationsEnabled);
                 this.saveState();
+                this.showToast(`Notifications ${this.state.notificationsEnabled ? 'enabled' : 'disabled'}.`);
             },
 
             toggleDarkMode() {
                 this.state.darkMode = !this.state.darkMode;
-                document.getElementById('app').classList.toggle('dark-theme', this.state.darkMode);
-                document.getElementById('dark-mode-toggle').classList.toggle('active', this.state.darkMode);
+                const appEl = document.getElementById('app');
+                const darkToggle = document.getElementById('dark-mode-toggle');
+
+                if (this.state.darkMode) {
+                    appEl.classList.add('dark-theme');
+                    if (darkToggle) darkToggle.classList.add('active');
+                } else {
+                    appEl.classList.remove('dark-theme');
+                    if (darkToggle) darkToggle.classList.remove('active');
+                }
+
                 this.saveState();
+                this.showToast(`Dark Mode ${this.state.darkMode ? 'activated' : 'deactivated'}.`);
             },
 
-            updateGoalsUI() {
-                // Future Implementation Placeholder
+            openModal(id) {
+                const modal = document.getElementById(id);
+                if (modal) modal.classList.add('active');
             },
 
-            renderInsightsCharts() {
-                // Future Implementation Placeholder
-            },
-            
-            scheduleNewExpense() {
-                // Future Implementation Placeholder
+            closeModal(id) {
+                const modal = document.getElementById(id);
+                if (modal) modal.classList.remove('active');
             }
         };
 
-        window.onload = () => {
+        document.addEventListener('DOMContentLoaded', () => {
             app.init();
-        };
+        });
     </script>
 </body>
 </html>
