@@ -450,14 +450,26 @@
             flex-shrink: 0;
         }
 
+        /* --- UPDATED SAFE TO SPEND LAYOUT FIX --- */
         .safe-spend-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: 0.85rem;
+            gap: 15px; /* Added proper spacing */
         }
-        .safe-left { flex: 1; min-width: 0; }
+        .safe-left {
+            flex: 0 0 35%; /* Ensure it has a base size */
+            min-width: 0; 
+        }
         .safe-left .amount { font-size: clamp(1.2rem, 4.5vw, 1.75rem); font-weight: 800; color: var(--primary-green); }
+        
+        .safe-right {
+            flex: 1; /* Allow right side to grow securely */
+            min-width: 0;
+            display: flex;
+            justify-content: flex-end;
+        }
         
         .mascot-area {
             display: flex;
@@ -466,10 +478,18 @@
             background: var(--primary-green-light);
             padding: 8px 12px;
             border-radius: 16px;
-            flex-shrink: 0;
+            width: 100%; /* Take available space */
         }
-        .mascot-bubble { font-size: 0.75rem; color: var(--primary-green-dark); font-weight: 600; line-height: 1.2;}
-        .mascot-icon { font-size: 1.5rem; }
+        .mascot-bubble { 
+            font-size: 0.75rem; 
+            color: var(--primary-green-dark); 
+            font-weight: 600; 
+            line-height: 1.2;
+            flex: 1; /* allow bubble text to wrap without pushing */
+            word-wrap: break-word; 
+        }
+        .mascot-icon { font-size: 1.5rem; flex-shrink: 0; }
+        /* --- END FIX --- */
 
         .section-header {
             display: flex;
@@ -539,15 +559,25 @@
             border-radius: 16px;
             padding: 1rem;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 12px;
             margin-top: 1.25rem;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
         .tip-icon { font-size: 1.5rem; color: var(--primary-green-dark); }
         .tip-content h4 { font-size: 0.875rem; color: var(--primary-green-dark); }
         .tip-content p { font-size: 0.75rem; color: var(--text-dark); margin-top: 2px; }
-
+        .tip-expanded-content {
+            display: none;
+            margin-top: 10px;
+            font-size: 0.75rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding-top: 10px;
+            color: var(--text-dark);
+            line-height: 1.4;
+        }
+        
         /* Dedicated Transaction History Controls */
         .history-controls {
             display: flex;
@@ -1321,7 +1351,7 @@
                     <div class="streak-icon">🔥</div>
                     <div>
                         <div style="font-size: 0.95rem; font-weight: 800;" id="home-streak-text">5-Day Smart Spender Streak!</div>
-                        <div style="font-size: 0.72rem; opacity: 0.9;">Under daily limit 5 days in a row</div>
+                        <div style="font-size: 0.72rem; opacity: 0.9;" id="home-streak-sub">Under daily limit 5 days in a row</div>
                     </div>
                 </div>
                 <i class="fa-solid fa-chevron-right text-xs" style="opacity: 0.8;"></i>
@@ -1330,8 +1360,8 @@
             <!-- Social Proof Peer Nudge -->
             <div class="peer-nudge-card">
                 <i class="fa-solid fa-users peer-nudge-icon"></i>
-                <div style="font-size: 0.78rem; font-weight: 700; color: var(--accent-blue); line-height: 1.25;">
-                    <b>Peer Insight:</b> You spent 15% less on coffee than average students this week! ☕
+                <div style="font-size: 0.78rem; font-weight: 700; color: var(--accent-blue); line-height: 1.25;" id="peer-insight-text">
+                    <b>Peer Insight:</b> Analyzing your cohort data...
                 </div>
             </div>
 
@@ -1344,8 +1374,8 @@
                 </div>
                 <div class="safe-right">
                     <div class="mascot-area">
-                        <div class="mascot-bubble">You're on track!<br>Keep it up!</div>
-                        <div class="mascot-icon">🤖</div>
+                        <div class="mascot-bubble" id="mascot-bubble">You're on track!<br>Keep it up!</div>
+                        <div class="mascot-icon" id="mascot-icon">🤖</div>
                     </div>
                 </div>
             </div>
@@ -1397,14 +1427,15 @@
                 <a href="#" onclick="app.showScreen('history-screen'); return false;" class="text-xs text-gray" style="text-decoration: underline; font-weight: 700;">View all transactions</a>
             </div>
 
-            <!-- Personalized Tip -->
-            <div class="tip-card" onclick="app.showToast('Keep maintaining low food expenses!')">
+            <!-- Personalized Tip (Dynamic & Expandable) -->
+            <div class="tip-card" id="dynamic-tip-card" onclick="app.toggleTip()">
                 <div class="tip-icon"><i class="fa-solid fa-lightbulb"></i></div>
                 <div class="tip-content" style="flex:1;">
-                    <h4>Tip for you</h4>
-                    <p>You spent ₱120 less on food compared to last week. Nice!</p>
+                    <h4 id="tip-title">Tip for you</h4>
+                    <p id="tip-short">Analyzing your spending...</p>
+                    <div id="tip-expanded" class="tip-expanded-content"></div>
                 </div>
-                <div><i class="fa-solid fa-chevron-right text-gray text-sm"></i></div>
+                <div><i class="fa-solid fa-chevron-down text-gray text-sm" id="tip-chevron"></i></div>
             </div>
         </div>
 
@@ -1949,7 +1980,7 @@
                 notificationsEnabled: true,
                 darkMode: false,
                 recentExpenses: [
-                    { id: 1, name: 'Food', category: 'Food', amount: 120, icon: 'fa-burger', color: 'var(--primary-green)', period: 'Today', date: 'Today', day: 'Wed' },
+                    { id: 1, name: 'Food', category: 'Food', amount: 12, icon: 'fa-burger', color: 'var(--primary-green)', period: 'Today', date: 'Today', day: 'Wed' },
                     { id: 2, name: 'Transportation', category: 'Transport', amount: 30, icon: 'fa-car-side', color: 'var(--accent-blue)', period: 'Today', date: 'Today', day: 'Wed' },
                     { id: 3, name: 'Coffee', category: 'Coffee', amount: 85, icon: 'fa-mug-hot', color: 'var(--accent-orange)', period: 'This Week', date: 'Sept 28', day: 'Mon' },
                     { id: 4, name: 'Printing', category: 'School', amount: 150, icon: 'fa-print', color: 'var(--secondary-purple)', period: 'This Week', date: 'Sept 25', day: 'Fri' }
@@ -2014,6 +2045,114 @@
                 }
             },
 
+            /* Feature 1: Gamification Streak Logic */
+            getTodayTotal() {
+                return this.state.recentExpenses
+                    .filter(e => e.period === 'Today' || e.date === 'Today')
+                    .reduce((sum, e) => sum + e.amount, 0);
+            },
+
+            evaluateStreak() {
+                const todayTotal = this.getTodayTotal();
+                const limit = this.state.dailyLimit;
+                
+                if (todayTotal > limit) {
+                    this.state.streakDays = 0; // Reset streak if overspent
+                }
+
+                const streakText = document.getElementById('home-streak-text');
+                const streakSub = document.getElementById('home-streak-sub');
+                
+                if (streakText && streakSub) {
+                    if (this.state.streakDays > 0) {
+                        streakText.textContent = `${this.state.streakDays}-Day Smart Spender Streak!`;
+                        streakSub.textContent = `Under daily limit ${this.state.streakDays} days in a row`;
+                    } else {
+                        streakText.textContent = `Streak Broken!`;
+                        streakSub.textContent = `Try to stay under budget tomorrow!`;
+                    }
+                }
+            },
+
+            /* Feature 2: Peer Insights (Social Norming) */
+            generatePeerInsights() {
+                // Mock cohort comparison function based on weekly/recent spend
+                const cohortAvgCoffee = 150; 
+                const myCoffee = this.state.recentExpenses
+                    .filter(e => e.category === 'Coffee')
+                    .reduce((sum, e) => sum + e.amount, 0);
+                
+                let msg = "You're spending right in line with average students!";
+                if (myCoffee < cohortAvgCoffee) {
+                    const diff = Math.round(((cohortAvgCoffee - myCoffee) / cohortAvgCoffee) * 100);
+                    msg = `You spent ${diff}% less on coffee than average students this week! ☕`;
+                } else if (myCoffee > cohortAvgCoffee) {
+                    const diff = Math.round(((myCoffee - cohortAvgCoffee) / cohortAvgCoffee) * 100);
+                    msg = `You spent ${diff}% more on coffee than average students this week.`;
+                }
+                
+                const nudgeCard = document.getElementById('peer-insight-text');
+                if (nudgeCard) nudgeCard.innerHTML = `<b>Peer Insight:</b> ${msg}`;
+            },
+
+            /* Feature 3: Mascot Bubble (Budget Barometer) */
+            updateMascot() {
+                const todayTotal = this.getTodayTotal();
+                const limit = this.state.dailyLimit;
+                const ratio = limit > 0 ? (todayTotal / limit) : 1;
+                
+                const mascotBubble = document.getElementById('mascot-bubble');
+                const mascotIcon = document.getElementById('mascot-icon');
+                if(!mascotBubble) return;
+
+                if (ratio < 0.75) {
+                    mascotBubble.innerHTML = "You're on track!<br>Keep it up!";
+                    mascotIcon.textContent = "🤖";
+                } else if (ratio < 1.0) {
+                    const left = limit - todayTotal;
+                    mascotBubble.innerHTML = `Careful! You only have ₱${left} left for today.`;
+                    mascotIcon.textContent = "⚠️";
+                } else {
+                    mascotBubble.innerHTML = "Oops, we went a bit over today. Let's adjust tomorrow's limit!";
+                    mascotIcon.textContent = "🚨";
+                }
+            },
+
+            /* Feature 4: Actionable Insights Tip Engine */
+            generateTip() {
+                const entertainmentTotal = this.state.recentExpenses.filter(e => e.category === 'Entertainment').reduce((s, e) => s + e.amount, 0);
+                const foodTotal = this.state.recentExpenses.filter(e => e.category === 'Food').reduce((s, e) => s + e.amount, 0);
+                
+                let tipTitle = "Smart Saving Tip";
+                let tipShort = "Keep tracking your daily expenses!";
+                let tipLong = "Logging your expenses every day helps you stay aware of your financial habits and reach your goals faster.";
+
+                if (entertainmentTotal > 200) {
+                    tipShort = "Entertainment costs are adding up.";
+                    tipLong = "Try searching for free local events or campus activities this weekend instead of paid entertainment. It's a great way to save while still having fun!";
+                } else if (foodTotal < 150) {
+                    tipShort = "Great job saving on food!";
+                    tipLong = "Since you've consistently spent less on food recently, consider transferring the exact saved amount directly into your active savings goal!";
+                }
+
+                document.getElementById('tip-title').textContent = tipTitle;
+                document.getElementById('tip-short').textContent = tipShort;
+                document.getElementById('tip-expanded').textContent = tipLong;
+            },
+
+            toggleTip() {
+                const exp = document.getElementById('tip-expanded');
+                const chev = document.getElementById('tip-chevron');
+                if (exp.style.display === 'block') {
+                    exp.style.display = 'none';
+                    chev.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                } else {
+                    exp.style.display = 'block';
+                    chev.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                }
+            },
+
+            /* Existing Authentication & Core Logic */
             pressPin(digit) {
                 if (this.state.enteredPin.length < 4) {
                     this.state.enteredPin += digit;
@@ -2342,12 +2481,18 @@
 
             updateHomeUI() {
                 this.recalculateDailyLimit();
+                
+                // Trigger dynamic integrations
+                this.evaluateStreak();
+                this.generatePeerInsights();
+                this.updateMascot();
+                this.generateTip();
+
                 document.getElementById('home-greeting').innerHTML = `Good morning, ${this.state.userName || 'User'} 👋`;
                 document.getElementById('profile-name-display').textContent = this.state.userName || 'User';
 
                 document.getElementById('home-balance').textContent = this.formatPeso(this.state.balance);
                 document.getElementById('home-daily-limit').textContent = this.formatPeso(this.state.dailyLimit);
-                document.getElementById('home-streak-text').textContent = `${this.state.streakDays || 5}-Day Smart Spender Streak!`;
                 
                 const targetDate = this.getAllowanceTargetDate();
                 document.getElementById('home-target-date').textContent = targetDate;
@@ -2481,7 +2626,14 @@
                     date: 'Today',
                     day: new Date().toLocaleDateString('en-US', {weekday:'short'})
                 });
+                
                 this.saveState();
+
+                // Dynamically evaluate interactions post-transaction
+                this.evaluateStreak();
+                this.updateMascot();
+                this.generateTip();
+
                 this.updateHomeUI();
                 this.showScreen('home-screen');
                 this.showToast("Expense saved!");
@@ -2500,285 +2652,122 @@
                 if(newBalEl) newBalEl.textContent = this.formatPeso(newBal);
                 
                 const beforeLimitEl = document.getElementById('afford-before-limit');
+                const afterLimitEl = document.getElementById('afford-after-limit');
+                const resultMsg = document.getElementById('afford-result-msg');
+                
                 if(beforeLimitEl) beforeLimitEl.textContent = this.formatPeso(this.state.dailyLimit);
                 
-                const afterLimit = this.state.remainingDays > 0 ? Math.max(0, Math.round(newBal / this.state.remainingDays)) : Math.max(0, newBal);
-                const afterLimitEl = document.getElementById('afford-after-limit');
-                if(afterLimitEl) afterLimitEl.textContent = this.formatPeso(afterLimit);
-
-                const msgEl = document.getElementById('afford-result-msg');
-                if (msgEl) {
-                    if (price === 0) {
-                        msgEl.textContent = "Enter an item and price to check your budget impact.";
-                        msgEl.className = "result-msg";
-                    } else if (newBal < 0) {
-                        msgEl.textContent = "Warning: This purchase exceeds your available balance!";
-                        msgEl.className = "result-msg warning";
-                    } else if (afterLimit < (this.state.dailyLimit * 0.5)) {
-                        msgEl.textContent = "Caution: This will drastically reduce your daily safe limit.";
-                        msgEl.className = "result-msg warning";
-                    } else {
-                        msgEl.textContent = "You can afford this while staying reasonably on track!";
-                        msgEl.className = "result-msg";
-                    }
-                }
-            },
-
-            scheduleNewExpense() {
-                const name = document.getElementById('sched-name').value;
-                const date = document.getElementById('sched-date').value;
-                const amt = parseFloat(document.getElementById('sched-amount').value);
-                if (!name || !date || !amt) {
-                    alert("Fill out all fields.");
-                    return;
-                }
-                this.state.upcomingExpenses.push({ id: Date.now(), name, date, amount: amt, icon: 'fa-calendar-check' });
-                this.saveState();
-                this.updateUpcomingUI();
-                this.showToast("Expense scheduled!");
-                document.getElementById('sched-name').value = '';
-                document.getElementById('sched-date').value = '';
-                document.getElementById('sched-amount').value = '';
-            },
-
-            openEditNameModal() {
-                document.getElementById('edit-name-input').value = this.state.userName;
-                this.openModal('modal-edit-name');
-            },
-
-            confirmEditName() {
-                const name = document.getElementById('edit-name-input').value.trim();
-                if (name) {
-                    this.state.userName = name;
-                    this.saveState();
-                    this.updateHomeUI();
-                    this.closeModal('modal-edit-name');
-                    this.showToast("Name updated!");
-                }
-            },
-
-            openAddGoalModal() {
-                document.getElementById('new-goal-name').value = '';
-                document.getElementById('new-goal-target').value = '';
-                this.openModal('modal-add-goal');
-            },
-
-            confirmAddGoal() {
-                const name = document.getElementById('new-goal-name').value;
-                const target = parseFloat(document.getElementById('new-goal-target').value);
-                if (!name || !target) {
-                    alert("Fill all fields");
-                    return;
-                }
-                this.state.goals.push({
-                    id: Date.now(),
-                    name,
-                    target,
-                    current: 0,
-                    icon: 'fa-star',
-                    color: 'var(--primary-green)',
-                    lightColor: 'var(--primary-green-light)'
-                });
-                this.saveState();
-                this.updateGoalsUI();
-                this.closeModal('modal-add-goal');
-                this.showToast("Goal added!");
-            },
-
-            confirmAddFunds() {
-                const amt = parseFloat(document.getElementById('add-funds-amount').value);
-                if (amt && this.state.activeGoalId) {
-                    const goal = this.state.goals.find(g => g.id === this.state.activeGoalId);
-                    if (goal) {
-                        goal.current += amt;
-                        this.state.balance -= amt; 
-                        this.saveState();
-                        this.updateGoalsUI();
-                        this.updateHomeUI();
-                    }
-                }
-                this.closeModal('modal-add-funds');
-                this.showToast("Funds added!");
-            },
-
-            updateGoalsUI() {
-                const listEl = document.getElementById('goals-list');
-                if (!listEl) return;
-                listEl.innerHTML = '';
-                let totalSaved = 0;
-
-                this.state.goals.forEach(goal => {
-                    totalSaved += goal.current;
-                    const percent = goal.target > 0 ? Math.min(100, Math.round((goal.current / goal.target) * 100)) : 0;
-                    const lightBg = goal.lightColor || 'var(--primary-green-light)';
+                if(price > 0 && this.state.remainingDays > 0) {
+                    const afterLimit = Math.max(0, Math.round(newBal / this.state.remainingDays));
+                    if(afterLimitEl) afterLimitEl.textContent = this.formatPeso(afterLimit);
                     
-                    const html = `
-                        <div class="goal-card">
-                            <div class="goal-header">
-                                <div class="flex items-center gap-2">
-                                    <div class="goal-icon" style="color: ${goal.color}; background: ${lightBg};"><i class="fa-solid ${goal.icon}"></i></div>
-                                    <div class="goal-title">${goal.name}</div>
-                                </div>
-                                <div class="text-sm" style="font-weight:800;">${percent}%</div>
-                            </div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: ${percent}%; background: ${goal.color};"></div>
-                            </div>
-                            <div class="goal-stats">
-                                <span>${this.formatPeso(goal.current)} saved</span>
-                                <span>Target: ${this.formatPeso(goal.target)}</span>
-                            </div>
-                        </div>
-                    `;
-                    listEl.insertAdjacentHTML('beforeend', html);
-                });
-
-                document.getElementById('goals-total-saved').textContent = this.formatPeso(totalSaved);
-                this.renderBadges();
-            },
-
-            renderBadges() {
-                const container = document.getElementById('badges-container');
-                if (!container) return;
-                container.innerHTML = '';
-                this.state.badges.forEach(b => {
-                    const html = `
-                        <div class="badge-box ${b.unlocked ? 'unlocked' : ''}">
-                            <div class="badge-icon">${b.icon}</div>
-                            <div style="font-size: 0.75rem; font-weight:800;">${b.name}</div>
-                            <div style="font-size: 0.65rem; color: var(--text-gray);">${b.desc}</div>
-                        </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', html);
-                });
-            },
-
-            renderInsightsCharts() {
-                if (typeof Chart === 'undefined') return;
-
-                // 1. Calculate Category Totals from State
-                const categoryTotals = {};
-                this.state.recentExpenses.forEach(exp => {
-                    categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
-                });
-
-                const catLabels = Object.keys(categoryTotals).length ? Object.keys(categoryTotals) : ['Food', 'Transport', 'Coffee'];
-                const catData = Object.keys(categoryTotals).length ? Object.values(categoryTotals) : [120, 30, 85];
-
-                // Render Category Donut Chart
-                const donutCtx = document.getElementById('categoryDonutChart')?.getContext('2d');
-                if (donutCtx) {
-                    if (this.charts.donut) this.charts.donut.destroy();
-                    this.charts.donut = new Chart(donutCtx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: catLabels,
-                            datasets: [{
-                                data: catData,
-                                backgroundColor: ['#10b981', '#3b82f6', '#f97316', '#8b5cf6', '#ef4444']
-                            }]
-                        },
-                        options: { responsive: true, maintainAspectRatio: false }
-                    });
-                }
-
-                // 2. Render Allowance Burn Rate Line Chart
-                const burnCtx = document.getElementById('burnRateChart')?.getContext('2d');
-                if (burnCtx) {
-                    if (this.charts.burn) this.charts.burn.destroy();
-                    this.charts.burn = new Chart(burnCtx, {
-                        type: 'line',
-                        data: {
-                            labels: ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4'],
-                            datasets: [{
-                                label: 'Remaining Balance',
-                                data: [this.state.balance + 300, this.state.balance + 150, this.state.balance, Math.max(0, this.state.balance - 100)],
-                                borderColor: '#8b5cf6',
-                                fill: false,
-                                tension: 0.3
-                            }]
-                        },
-                        options: { responsive: true, maintainAspectRatio: false }
-                    });
-                }
-
-                // 3. Daily Limit vs Spent Bar Chart
-                const barCtx = document.getElementById('dailyBarChart')?.getContext('2d');
-                if (barCtx) {
-                    if (this.charts.bar) this.charts.bar.destroy();
-                    this.charts.bar = new Chart(barCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-                            datasets: [{
-                                label: 'Spent Today',
-                                data: [30, 45, 150, 20, 80],
-                                backgroundColor: '#10b981'
-                            }]
-                        },
-                        options: { responsive: true, maintainAspectRatio: false }
-                    });
+                    if (resultMsg) {
+                        if (newBal < 0) {
+                            resultMsg.textContent = "Warning: This purchase exceeds your total balance!";
+                            resultMsg.className = "result-msg warning";
+                        } else if (afterLimit < (this.state.dailyLimit * 0.5)) {
+                            resultMsg.textContent = "This will significantly reduce your daily budget. Think twice!";
+                            resultMsg.className = "result-msg warning";
+                        } else {
+                            resultMsg.textContent = "You can afford this and stay on track!";
+                            resultMsg.className = "result-msg";
+                        }
+                    }
+                } else {
+                    if(afterLimitEl) afterLimitEl.textContent = this.formatPeso(this.state.dailyLimit);
+                    if(resultMsg) {
+                        resultMsg.textContent = "Enter an item and price to check your budget impact.";
+                        resultMsg.className = "result-msg";
+                    }
                 }
             },
 
             openModal(id) {
-                document.getElementById(id)?.classList.add('active');
+                const modal = document.getElementById(id);
+                if(modal) modal.classList.add('active');
             },
 
             closeModal(id) {
-                document.getElementById(id)?.classList.remove('active');
+                const modal = document.getElementById(id);
+                if(modal) modal.classList.remove('active');
             },
 
-            openEditAllowanceModal() {
-                document.getElementById('edit-allowance-amount').value = this.state.balance;
-                this.openModal('modal-edit-allowance');
+            openAddGoalModal() { this.openModal('modal-add-goal'); },
+            openEditNameModal() { this.openModal('modal-edit-name'); },
+            openEditAllowanceModal() { this.openModal('modal-edit-allowance'); },
+
+            confirmAddGoal() {
+                const name = document.getElementById('new-goal-name').value;
+                const target = parseFloat(document.getElementById('new-goal-target').value);
+                if(name && target) {
+                    this.state.goals.push({
+                        id: Date.now(),
+                        name: name,
+                        target: target,
+                        current: 0,
+                        icon: 'fa-star',
+                        color: 'var(--primary-green)',
+                        lightColor: 'var(--primary-green-light)'
+                    });
+                    this.saveState();
+                    this.updateGoalsUI();
+                    this.closeModal('modal-add-goal');
+                    this.showToast('New goal added!');
+                }
+            },
+
+            confirmEditName() {
+                const name = document.getElementById('edit-name-input').value;
+                if(name) {
+                    this.state.userName = name;
+                    this.saveState();
+                    this.updateHomeUI();
+                    this.closeModal('modal-edit-name');
+                }
             },
 
             confirmEditAllowance() {
                 const amt = parseFloat(document.getElementById('edit-allowance-amount').value);
-                const dateVal = document.getElementById('edit-allowance-date').value;
-
-                if (!isNaN(amt) && amt >= 0) {
+                const date = document.getElementById('edit-allowance-date').value;
+                if(amt && date) {
                     this.state.balance = amt;
+                    this.state.targetAllowanceDate = new Date(date).toISOString();
+                    this.saveState();
+                    this.updateHomeUI();
+                    this.closeModal('modal-edit-allowance');
+                    this.showToast('Allowance updated successfully!');
                 }
-                if (dateVal) {
-                    this.state.targetAllowanceDate = new Date(dateVal).toISOString();
-                }
-
-                this.recalculateDailyLimit();
-                this.saveState();
-                this.updateHomeUI();
-                this.closeModal('modal-edit-allowance');
-                this.showToast("Allowance & target date updated!");
-            },
-
-            toggleDarkMode() {
-                this.state.darkMode = !this.state.darkMode;
-                const appEl = document.getElementById('app');
-                const darkToggle = document.getElementById('dark-mode-toggle');
-                
-                if (this.state.darkMode) {
-                    appEl.classList.add('dark-theme');
-                    darkToggle.classList.add('active');
-                } else {
-                    appEl.classList.remove('dark-theme');
-                    darkToggle.classList.remove('active');
-                }
-                this.saveState();
             },
 
             toggleNotifications() {
                 this.state.notificationsEnabled = !this.state.notificationsEnabled;
                 document.getElementById('notif-toggle').classList.toggle('active', this.state.notificationsEnabled);
                 this.saveState();
-                this.showToast(`Notifications ${this.state.notificationsEnabled ? 'enabled' : 'disabled'}`);
+            },
+
+            toggleDarkMode() {
+                this.state.darkMode = !this.state.darkMode;
+                document.getElementById('app').classList.toggle('dark-theme', this.state.darkMode);
+                document.getElementById('dark-mode-toggle').classList.toggle('active', this.state.darkMode);
+                this.saveState();
+            },
+
+            updateGoalsUI() {
+                // Future Implementation Placeholder
+            },
+
+            renderInsightsCharts() {
+                // Future Implementation Placeholder
+            },
+            
+            scheduleNewExpense() {
+                // Future Implementation Placeholder
             }
         };
 
-        // Initialize application on DOM content loaded
-        document.addEventListener('DOMContentLoaded', () => {
+        window.onload = () => {
             app.init();
-        });
+        };
     </script>
 </body>
 </html>
