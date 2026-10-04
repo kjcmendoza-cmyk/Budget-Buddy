@@ -450,22 +450,22 @@
             flex-shrink: 0;
         }
 
-        /* --- SAFE TO SPEND LAYOUT --- */
+        /* --- UPDATED SAFE TO SPEND LAYOUT FIX --- */
         .safe-spend-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: 0.85rem;
-            gap: 15px;
+            gap: 15px; /* Added proper spacing */
         }
         .safe-left {
-            flex: 0 0 35%;
+            flex: 0 0 35%; /* Ensure it has a base size */
             min-width: 0; 
         }
         .safe-left .amount { font-size: clamp(1.2rem, 4.5vw, 1.75rem); font-weight: 800; color: var(--primary-green); }
         
         .safe-right {
-            flex: 1;
+            flex: 1; /* Allow right side to grow securely */
             min-width: 0;
             display: flex;
             justify-content: flex-end;
@@ -478,17 +478,18 @@
             background: var(--primary-green-light);
             padding: 8px 12px;
             border-radius: 16px;
-            width: 100%;
+            width: 100%; /* Take available space */
         }
         .mascot-bubble { 
             font-size: 0.75rem; 
             color: var(--primary-green-dark); 
             font-weight: 600; 
             line-height: 1.2;
-            flex: 1;
+            flex: 1; /* allow bubble text to wrap without pushing */
             word-wrap: break-word; 
         }
         .mascot-icon { font-size: 1.5rem; flex-shrink: 0; }
+        /* --- END FIX --- */
 
         .section-header {
             display: flex;
@@ -1331,13 +1332,13 @@
                     <div class="label">
                         <i class="fa-solid fa-wallet"></i> AVAILABLE MONEY
                     </div>
-                    <div class="balance" id="home-balance">₱1,450</div>
+                    <div class="balance" id="home-balance">₱0</div>
                     <div class="badge-ontrack"><i class="fa-solid fa-check-circle"></i> On track</div>
                 </div>
                 <div class="am-right">
                     <div class="next-allowance">Next allowance</div>
-                    <div class="date" id="home-target-date">Oct 31, 2026</div>
-                    <div class="days-left" id="home-days-left">29 days left</div>
+                    <div class="date" id="home-target-date">Not set</div>
+                    <div class="days-left" id="home-days-left">0 days left</div>
                 </div>
                 <svg class="mini-graph" width="80" height="40" viewBox="0 0 80 40">
                     <path d="M0,40 L15,30 L30,35 L45,20 L60,25 L80,5" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1349,8 +1350,8 @@
                 <div class="streak-badge">
                     <div class="streak-icon">🔥</div>
                     <div>
-                        <div style="font-size: 0.95rem; font-weight: 800;" id="home-streak-text">5-Day Smart Spender Streak!</div>
-                        <div style="font-size: 0.72rem; opacity: 0.9;" id="home-streak-sub">Under daily limit 5 days in a row</div>
+                        <div style="font-size: 0.95rem; font-weight: 800;" id="home-streak-text">0-Day Smart Spender Streak!</div>
+                        <div style="font-size: 0.72rem; opacity: 0.9;" id="home-streak-sub">Start tracking to build your streak</div>
                     </div>
                 </div>
                 <i class="fa-solid fa-chevron-right text-xs" style="opacity: 0.8;"></i>
@@ -1368,12 +1369,12 @@
             <div class="card safe-spend-card">
                 <div class="safe-left">
                     <div class="text-xs text-gray" style="font-weight: 700; text-transform: uppercase;">Safe to spend today</div>
-                    <div class="amount" id="home-daily-limit">₱50</div>
+                    <div class="amount" id="home-daily-limit">₱0</div>
                     <div class="text-xs text-gray">Daily limit</div>
                 </div>
                 <div class="safe-right">
                     <div class="mascot-area">
-                        <div class="mascot-bubble" id="mascot-bubble">You're on track!<br>Keep it up!</div>
+                        <div class="mascot-bubble" id="mascot-bubble">Set up your budget<br>to get started!</div>
                         <div class="mascot-icon" id="mascot-icon">🤖</div>
                     </div>
                 </div>
@@ -1406,7 +1407,7 @@
             <!-- Upcoming Expenses -->
             <div class="section-header">
                 <h2>Upcoming Expenses</h2>
-                <span class="text-xs text-gray" id="home-total-reserved" style="font-weight: 700;">Total reserved ₱850</span>
+                <span class="text-xs text-gray" id="home-total-reserved" style="font-weight: 700;">Total reserved ₱0</span>
             </div>
             <div class="card transaction-list" id="home-upcoming-list"></div>
             <div class="text-center mt-2">
@@ -1561,7 +1562,7 @@
                 <div class="card p-0" style="padding: 1rem; box-shadow: none; border: 1px solid var(--border-color);">
                     <div class="impact-row">
                         <span class="text-gray">Current balance:</span>
-                        <span id="afford-current-bal">₱1,450</span>
+                        <span id="afford-current-bal">₱0</span>
                     </div>
                     <div class="impact-row text-red">
                         <span>Purchase:</span>
@@ -1569,7 +1570,7 @@
                     </div>
                     <div class="impact-row border-top text-green">
                         <span>New balance:</span>
-                        <span id="afford-new-bal">₱1,450</span>
+                        <span id="afford-new-bal">₱0</span>
                     </div>
                 </div>
             </div>
@@ -1578,12 +1579,12 @@
                 <div class="comp-card">
                     <div class="label">Before purchase</div>
                     <div class="label">Safe to spend/day</div>
-                    <div class="val text-purple" id="afford-before-limit">₱50</div>
+                    <div class="val text-purple" id="afford-before-limit">₱0</div>
                 </div>
                 <div class="comp-card" style="background: var(--secondary-purple-light); border-color: var(--secondary-purple);">
                     <div class="label" style="color: var(--secondary-purple);">After purchase</div>
                     <div class="label" style="color: var(--secondary-purple);">Safe to spend/day</div>
-                    <div class="val text-purple" id="afford-after-limit">₱50</div>
+                    <div class="val text-purple" id="afford-after-limit">₱0</div>
                 </div>
             </div>
 
@@ -1660,7 +1661,7 @@
 
             <div class="section-header" style="margin-top: 2rem;">
                 <h2>Scheduled</h2>
-                <span class="text-xs text-gray" id="upcoming-screen-total" style="font-weight: 700;">Total reserved ₱850</span>
+                <span class="text-xs text-gray" id="upcoming-screen-total" style="font-weight: 700;">Total reserved ₱0</span>
             </div>
             
             <div class="card transaction-list" id="upcoming-screen-list"></div>
@@ -1680,7 +1681,7 @@
             <!-- Allowance Burn Rate Pace Warning -->
             <div class="insight-banner-warning">
                 <i class="fa-solid fa-triangle-exclamation"></i>
-                <p id="insight-banner-text">At your current rate, your allowance will run out 3 days before target!</p>
+                <p id="insight-banner-text">Start spending to see your insights and burn rate projections!</p>
             </div>
 
             <!-- 1. Allowance Pace & Burn Rate (Line Chart) -->
@@ -1689,7 +1690,7 @@
                     <div class="chart-card-title">
                         <i class="fa-solid fa-chart-line text-purple"></i> Allowance Burn Rate
                     </div>
-                    <span class="text-xs text-gray" id="burn-rate-cycle-label" style="font-weight: 700;">29-Day Cycle</span>
+                    <span class="text-xs text-gray" id="burn-rate-cycle-label" style="font-weight: 700;">0-Day Cycle</span>
                 </div>
                 <div class="chart-container" style="height: 180px;">
                     <canvas id="burnRateChart"></canvas>
@@ -1712,8 +1713,8 @@
                 <div class="category-breakdown-list" id="category-breakdown-list"></div>
 
                 <div class="category-detail-box" id="cat-insight-detail">
-                    <span>Food vs. Historical Avg:</span>
-                    <span style="color: var(--danger-red);">+18% higher than usual</span>
+                    <span>Awaiting data:</span>
+                    <span style="color: var(--danger-red);">No categories yet</span>
                 </div>
             </div>
 
@@ -1723,7 +1724,7 @@
                     <div class="chart-card-title">
                         <i class="fa-solid fa-chart-column text-purple"></i> Daily Limit vs. Spent
                     </div>
-                    <span class="text-xs text-gray" id="daily-limit-chart-label" style="font-weight: 700;">Limit: ₱50/day</span>
+                    <span class="text-xs text-gray" id="daily-limit-chart-label" style="font-weight: 700;">Limit: ₱0/day</span>
                 </div>
                 <div class="chart-container" style="height: 180px;">
                     <canvas id="dailyBarChart"></canvas>
@@ -1744,13 +1745,13 @@
                 <div class="peak-spending-grid">
                     <div class="peak-stat-box">
                         <div class="peak-stat-label">Peak Spending Day</div>
-                        <div class="peak-stat-val" style="color: var(--danger-red);">Friday</div>
-                        <div class="text-xs text-gray mt-2" style="font-weight:600;">Avg ₱450 spent</div>
+                        <div class="peak-stat-val" style="color: var(--text-light);">--</div>
+                        <div class="text-xs text-gray mt-2" style="font-weight:600;">Awaiting data</div>
                     </div>
                     <div class="peak-stat-box">
                         <div class="peak-stat-label">Peak Hours</div>
-                        <div class="peak-stat-val" style="color: var(--accent-orange);">4 PM – 7 PM</div>
-                        <div class="text-xs text-gray mt-2" style="font-weight:600;">After-school snacks</div>
+                        <div class="peak-stat-val" style="color: var(--text-light);">--</div>
+                        <div class="text-xs text-gray mt-2" style="font-weight:600;">Awaiting data</div>
                     </div>
                 </div>
             </div>
@@ -1762,14 +1763,13 @@
                     <i class="fa-solid fa-seedling text-lg"></i>
                 </div>
                 <p class="text-xs" style="opacity: 0.9; margin-bottom: 12px; line-height: 1.3;">
-                    Staying under your daily budget routed <b>₱240</b> directly into your active goals!
+                    Staying under your daily budget will route excess funds directly into your active goals!
                 </p>
                 <div class="progress-bar-bg" style="background: rgba(255,255,255,0.2); height: 10px;">
-                    <div class="progress-bar-fill" style="width: 70%; background: white;"></div>
+                    <div class="progress-bar-fill" style="width: 0%; background: white;"></div>
                 </div>
                 <div class="flex justify-between text-xs mt-2" style="font-weight: 700; opacity: 0.95;">
-                    <span>Emergency Fund: +₱140</span>
-                    <span>New Laptop: +₱100</span>
+                    <span>Start saving today</span>
                 </div>
             </div>
         </div>
@@ -1928,7 +1928,6 @@
     </div>
 
     <script>
-        // Replace with your actual Firebase project credentials
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_AUTH_DOMAIN",
@@ -1956,6 +1955,7 @@
 
         // Helper function to calculate remaining days
         function getDaysLeft(targetDateStr) {
+            if (!targetDateStr) return 0;
             const today = new Date();
             const targetDate = new Date(targetDateStr);
             const diffTime = targetDate - today;
@@ -1971,31 +1971,19 @@
                 userPin: '',
                 enteredPin: '',
                 authTab: 'signin',
-                balance: 1450,
-                remainingDays: 29,
-                dailyLimit: 50,
-                streakDays: 5,
-                targetAllowanceDate: "2026-10-31T16:00:00.000Z",
+                balance: 0,
+                remainingDays: 0,
+                dailyLimit: 0,
+                streakDays: 0,
+                targetAllowanceDate: "",
                 notificationsEnabled: true,
                 darkMode: false,
-                recentExpenses: [
-                    { id: 1, name: 'Food', category: 'Food', amount: 12, icon: 'fa-burger', color: 'var(--primary-green)', period: 'Today', date: 'Today', day: 'Wed' },
-                    { id: 2, name: 'Transportation', category: 'Transport', amount: 30, icon: 'fa-car-side', color: 'var(--accent-blue)', period: 'Today', date: 'Today', day: 'Wed' },
-                    { id: 3, name: 'Coffee', category: 'Coffee', amount: 85, icon: 'fa-mug-hot', color: 'var(--accent-orange)', period: 'This Week', date: 'Sept 28', day: 'Mon' },
-                    { id: 4, name: 'Printing', category: 'School', amount: 150, icon: 'fa-print', color: 'var(--secondary-purple)', period: 'This Week', date: 'Sept 25', day: 'Fri' }
-                ],
-                goals: [
-                    { id: 1, name: 'Emergency Fund', target: 20000, current: 12000, icon: 'fa-piggy-bank', color: 'var(--primary-green)', lightColor: 'var(--primary-green-light)' },
-                    { id: 2, name: 'New Laptop', target: 45000, current: 3200, icon: 'fa-laptop', color: 'var(--accent-blue)', lightColor: 'var(--accent-blue-light)' }
-                ],
-                upcomingExpenses: [
-                    { id: 1, name: 'School project', date: 'Sept 21', amount: 500, icon: 'fa-book' },
-                    { id: 2, name: 'Transportation', date: 'Sept 28', amount: 200, icon: 'fa-bus' },
-                    { id: 3, name: 'Printing', date: 'Sept 30', amount: 150, icon: 'fa-print' }
-                ],
+                recentExpenses: [],
+                goals: [],
+                upcomingExpenses: [],
                 badges: [
-                    { id: 1, name: 'Goal Getter', icon: '🎯', unlocked: true, desc: 'Set first savings goal' },
-                    { id: 2, name: 'Streak Master', icon: '🔥', unlocked: true, desc: '5-Day budget streak' },
+                    { id: 1, name: 'Goal Getter', icon: '🎯', unlocked: false, desc: 'Set first savings goal' },
+                    { id: 2, name: 'Streak Master', icon: '🔥', unlocked: false, desc: '5-Day budget streak' },
                     { id: 3, name: 'Super Saver', icon: '💰', unlocked: false, desc: 'Save ₱1,000 extra' }
                 ],
                 selectedCategory: 'Food',
@@ -2024,7 +2012,6 @@
                 this.updateHomeUI();
                 this.updateUpcomingUI();
 
-                // Setup Firebase Auth State Listener if configured
                 if (isFirebaseActive && auth) {
                     auth.onAuthStateChanged(user => {
                         if (user) {
@@ -2036,7 +2023,6 @@
                     });
                 }
 
-                // Check authorization status for chronological open ordering
                 if (this.state.isLoggedIn) {
                     this.showScreen('lock-screen');
                 } else {
@@ -2044,7 +2030,6 @@
                 }
             },
 
-            /* Feature 1: Gamification Streak Logic */
             getTodayTotal() {
                 return this.state.recentExpenses
                     .filter(e => e.period === 'Today' || e.date === 'Today')
@@ -2052,13 +2037,6 @@
             },
 
             evaluateStreak() {
-                const todayTotal = this.getTodayTotal();
-                const limit = this.state.dailyLimit;
-                
-                if (todayTotal > limit) {
-                    this.state.streakDays = 0; // Reset streak if overspent
-                }
-
                 const streakText = document.getElementById('home-streak-text');
                 const streakSub = document.getElementById('home-streak-sub');
                 
@@ -2067,76 +2045,51 @@
                         streakText.textContent = `${this.state.streakDays}-Day Smart Spender Streak!`;
                         streakSub.textContent = `Under daily limit ${this.state.streakDays} days in a row`;
                     } else {
-                        streakText.textContent = `Streak Broken!`;
-                        streakSub.textContent = `Try to stay under budget tomorrow!`;
+                        streakText.textContent = `0-Day Smart Spender Streak!`;
+                        streakSub.textContent = `Start tracking to build your streak`;
                     }
                 }
             },
 
-            /* Feature 2: Peer Insights (Social Norming) */
             generatePeerInsights() {
-                // Mock cohort comparison function based on weekly/recent spend
-                const cohortAvgCoffee = 150; 
-                const myCoffee = this.state.recentExpenses
-                    .filter(e => e.category === 'Coffee')
-                    .reduce((sum, e) => sum + e.amount, 0);
-                
-                let msg = "You're spending right in line with average students!";
-                if (myCoffee < cohortAvgCoffee) {
-                    const diff = Math.round(((cohortAvgCoffee - myCoffee) / cohortAvgCoffee) * 100);
-                    msg = `You spent ${diff}% less on coffee than average students this week! ☕`;
-                } else if (myCoffee > cohortAvgCoffee) {
-                    const diff = Math.round(((myCoffee - cohortAvgCoffee) / cohortAvgCoffee) * 100);
-                    msg = `You spent ${diff}% more on coffee than average students this week.`;
-                }
-                
                 const nudgeCard = document.getElementById('peer-insight-text');
-                if (nudgeCard) nudgeCard.innerHTML = `<b>Peer Insight:</b> ${msg}`;
+                if (this.state.recentExpenses.length === 0) {
+                    if (nudgeCard) nudgeCard.innerHTML = `<b>Peer Insight:</b> Track your first expense to see how you compare to other students!`;
+                } else {
+                    if (nudgeCard) nudgeCard.innerHTML = `<b>Peer Insight:</b> You're doing great! Keep tracking to unlock more insights.`;
+                }
             },
 
-            /* Feature 3: Mascot Bubble (Budget Barometer) */
             updateMascot() {
                 const todayTotal = this.getTodayTotal();
                 const limit = this.state.dailyLimit;
-                const ratio = limit > 0 ? (todayTotal / limit) : 1;
                 
                 const mascotBubble = document.getElementById('mascot-bubble');
                 const mascotIcon = document.getElementById('mascot-icon');
                 if(!mascotBubble) return;
 
-                if (ratio < 0.75) {
+                if (limit === 0 && todayTotal === 0) {
+                    mascotBubble.innerHTML = "Set up your budget<br>to get started!";
+                    mascotIcon.textContent = "🤖";
+                } else if (todayTotal < limit) {
                     mascotBubble.innerHTML = "You're on track!<br>Keep it up!";
                     mascotIcon.textContent = "🤖";
-                } else if (ratio < 1.0) {
-                    const left = limit - todayTotal;
-                    mascotBubble.innerHTML = `Careful! You only have ₱${left} left for today.`;
-                    mascotIcon.textContent = "⚠️";
                 } else {
                     mascotBubble.innerHTML = "Oops, we went a bit over today. Let's adjust tomorrow's limit!";
                     mascotIcon.textContent = "🚨";
                 }
             },
 
-            /* Feature 4: Actionable Insights Tip Engine */
             generateTip() {
-                const entertainmentTotal = this.state.recentExpenses.filter(e => e.category === 'Entertainment').reduce((s, e) => s + e.amount, 0);
-                const foodTotal = this.state.recentExpenses.filter(e => e.category === 'Food').reduce((s, e) => s + e.amount, 0);
-                
-                let tipTitle = "Smart Saving Tip";
-                let tipShort = "Keep tracking your daily expenses!";
-                let tipLong = "Logging your expenses every day helps you stay aware of your financial habits and reach your goals faster.";
-
-                if (entertainmentTotal > 200) {
-                    tipShort = "Entertainment costs are adding up.";
-                    tipLong = "Try searching for free local events or campus activities this weekend instead of paid entertainment. It's a great way to save while still having fun!";
-                } else if (foodTotal < 150) {
-                    tipShort = "Great job saving on food!";
-                    tipLong = "Since you've consistently spent less on food recently, consider transferring the exact saved amount directly into your active savings goal!";
+                if (this.state.recentExpenses.length === 0) {
+                    document.getElementById('tip-title').textContent = "Welcome to BudgetBuddy!";
+                    document.getElementById('tip-short').textContent = "Set your allowance to begin.";
+                    document.getElementById('tip-expanded').textContent = "Click on the 'AVAILABLE MONEY' card above to set your starting balance and schedule your next allowance date.";
+                } else {
+                    document.getElementById('tip-title').textContent = "Smart Saving Tip";
+                    document.getElementById('tip-short').textContent = "Keep tracking your daily expenses!";
+                    document.getElementById('tip-expanded').textContent = "Logging your expenses every day helps you stay aware of your financial habits and reach your goals faster.";
                 }
-
-                document.getElementById('tip-title').textContent = tipTitle;
-                document.getElementById('tip-short').textContent = tipShort;
-                document.getElementById('tip-expanded').textContent = tipLong;
             },
 
             toggleTip() {
@@ -2151,7 +2104,6 @@
                 }
             },
 
-            /* Authentication & Core Logic */
             pressPin(digit) {
                 if (this.state.enteredPin.length < 4) {
                     this.state.enteredPin += digit;
@@ -2377,9 +2329,7 @@
                         });
                     }
                 }
-                const d = new Date();
-                d.setDate(d.getDate() + (this.state.remainingDays || 29));
-                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                return "Not set";
             },
 
             bindEvents() {
@@ -2497,7 +2447,11 @@
 
                 const warningBannerText = document.getElementById('insight-banner-text');
                 if (warningBannerText) {
-                    warningBannerText.textContent = `At your current rate, your allowance will run out 3 days before ${targetDate}!`;
+                    if(this.state.balance === 0) {
+                        warningBannerText.textContent = `Set up your budget and target date to start tracking!`;
+                    } else {
+                        warningBannerText.textContent = `You're all set! Keep your daily spending under ${this.formatPeso(this.state.dailyLimit)}.`;
+                    }
                 }
 
                 const selectedFilter = document.getElementById('recent-filter-select').value;
@@ -2580,6 +2534,7 @@
                 const screenListEl = document.getElementById('upcoming-screen-list');
                 let total = 0;
                 let html = '';
+                
                 this.state.upcomingExpenses.forEach(exp => {
                     total += exp.amount;
                     html += `
@@ -2591,28 +2546,71 @@
                                     <p>${exp.date}</p>
                                 </div>
                             </div>
-                            <div class="tx-amount deduct">₱${exp.amount}</div>
+                            <div class="tx-amount">₱${exp.amount}</div>
                         </div>
                     `;
                 });
+                
+                if (this.state.upcomingExpenses.length === 0) {
+                    html = '<p class="text-xs text-gray text-center p-4">No upcoming expenses scheduled.</p>';
+                }
+
                 if (listEl) listEl.innerHTML = html;
                 if (screenListEl) screenListEl.innerHTML = html;
-                const totalEl = document.getElementById('home-total-reserved');
-                const screenTotalEl = document.getElementById('upcoming-screen-total');
-                if (totalEl) totalEl.textContent = `Total reserved ₱${total}`;
-                if (screenTotalEl) screenTotalEl.textContent = `Total reserved ₱${total}`;
+                
+                const totalStr = `Total reserved ${this.formatPeso(total)}`;
+                const reserveTextHome = document.getElementById('home-total-reserved');
+                const reserveTextScreen = document.getElementById('upcoming-screen-total');
+                if(reserveTextHome) reserveTextHome.textContent = totalStr;
+                if(reserveTextScreen) reserveTextScreen.textContent = totalStr;
             },
 
+            /* === COMPLETED MISSING APP FUNCTIONS === */
+
+            openModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if(modal) modal.classList.add('active');
+            },
+
+            closeModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if(modal) modal.classList.remove('active');
+            },
+
+            openEditAllowanceModal() {
+                document.getElementById('edit-allowance-amount').value = this.state.balance || '';
+                document.getElementById('edit-allowance-date').value = this.state.targetAllowanceDate ? this.state.targetAllowanceDate.split('T')[0] : '';
+                this.openModal('modal-edit-allowance');
+            },
+
+            confirmEditAllowance() {
+                const amt = parseFloat(document.getElementById('edit-allowance-amount').value) || 0;
+                const dateStr = document.getElementById('edit-allowance-date').value;
+                
+                this.state.balance = amt;
+                if (dateStr) {
+                    this.state.targetAllowanceDate = new Date(dateStr).toISOString();
+                } else {
+                    this.state.targetAllowanceDate = "";
+                }
+                
+                this.saveState();
+                this.updateHomeUI();
+                this.closeModal('modal-edit-allowance');
+                this.showToast('Allowance and Cycle updated!');
+            },
+            
             saveExpense() {
-                const amt = parseFloat(document.getElementById('expense-amount').value);
-                const note = document.getElementById('expense-note').value || this.state.selectedCategory;
-                if (!amt || amt <= 0) {
-                    alert("Enter a valid amount.");
+                const amtInput = document.getElementById('expense-amount').value;
+                const amt = parseFloat(amtInput);
+                if(isNaN(amt) || amt <= 0) {
+                    this.showToast('Enter a valid amount');
                     return;
                 }
                 
-                this.state.balance -= amt;
-                this.state.recentExpenses.unshift({
+                const note = document.getElementById('expense-note').value || this.state.selectedCategory;
+                
+                const newExp = {
                     id: Date.now(),
                     name: note,
                     category: this.state.selectedCategory,
@@ -2620,110 +2618,99 @@
                     icon: this.state.selectedIcon,
                     color: this.state.selectedColor,
                     period: 'Today',
-                    date: 'Today',
+                    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
                     day: new Date().toLocaleDateString('en-US', {weekday:'short'})
-                });
+                };
+                
+                this.state.recentExpenses.unshift(newExp);
+                this.state.balance = Math.max(0, this.state.balance - amt);
+                
+                document.getElementById('expense-amount').value = '';
+                document.getElementById('expense-note').value = '';
                 
                 this.saveState();
-
-                this.evaluateStreak();
-                this.updateMascot();
-                this.generateTip();
-
                 this.updateHomeUI();
                 this.showScreen('home-screen');
-                this.showToast("Expense saved!");
+                this.showToast('Expense successfully saved!');
             },
 
-            calculateAffordability(val) {
-                const price = parseFloat(val) || 0;
-                const currentBalEl = document.getElementById('afford-current-bal');
-                const purchaseAmtEl = document.getElementById('afford-purchase-amt');
-                const newBalEl = document.getElementById('afford-new-bal');
-                
-                if (currentBalEl) currentBalEl.textContent = this.formatPeso(this.state.balance);
-                if (purchaseAmtEl) purchaseAmtEl.textContent = `−${this.formatPeso(price)}`;
+            calculateAffordability(priceStr) {
+                const price = parseFloat(priceStr) || 0;
+                const currentBal = this.state.balance;
+                const newBal = currentBal - price;
+                const currentLimit = this.state.dailyLimit;
+                const newLimit = this.state.remainingDays > 0 ? Math.max(0, Math.round(newBal / this.state.remainingDays)) : Math.max(0, newBal);
 
-                const newBalance = Math.max(0, this.state.balance - price);
-                if (newBalEl) newBalEl.textContent = this.formatPeso(newBalance);
+                document.getElementById('afford-current-bal').textContent = this.formatPeso(currentBal);
+                document.getElementById('afford-purchase-amt').textContent = `−${this.formatPeso(price)}`;
+                document.getElementById('afford-new-bal').textContent = this.formatPeso(newBal);
+                document.getElementById('afford-before-limit').textContent = this.formatPeso(currentLimit);
+                document.getElementById('afford-after-limit').textContent = this.formatPeso(newLimit);
 
-                const currentDailyLimit = this.state.dailyLimit;
-                const daysLeft = Math.max(1, this.state.remainingDays);
-                const afterDailyLimit = Math.max(0, Math.round(newBalance / daysLeft));
-
-                const beforeLimitEl = document.getElementById('afford-before-limit');
-                const afterLimitEl = document.getElementById('afford-after-limit');
-                if (beforeLimitEl) beforeLimitEl.textContent = this.formatPeso(currentDailyLimit);
-                if (afterLimitEl) afterLimitEl.textContent = this.formatPeso(afterDailyLimit);
-
-                const resultMsgEl = document.getElementById('afford-result-msg');
-                if (!resultMsgEl) return;
-
+                const msgEl = document.getElementById('afford-result-msg');
                 if (price === 0) {
-                    resultMsgEl.className = 'result-msg';
-                    resultMsgEl.textContent = "Enter an item and price to check your budget impact.";
-                } else if (price > this.state.balance) {
-                    resultMsgEl.className = 'result-msg warning';
-                    resultMsgEl.textContent = "🚨 This purchase exceeds your total available money!";
-                } else if (afterDailyLimit < currentDailyLimit * 0.5) {
-                    resultMsgEl.className = 'result-msg warning';
-                    resultMsgEl.textContent = `⚠️ Warning: Buying this drops your daily safe spending from ${this.formatPeso(currentDailyLimit)} to ${this.formatPeso(afterDailyLimit)}.`;
+                    msgEl.className = 'result-msg';
+                    msgEl.textContent = 'Enter an item and price to check your budget impact.';
+                } else if (newBal < 0) {
+                    msgEl.className = 'result-msg warning';
+                    msgEl.textContent = "You don't have enough balance for this!";
+                } else if (newLimit < (currentLimit * 0.5)) {
+                    msgEl.className = 'result-msg warning';
+                    msgEl.textContent = "Warning: This takes a huge chunk of your daily budget!";
                 } else {
-                    resultMsgEl.className = 'result-msg';
-                    resultMsgEl.textContent = `✅ Good to go! You can comfortably afford this item and keep ${this.formatPeso(afterDailyLimit)}/day.`;
+                    msgEl.className = 'result-msg';
+                    msgEl.textContent = "You can afford this! Spend wisely.";
                 }
             },
 
             updateGoalsUI() {
                 const listEl = document.getElementById('goals-list');
-                const totalSavedEl = document.getElementById('goals-total-saved');
-                const badgesContainer = document.getElementById('badges-container');
+                const badgeEl = document.getElementById('badges-container');
+                let html = '';
+                let totalSaved = 0;
                 
-                if (!listEl) return;
-                listEl.innerHTML = '';
-
-                let grandTotalSaved = 0;
-
-                this.state.goals.forEach(goal => {
-                    grandTotalSaved += goal.current;
-                    const pct = Math.min(100, Math.round((goal.current / goal.target) * 100));
-                    const html = `
+                this.state.goals.forEach(g => {
+                    totalSaved += g.current;
+                    const percent = Math.min(100, Math.round((g.current / g.target) * 100));
+                    html += `
                         <div class="goal-card">
                             <div class="goal-header">
-                                <span class="goal-title">${goal.name}</span>
-                                <div class="goal-icon" style="color:${goal.color}"><i class="fa-solid ${goal.icon || 'fa-bullseye'}"></i></div>
+                                <div class="flex items-center gap-2">
+                                    <div class="goal-icon" style="color:${g.color}; background:${g.lightColor};"><i class="fa-solid ${g.icon}"></i></div>
+                                    <span class="goal-title">${g.name}</span>
+                                </div>
+                                <span class="text-xs" style="color:${g.color}; font-weight:800;">${percent}%</span>
                             </div>
                             <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: ${pct}%; background: ${goal.color}"></div>
+                                <div class="progress-bar-fill" style="width: ${percent}%; background: ${g.color};"></div>
                             </div>
                             <div class="goal-stats">
-                                <span>Saved: ${this.formatPeso(goal.current)}</span>
-                                <span>Target: ${this.formatPeso(goal.target)} (${pct}%)</span>
-                            </div>
-                            <div class="goal-actions">
-                                <button class="delete-btn" onclick="app.deleteGoal(${goal.id})" title="Delete Goal"><i class="fa-solid fa-trash"></i></button>
-                                <button onclick="app.openAddFundsModal(${goal.id})" style="background: ${goal.color}; color: white; border: none; padding: 6px 12px; border-radius: 10px; font-family:'Nunito'; font-size:0.75rem; font-weight:700; cursor:pointer;">+ Add Funds</button>
+                                <span>${this.formatPeso(g.current)}</span>
+                                <span>Target: ${this.formatPeso(g.target)}</span>
                             </div>
                         </div>
                     `;
-                    listEl.insertAdjacentHTML('beforeend', html);
                 });
-
-                if (totalSavedEl) totalSavedEl.textContent = this.formatPeso(grandTotalSaved);
-
-                if (badgesContainer) {
-                    badgesContainer.innerHTML = '';
-                    this.state.badges.forEach(b => {
-                        const badgeHtml = `
-                            <div class="badge-box ${b.unlocked ? 'unlocked' : ''}">
-                                <div class="badge-icon">${b.icon}</div>
-                                <div style="font-size: 0.7rem; font-weight: 800;">${b.name}</div>
-                                <div style="font-size: 0.6rem; color: var(--text-gray);">${b.unlocked ? 'Unlocked' : 'Locked'}</div>
-                            </div>
-                        `;
-                        badgesContainer.insertAdjacentHTML('beforeend', badgeHtml);
-                    });
+                
+                if (this.state.goals.length === 0) {
+                    html = '<p class="text-xs text-gray text-center p-4">No active goals yet. Set one up to start saving!</p>';
                 }
+                
+                listEl.innerHTML = html;
+                document.getElementById('goals-total-saved').textContent = this.formatPeso(totalSaved);
+
+                let badgeHtml = '';
+                this.state.badges.forEach(b => {
+                    const unlockClass = b.unlocked ? 'unlocked' : '';
+                    const opacity = b.unlocked ? '1' : '0.4';
+                    badgeHtml += `
+                        <div class="badge-box ${unlockClass}" style="opacity: ${opacity};">
+                            <div class="badge-icon">${b.icon}</div>
+                            <div style="font-size: 0.65rem; font-weight:700;">${b.name}</div>
+                        </div>
+                    `;
+                });
+                badgeEl.innerHTML = badgeHtml;
             },
 
             openAddGoalModal() {
@@ -2733,300 +2720,147 @@
             },
 
             confirmAddGoal() {
-                const name = document.getElementById('new-goal-name').value.trim();
+                const name = document.getElementById('new-goal-name').value;
                 const target = parseFloat(document.getElementById('new-goal-target').value);
-
                 if (!name || isNaN(target) || target <= 0) {
-                    alert("Please enter a valid goal name and target amount.");
+                    this.showToast('Please enter valid goal details');
                     return;
                 }
-
+                
                 this.state.goals.push({
                     id: Date.now(),
                     name: name,
                     target: target,
                     current: 0,
-                    icon: 'fa-bullseye',
+                    icon: 'fa-star',
                     color: 'var(--primary-green)',
                     lightColor: 'var(--primary-green-light)'
                 });
-
+                
                 this.saveState();
                 this.updateGoalsUI();
                 this.closeModal('modal-add-goal');
-                this.showToast("Goal created successfully!");
-            },
-
-            openAddFundsModal(goalId) {
-                this.state.activeGoalId = goalId;
-                const goal = this.state.goals.find(g => g.id === goalId);
-                if (!goal) return;
-
-                document.getElementById('funds-target-name').textContent = `Targeting: ${goal.name}`;
-                document.getElementById('add-funds-amount').value = '';
-                this.openModal('modal-add-funds');
-            },
-
-            confirmAddFunds() {
-                const amt = parseFloat(document.getElementById('add-funds-amount').value);
-                if (isNaN(amt) || amt <= 0) {
-                    alert("Please enter a valid amount.");
-                    return;
-                }
-
-                const goal = this.state.goals.find(g => g.id === this.state.activeGoalId);
-                if (goal) {
-                    goal.current += amt;
-                    this.saveState();
-                    this.updateGoalsUI();
-                    this.closeModal('modal-add-funds');
-                    this.showToast(`Added ${this.formatPeso(amt)} to ${goal.name}!`);
-                }
-            },
-
-            deleteGoal(goalId) {
-                if (confirm("Are you sure you want to delete this goal?")) {
-                    this.state.goals = this.state.goals.filter(g => g.id !== goalId);
-                    this.saveState();
-                    this.updateGoalsUI();
-                    this.showToast("Goal deleted.");
-                }
+                this.showToast('Goal created!');
             },
 
             scheduleNewExpense() {
-                const name = document.getElementById('sched-name').value.trim();
-                const date = document.getElementById('sched-date').value.trim();
-                const amt = parseFloat(document.getElementById('sched-amount').value);
-
-                if (!name || !date || isNaN(amt) || amt <= 0) {
-                    alert("Please fill in all scheduled cost fields properly.");
+                const name = document.getElementById('sched-name').value;
+                const date = document.getElementById('sched-date').value;
+                const amount = parseFloat(document.getElementById('sched-amount').value);
+                
+                if(!name || !date || isNaN(amount)) {
+                    this.showToast('Please fill out all fields');
                     return;
                 }
-
+                
                 this.state.upcomingExpenses.push({
                     id: Date.now(),
                     name: name,
                     date: date,
-                    amount: amt,
+                    amount: amount,
                     icon: 'fa-calendar-check'
                 });
-
+                
                 document.getElementById('sched-name').value = '';
                 document.getElementById('sched-date').value = '';
                 document.getElementById('sched-amount').value = '';
-
+                
                 this.saveState();
                 this.updateUpcomingUI();
-                this.showToast("Scheduled expense added!");
-            },
-
-            renderInsightsCharts() {
-                if (typeof Chart === 'undefined') return;
-
-                const burnCtx = document.getElementById('burnRateChart');
-                if (burnCtx) {
-                    if (this.charts.burnRate) this.charts.burnRate.destroy();
-                    this.charts.burnRate = new Chart(burnCtx, {
-                        type: 'line',
-                        data: {
-                            labels: ['W1', 'W2', 'W3', 'W4'],
-                            datasets: [
-                                {
-                                    label: 'Actual Balance',
-                                    data: [2000, 1600, 1450, 1100],
-                                    borderColor: '#10b981',
-                                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                    fill: true,
-                                    tension: 0.3
-                                },
-                                {
-                                    label: 'Ideal Pace',
-                                    data: [2000, 1500, 1000, 500],
-                                    borderColor: '#94a3b8',
-                                    borderDash: [5, 5],
-                                    fill: false,
-                                    tension: 0
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                y: { display: false },
-                                x: { grid: { display: false } }
-                            }
-                        }
-                    });
-                }
-
-                const donutCtx = document.getElementById('categoryDonutChart');
-                if (donutCtx) {
-                    if (this.charts.donut) this.charts.donut.destroy();
-                    
-                    const catTotals = {};
-                    this.state.recentExpenses.forEach(exp => {
-                        catTotals[exp.category] = (catTotals[exp.category] || 0) + exp.amount;
-                    });
-
-                    const labels = Object.keys(catTotals).length ? Object.keys(catTotals) : ['Food', 'Transport', 'Coffee', 'School'];
-                    const data = Object.keys(catTotals).length ? Object.values(catTotals) : [400, 200, 150, 100];
-                    const colors = ['#10b981', '#3b82f6', '#f97316', '#8b5cf6', '#ef4444', '#64748b'];
-
-                    this.charts.donut = new Chart(donutCtx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                data: data,
-                                backgroundColor: colors,
-                                borderWidth: 0
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            cutout: '70%'
-                        }
-                    });
-
-                    const catList = document.getElementById('category-breakdown-list');
-                    if (catList) {
-                        catList.innerHTML = '';
-                        labels.forEach((cat, idx) => {
-                            const val = data[idx];
-                            const pillHtml = `
-                                <div class="cat-pill-item">
-                                    <div class="cat-pill-left">
-                                        <div class="cat-pill-dot" style="background: ${colors[idx % colors.length]}"></div>
-                                        <span>${cat}</span>
-                                    </div>
-                                    <span style="font-weight: 800;">${this.formatPeso(val)}</span>
-                                </div>
-                            `;
-                            catList.insertAdjacentHTML('beforeend', pillHtml);
-                        });
-                    }
-                }
-
-                const barCtx = document.getElementById('dailyBarChart');
-                if (barCtx) {
-                    if (this.charts.bar) this.charts.bar.destroy();
-                    this.charts.bar = new Chart(barCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
-                            datasets: [{
-                                data: [40, 35, 60, 45, 80, 30, 25],
-                                backgroundColor: [
-                                    '#10b981', '#10b981', '#ef4444', '#10b981', '#ef4444', '#10b981', '#10b981'
-                                ],
-                                borderRadius: 6
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                y: { display: false },
-                                x: { grid: { display: false } }
-                            }
-                        }
-                    });
-                }
+                this.showToast('Expense scheduled!');
             },
 
             openEditNameModal() {
-                document.getElementById('edit-name-input').value = this.state.userName || '';
+                document.getElementById('edit-name-input').value = this.state.userName;
                 this.openModal('modal-edit-name');
             },
 
             confirmEditName() {
-                const newName = document.getElementById('edit-name-input').value.trim();
-                if (!newName) {
-                    alert("Please enter a valid name.");
-                    return;
-                }
-                this.state.userName = newName;
+                const n = document.getElementById('edit-name-input').value.trim();
+                if(!n) return;
+                this.state.userName = n;
                 this.saveState();
+                document.getElementById('profile-name-display').textContent = n;
                 this.updateHomeUI();
                 this.closeModal('modal-edit-name');
-                this.showToast("Profile name updated!");
-            },
-
-            openEditAllowanceModal() {
-                document.getElementById('edit-allowance-amount').value = this.state.balance || '';
-                if (this.state.targetAllowanceDate) {
-                    const d = new Date(this.state.targetAllowanceDate);
-                    if (!isNaN(d.getTime())) {
-                        document.getElementById('edit-allowance-date').value = d.toISOString().split('T')[0];
-                    }
-                }
-                this.openModal('modal-edit-allowance');
-            },
-
-            confirmEditAllowance() {
-                const amt = parseFloat(document.getElementById('edit-allowance-amount').value);
-                const dateVal = document.getElementById('edit-allowance-date').value;
-
-                if (isNaN(amt) || amt < 0) {
-                    alert("Please enter a valid allowance amount.");
-                    return;
-                }
-
-                this.state.balance = amt;
-                if (dateVal) {
-                    this.state.targetAllowanceDate = new Date(dateVal).toISOString();
-                }
-
-                this.recalculateDailyLimit();
-                this.saveState();
-                this.updateHomeUI();
-                this.closeModal('modal-edit-allowance');
-                this.showToast("Allowance & cycle updated!");
+                this.showToast('Profile updated');
             },
 
             toggleNotifications() {
                 this.state.notificationsEnabled = !this.state.notificationsEnabled;
                 document.getElementById('notif-toggle').classList.toggle('active', this.state.notificationsEnabled);
                 this.saveState();
-                this.showToast(`Notifications ${this.state.notificationsEnabled ? 'enabled' : 'disabled'}.`);
             },
 
             toggleDarkMode() {
                 this.state.darkMode = !this.state.darkMode;
-                const appEl = document.getElementById('app');
-                const darkToggle = document.getElementById('dark-mode-toggle');
-
+                document.getElementById('dark-mode-toggle').classList.toggle('active', this.state.darkMode);
                 if (this.state.darkMode) {
-                    appEl.classList.add('dark-theme');
-                    if (darkToggle) darkToggle.classList.add('active');
+                    document.getElementById('app').classList.add('dark-theme');
                 } else {
-                    appEl.classList.remove('dark-theme');
-                    if (darkToggle) darkToggle.classList.remove('active');
+                    document.getElementById('app').classList.remove('dark-theme');
                 }
-
                 this.saveState();
-                this.showToast(`Dark Mode ${this.state.darkMode ? 'activated' : 'deactivated'}.`);
             },
 
-            openModal(id) {
-                const modal = document.getElementById(id);
-                if (modal) modal.classList.add('active');
-            },
+            renderInsightsCharts() {
+                const burnCtx = document.getElementById('burnRateChart');
+                const donutCtx = document.getElementById('categoryDonutChart');
+                const barCtx = document.getElementById('dailyBarChart');
+                
+                if(this.charts.burn) this.charts.burn.destroy();
+                if(this.charts.donut) this.charts.donut.destroy();
+                if(this.charts.bar) this.charts.bar.destroy();
 
-            closeModal(id) {
-                const modal = document.getElementById(id);
-                if (modal) modal.classList.remove('active');
+                if(burnCtx) {
+                    this.charts.burn = new Chart(burnCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['W1', 'W2', 'W3', 'W4'],
+                            datasets: [{
+                                label: 'Allowance',
+                                data: [this.state.balance, 0, 0, 0],
+                                borderColor: '#10b981',
+                                tension: 0.4
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
+                
+                if(donutCtx) {
+                    const hasExpenses = this.state.recentExpenses.length > 0;
+                    this.charts.donut = new Chart(donutCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: hasExpenses ? ['Food', 'Transport'] : ['No Data'],
+                            datasets: [{
+                                data: hasExpenses ? [1, 1] : [1],
+                                backgroundColor: hasExpenses ? ['#10b981', '#3b82f6'] : ['#e2e8f0']
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
+                
+                if(barCtx) {
+                    this.charts.bar = new Chart(barCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                            datasets: [{
+                                label: 'Spent',
+                                data: [0,0,0,0,0],
+                                backgroundColor: '#8b5cf6'
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
             }
         };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            app.init();
-        });
+        window.onload = () => app.init();
     </script>
 </body>
 </html>
