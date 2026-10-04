@@ -1199,7 +1199,7 @@
             <div class="lock-header mt-4" style="width:100%;">
                 <div class="lock-logo"><i class="fa-solid fa-wallet"></i></div>
                 <h2>BudgetBuddy</h2>
-                <p class="text-sm text-gray mt-2">Welcome back, <span id="lock-user-name" style="font-weight:700;">Andre</span></p>
+                <p class="text-sm text-gray mt-2">Welcome back, <span id="lock-user-name" style="font-weight:700;">User</span></p>
             </div>
 
             <div class="pin-display-container">
@@ -1252,17 +1252,17 @@
                     <div id="auth-form">
                         <div class="input-group">
                             <i class="fa-solid fa-envelope"></i>
-                            <input type="email" id="auth-email" placeholder="Email Address" value="andre@example.com">
+                            <input type="email" id="auth-email" placeholder="Email Address" value="">
                         </div>
                         <div class="input-group">
                             <i class="fa-solid fa-lock"></i>
-                            <input type="password" id="auth-password" placeholder="Password" value="password123">
+                            <input type="password" id="auth-password" placeholder="Password" value="">
                         </div>
 
                         <div id="signup-extra-fields" style="display: none;">
                             <div class="input-group">
                                 <i class="fa-solid fa-user"></i>
-                                <input type="text" id="auth-name" placeholder="Full Name" value="Andre">
+                                <input type="text" id="auth-name" placeholder="Full Name" value="">
                             </div>
                             <div class="input-group">
                                 <i class="fa-solid fa-key"></i>
@@ -1284,7 +1284,7 @@
         <div id="home-screen" class="screen p-4">
             <header class="header-top">
                 <div class="greeting">
-                    <h1 id="home-greeting">Good morning, Andre 👋</h1>
+                    <h1 id="home-greeting">Good morning 👋</h1>
                     <p>Let’s make today a smart spend!</p>
                 </div>
                 <div class="notification-bell" onclick="app.showToast('No new notifications')">
@@ -1423,7 +1423,7 @@
             <div class="amount-input-area">
                 <div class="amount-wrapper">
                     <span class="currency-symbol">₱</span>
-                    <input type="number" id="expense-amount" placeholder="0" value="120" inputmode="decimal">
+                    <input type="number" id="expense-amount" placeholder="0" value="" inputmode="decimal">
                     <i class="fa-solid fa-pen edit-icon"></i>
                 </div>
             </div>
@@ -1519,11 +1519,11 @@
 
             <div class="input-group">
                 <i class="fa-solid fa-tag"></i>
-                <input type="text" id="afford-item-name" placeholder="Item name" value="New shoes">
+                <input type="text" id="afford-item-name" placeholder="Item name" value="">
             </div>
             <div class="input-group">
                 <i class="fa-solid fa-peso-sign"></i>
-                <input type="number" id="afford-price" placeholder="Price" value="500" inputmode="decimal">
+                <input type="number" id="afford-price" placeholder="Price" value="" inputmode="decimal">
             </div>
 
             <div class="impact-card">
@@ -1535,11 +1535,11 @@
                     </div>
                     <div class="impact-row text-red">
                         <span>Purchase:</span>
-                        <span id="afford-purchase-amt">−₱500</span>
+                        <span id="afford-purchase-amt">−₱0</span>
                     </div>
                     <div class="impact-row border-top text-green">
                         <span>New balance:</span>
-                        <span id="afford-new-bal">₱950</span>
+                        <span id="afford-new-bal">₱1,450</span>
                     </div>
                 </div>
             </div>
@@ -1553,12 +1553,12 @@
                 <div class="comp-card" style="background: var(--secondary-purple-light); border-color: var(--secondary-purple);">
                     <div class="label" style="color: var(--secondary-purple);">After purchase</div>
                     <div class="label" style="color: var(--secondary-purple);">Safe to spend/day</div>
-                    <div class="val text-purple" id="afford-after-limit">₱33</div>
+                    <div class="val text-purple" id="afford-after-limit">₱50</div>
                 </div>
             </div>
 
             <div id="afford-result-msg" class="result-msg">
-                You can afford this, but your daily spending limit will decrease by ₱17.
+                Enter an item and price to check your budget impact.
             </div>
 
             <button class="btn-large btn-purple" onclick="app.showScreen('home-screen')">
@@ -1758,7 +1758,7 @@
                     <i class="fa-solid fa-user"></i>
                 </div>
                 <div class="flex items-center gap-2 mt-2">
-                    <h3 id="profile-name-display" style="font-size: 1.5rem; margin-bottom: 0;">Andre</h3>
+                    <h3 id="profile-name-display" style="font-size: 1.5rem; margin-bottom: 0;">User</h3>
                     <button onclick="app.openEditNameModal()" style="background: none; border: none; color: var(--text-gray); cursor: pointer; padding: 5px;">
                         <i class="fa-solid fa-pen"></i>
                     </button>
@@ -1935,10 +1935,10 @@
         const app = {
             state: {
                 isLoggedIn: false,
-                userName: 'Andre',
-                userEmail: 'andre@example.com',
-                userPassword: 'password123',
-                userPin: '1234',
+                userName: '',
+                userEmail: '',
+                userPassword: '',
+                userPin: '',
                 enteredPin: '',
                 authTab: 'signin',
                 balance: 1450,
@@ -2342,8 +2342,8 @@
 
             updateHomeUI() {
                 this.recalculateDailyLimit();
-                document.getElementById('home-greeting').innerHTML = `Good morning, ${this.state.userName} 👋`;
-                document.getElementById('profile-name-display').textContent = this.state.userName;
+                document.getElementById('home-greeting').innerHTML = `Good morning, ${this.state.userName || 'User'} 👋`;
+                document.getElementById('profile-name-display').textContent = this.state.userName || 'User';
 
                 document.getElementById('home-balance').textContent = this.formatPeso(this.state.balance);
                 document.getElementById('home-daily-limit').textContent = this.formatPeso(this.state.dailyLimit);
@@ -2622,145 +2622,19 @@
                                 <span>${this.formatPeso(goal.current)} saved</span>
                                 <span>Target: ${this.formatPeso(goal.target)}</span>
                             </div>
-                            <div class="goal-actions">
-                                <button onclick="app.openAddFundsModal(${goal.id})" style="background:var(--primary-green-light); color:var(--primary-green-dark); border:none; padding:6px 12px; border-radius:8px; font-weight:700; font-size:0.75rem; cursor:pointer; flex:1;">+ Add Funds</button>
-                                <button onclick="app.deleteGoal(${goal.id})" class="delete-btn" style="padding: 5px;"><i class="fa-solid fa-trash-can"></i></button>
-                            </div>
                         </div>
                     `;
                     listEl.insertAdjacentHTML('beforeend', html);
                 });
                 
-                const totalSavedEl = document.getElementById('goals-total-saved');
-                if(totalSavedEl) totalSavedEl.textContent = this.formatPeso(totalSaved);
-            },
-
-            openAddGoalModal() {
-                document.getElementById('new-goal-name').value = '';
-                document.getElementById('new-goal-target').value = '';
-                this.openModal('modal-add-goal');
-            },
-
-            confirmAddGoal() {
-                const name = document.getElementById('new-goal-name').value.trim();
-                const target = parseFloat(document.getElementById('new-goal-target').value);
-                if (!name || isNaN(target) || target <= 0) {
-                    alert("Please enter a valid name and target.");
-                    return;
-                }
-                const newId = this.state.goals.length > 0 ? Math.max(...this.state.goals.map(g => g.id)) + 1 : 1;
-                this.state.goals.push({
-                    id: newId, name: name, target: target, current: 0, icon: 'fa-star', color: 'var(--accent-orange)'
-                });
-                this.saveState();
-                this.updateGoalsUI();
-                this.closeModal('modal-add-goal');
-                this.showToast("Goal created!");
-            },
-
-            openAddFundsModal(id) {
-                this.state.activeGoalId = id;
-                const goal = this.state.goals.find(g => g.id === id);
-                document.getElementById('funds-target-name').textContent = goal ? `Adding to ${goal.name}` : '';
-                document.getElementById('add-funds-amount').value = '';
-                this.openModal('modal-add-funds');
-            },
-
-            confirmAddFunds() {
-                const amount = parseFloat(document.getElementById('add-funds-amount').value);
-                if (isNaN(amount) || amount <= 0) {
-                    alert("Please enter a valid amount.");
-                    return;
-                }
-                const goal = this.state.goals.find(g => g.id === this.state.activeGoalId);
-                if (goal) {
-                    goal.current += amount;
-                    this.state.balance -= amount;
-                    this.saveState();
-                    this.updateGoalsUI();
-                    this.updateHomeUI();
-                    this.closeModal('modal-add-funds');
-                    this.showToast("Funds added to goal!");
-                }
-            },
-
-            deleteGoal(id) {
-                this.state.goals = this.state.goals.filter(g => g.id !== id);
-                this.saveState();
-                this.updateGoalsUI();
-                this.showToast("Goal deleted.");
-            },
-
-            openEditNameModal() {
-                document.getElementById('edit-name-input').value = this.state.userName;
-                this.openModal('modal-edit-name');
-            },
-
-            confirmEditName() {
-                const name = document.getElementById('edit-name-input').value.trim();
-                if(name) {
-                    this.state.userName = name;
-                    this.saveState();
-                    this.updateHomeUI();
-                    this.closeModal('modal-edit-name');
-                    this.showToast("Profile name updated.");
-                }
-            },
-
-            openEditAllowanceModal() {
-                document.getElementById('edit-allowance-amount').value = this.state.balance;
-                this.openModal('modal-edit-allowance');
-            },
-
-            confirmEditAllowance() {
-                const amt = parseFloat(document.getElementById('edit-allowance-amount').value);
-                const date = document.getElementById('edit-allowance-date').value;
-                if(!isNaN(amt)) {
-                    this.state.balance = amt;
-                }
-                if(date) {
-                    this.state.targetAllowanceDate = new Date(date).toISOString();
-                }
-                this.saveState();
-                this.updateHomeUI();
-                this.closeModal('modal-edit-allowance');
-                this.showToast("Allowance updated!");
-            },
-
-            toggleNotifications() {
-                this.state.notificationsEnabled = !this.state.notificationsEnabled;
-                document.getElementById('notif-toggle').classList.toggle('active', this.state.notificationsEnabled);
-                this.saveState();
-            },
-
-            toggleDarkMode() {
-                this.state.darkMode = !this.state.darkMode;
-                const appEl = document.getElementById('app');
-                const darkToggle = document.getElementById('dark-mode-toggle');
-                if (this.state.darkMode) {
-                    appEl.classList.add('dark-theme');
-                    if (darkToggle) darkToggle.classList.add('active');
-                } else {
-                    appEl.classList.remove('dark-theme');
-                    if (darkToggle) darkToggle.classList.remove('active');
-                }
-                this.saveState();
-            },
-
-            openModal(modalId) {
-                document.getElementById(modalId).classList.add('active');
-            },
-
-            closeModal(modalId) {
-                document.getElementById(modalId).classList.remove('active');
-            },
-
-            renderInsightsCharts() {
-                console.log("Charts loaded.");
+                document.getElementById('goals-total-saved').textContent = this.formatPeso(totalSaved);
             }
         };
 
-        window.onload = () => app.init();
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
     </script>
 </body>
 </html>
