@@ -2423,181 +2423,187 @@
                                 <div class="tx-icon" style="color: ${exp.color}"><i class="fa-solid ${exp.icon}"></i></div>
                                 <div class="tx-details">
                                     <h4>${exp.name}</h4>
-                                    <p>${exp.date || exp.period || 'Today'}</p>
+                                    <p>${exp.date || exp.period}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <div class="tx-amount deduct">−${this.formatPeso(exp.amount)}</div>
-                                <button class="delete-btn" onclick="app.deleteExpense(${exp.id})" title="Delete entry"><i class="fa-solid fa-trash-can"></i></button>
-                            </div>
+                            <div class="tx-amount deduct">−${this.formatPeso(exp.amount)}</div>
                         </div>
                     `;
                     listEl.insertAdjacentHTML('beforeend', html);
                 });
             },
 
+            updateUpcomingUI() {
+                const listEl = document.getElementById('home-upcoming-list');
+                const screenListEl = document.getElementById('upcoming-screen-list');
+                let total = 0;
+                let html = '';
+                this.state.upcomingExpenses.forEach(exp => {
+                    total += exp.amount;
+                    html += `
+                        <div class="transaction-item">
+                            <div class="tx-left">
+                                <div class="tx-icon"><i class="fa-solid ${exp.icon}"></i></div>
+                                <div class="tx-details">
+                                    <h4>${exp.name}</h4>
+                                    <p>${exp.date}</p>
+                                </div>
+                            </div>
+                            <div class="tx-amount deduct">₱${exp.amount}</div>
+                        </div>
+                    `;
+                });
+                if (listEl) listEl.innerHTML = html;
+                if (screenListEl) screenListEl.innerHTML = html;
+                const totalEl = document.getElementById('home-total-reserved');
+                const screenTotalEl = document.getElementById('upcoming-screen-total');
+                if (totalEl) totalEl.textContent = `Total reserved ₱${total}`;
+                if (screenTotalEl) screenTotalEl.textContent = `Total reserved ₱${total}`;
+            },
+
             saveExpense() {
-                const amount = parseFloat(document.getElementById('expense-amount').value);
-                const note = document.getElementById('expense-note').value.trim();
-                
-                if (isNaN(amount) || amount <= 0) {
-                    alert("Please enter a valid expense amount.");
+                const amt = parseFloat(document.getElementById('expense-amount').value);
+                const note = document.getElementById('expense-note').value || this.state.selectedCategory;
+                if (!amt || amt <= 0) {
+                    alert("Enter a valid amount.");
                     return;
                 }
                 
-                const category = this.state.selectedCategory || 'Food';
-                const icon = this.state.selectedIcon || 'fa-burger';
-                const color = this.state.selectedColor || 'var(--primary-green)';
-                const name = note || category;
-
-                const newExpense = {
+                this.state.balance -= amt;
+                this.state.recentExpenses.unshift({
                     id: Date.now(),
-                    name: name,
-                    category: category,
-                    amount: amount,
-                    icon: icon,
-                    color: color,
+                    name: note,
+                    category: this.state.selectedCategory,
+                    amount: amt,
+                    icon: this.state.selectedIcon,
+                    color: this.state.selectedColor,
                     period: 'Today',
                     date: 'Today',
-                    day: new Date().toLocaleDateString('en-US', { weekday: 'short' })
-                };
-
-                this.state.recentExpenses.unshift(newExpense);
-                this.state.balance = Math.max(0, this.state.balance - amount);
-                this.recalculateDailyLimit();
+                    day: new Date().toLocaleDateString('en-US', {weekday:'short'})
+                });
                 this.saveState();
-
-                document.getElementById('expense-amount').value = '';
-                document.getElementById('expense-note').value = '';
-
+                this.updateHomeUI();
                 this.showScreen('home-screen');
-                this.showToast("Expense saved successfully!");
+                this.showToast("Expense saved!");
             },
 
-            deleteExpense(id) {
-                const idx = this.state.recentExpenses.findIndex(e => e.id === id);
-                if (idx !== -1) {
-                    const deleted = this.state.recentExpenses[idx];
-                    this.state.recentExpenses.splice(idx, 1);
-                    
-                    this.state.balance += deleted.amount;
-                    this.recalculateDailyLimit();
-                    this.saveState();
-                    
-                    this.updateHomeUI();
-                    this.renderHistoryUI();
-                    this.showToast("Expense removed and balance restored.");
-                }
-            },
-
-            calculateAffordability(priceVal) {
-                const price = parseFloat(priceVal) || 0;
-                const currentBal = this.state.balance;
-                const newBal = currentBal - price;
-
-                document.getElementById('afford-current-bal').textContent = this.formatPeso(currentBal);
-                document.getElementById('afford-purchase-amt').textContent = `−${this.formatPeso(price)}`;
-                document.getElementById('afford-new-bal').textContent = this.formatPeso(newBal);
-
-                const days = Math.max(1, this.state.remainingDays || 1);
-                const beforeLimit = Math.max(0, Math.round(currentBal / days));
-                const afterLimit = Math.max(0, Math.round(newBal / days));
-                const diff = Math.max(0, beforeLimit - afterLimit);
-
-                document.getElementById('afford-before-limit').textContent = this.formatPeso(beforeLimit);
-                document.getElementById('afford-after-limit').textContent = this.formatPeso(afterLimit);
+            calculateAffordability(val) {
+                const price = parseFloat(val) || 0;
+                const currentBalEl = document.getElementById('afford-current-bal');
+                const purchaseAmtEl = document.getElementById('afford-purchase-amt');
+                const newBalEl = document.getElementById('afford-new-bal');
+                
+                if(currentBalEl) currentBalEl.textContent = this.formatPeso(this.state.balance);
+                if(purchaseAmtEl) purchaseAmtEl.textContent = `−${this.formatPeso(price)}`;
+                
+                const newBal = this.state.balance - price;
+                if(newBalEl) newBalEl.textContent = this.formatPeso(newBal);
+                
+                const beforeLimitEl = document.getElementById('afford-before-limit');
+                if(beforeLimitEl) beforeLimitEl.textContent = this.formatPeso(this.state.dailyLimit);
+                
+                const afterLimit = this.state.remainingDays > 0 ? Math.max(0, Math.round(newBal / this.state.remainingDays)) : Math.max(0, newBal);
+                const afterLimitEl = document.getElementById('afford-after-limit');
+                if(afterLimitEl) afterLimitEl.textContent = this.formatPeso(afterLimit);
 
                 const msgEl = document.getElementById('afford-result-msg');
-                if (newBal < 0) {
-                    msgEl.className = "result-msg warning";
-                    msgEl.textContent = `Warning: You cannot afford this item. It exceeds your balance by ${this.formatPeso(Math.abs(newBal))}.`;
-                } else {
-                    msgEl.className = "result-msg";
-                    msgEl.textContent = `You can afford this, but your daily spending limit will decrease by ${this.formatPeso(diff)}/day.`;
+                if (msgEl) {
+                    if (price === 0) {
+                        msgEl.textContent = "Enter an item and price to check your budget impact.";
+                        msgEl.className = "result-msg";
+                    } else if (newBal < 0) {
+                        msgEl.textContent = "Warning: This purchase exceeds your available balance!";
+                        msgEl.className = "result-msg warning";
+                    } else if (afterLimit < (this.state.dailyLimit * 0.5)) {
+                        msgEl.textContent = "Caution: This will drastically reduce your daily safe limit.";
+                        msgEl.className = "result-msg warning";
+                    } else {
+                        msgEl.textContent = "You can afford this while staying reasonably on track!";
+                        msgEl.className = "result-msg";
+                    }
                 }
-            },
-
-            updateUpcomingUI() {
-                const total = this.state.upcomingExpenses.reduce((sum, item) => sum + item.amount, 0);
-                const totalText = `Total reserved ${this.formatPeso(total)}`;
-                
-                document.getElementById('home-total-reserved').textContent = totalText;
-                document.getElementById('upcoming-screen-total').textContent = totalText;
-
-                const homeList = document.getElementById('home-upcoming-list');
-                const screenList = document.getElementById('upcoming-screen-list');
-                
-                homeList.innerHTML = '';
-                screenList.innerHTML = '';
-
-                this.state.upcomingExpenses.forEach(exp => {
-                    const homeHtml = `
-                        <div class="transaction-item">
-                            <div class="tx-left">
-                                <div class="tx-icon" style="color: var(--accent-orange)"><i class="fa-solid ${exp.icon}"></i></div>
-                                <div class="tx-details">
-                                    <h4>${exp.name}</h4>
-                                    <p>${exp.date}</p>
-                                </div>
-                            </div>
-                            <div class="tx-amount">${this.formatPeso(exp.amount)}</div>
-                        </div>
-                    `;
-                    homeList.insertAdjacentHTML('beforeend', homeHtml);
-
-                    const screenHtml = `
-                        <div class="transaction-item">
-                            <div class="tx-left">
-                                <div class="tx-icon" style="color: var(--accent-orange); background: var(--accent-orange-light);"><i class="fa-solid ${exp.icon}"></i></div>
-                                <div class="tx-details">
-                                    <h4>${exp.name}</h4>
-                                    <p>${exp.date}</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="tx-amount">${this.formatPeso(exp.amount)}</div>
-                                <button class="delete-btn" onclick="app.deleteScheduledExpense(${exp.id})" title="Remove"><i class="fa-solid fa-xmark"></i></button>
-                            </div>
-                        </div>
-                    `;
-                    screenList.insertAdjacentHTML('beforeend', screenHtml);
-                });
             },
 
             scheduleNewExpense() {
-                const name = document.getElementById('sched-name').value.trim();
-                const date = document.getElementById('sched-date').value.trim();
-                const amount = parseFloat(document.getElementById('sched-amount').value);
-
-                if (!name || !date || isNaN(amount) || amount <= 0) {
-                    alert('Please fill out Name, Date, and a valid Amount.');
+                const name = document.getElementById('sched-name').value;
+                const date = document.getElementById('sched-date').value;
+                const amt = parseFloat(document.getElementById('sched-amount').value);
+                if (!name || !date || !amt) {
+                    alert("Fill out all fields.");
                     return;
                 }
-
-                const newId = this.state.upcomingExpenses.length > 0 
-                    ? Math.max(...this.state.upcomingExpenses.map(e => e.id)) + 1 : 1;
-
-                this.state.upcomingExpenses.push({
-                    id: newId, name: name, date: date, amount: amount, icon: 'fa-file-invoice'
-                });
-
+                this.state.upcomingExpenses.push({ id: Date.now(), name, date, amount: amt, icon: 'fa-calendar-check' });
                 this.saveState();
                 this.updateUpcomingUI();
+                this.showToast("Expense scheduled!");
                 document.getElementById('sched-name').value = '';
                 document.getElementById('sched-date').value = '';
                 document.getElementById('sched-amount').value = '';
-                this.showToast("Expense scheduled!");
             },
 
-            deleteScheduledExpense(id) {
-                this.state.upcomingExpenses = this.state.upcomingExpenses.filter(exp => exp.id !== id);
+            openEditNameModal() {
+                document.getElementById('edit-name-input').value = this.state.userName;
+                this.openModal('modal-edit-name');
+            },
+
+            confirmEditName() {
+                const name = document.getElementById('edit-name-input').value.trim();
+                if (name) {
+                    this.state.userName = name;
+                    this.saveState();
+                    this.updateHomeUI();
+                    this.closeModal('modal-edit-name');
+                    this.showToast("Name updated!");
+                }
+            },
+
+            openAddGoalModal() {
+                document.getElementById('new-goal-name').value = '';
+                document.getElementById('new-goal-target').value = '';
+                this.openModal('modal-add-goal');
+            },
+
+            confirmAddGoal() {
+                const name = document.getElementById('new-goal-name').value;
+                const target = parseFloat(document.getElementById('new-goal-target').value);
+                if (!name || !target) {
+                    alert("Fill all fields");
+                    return;
+                }
+                this.state.goals.push({
+                    id: Date.now(),
+                    name,
+                    target,
+                    current: 0,
+                    icon: 'fa-star',
+                    color: 'var(--primary-green)',
+                    lightColor: 'var(--primary-green-light)'
+                });
                 this.saveState();
-                this.updateUpcomingUI();
-                this.showToast("Scheduled expense removed.");
+                this.updateGoalsUI();
+                this.closeModal('modal-add-goal');
+                this.showToast("Goal added!");
+            },
+
+            confirmAddFunds() {
+                const amt = parseFloat(document.getElementById('add-funds-amount').value);
+                if (amt && this.state.activeGoalId) {
+                    const goal = this.state.goals.find(g => g.id === this.state.activeGoalId);
+                    if (goal) {
+                        goal.current += amt;
+                        this.state.balance -= amt; 
+                        this.saveState();
+                        this.updateGoalsUI();
+                        this.updateHomeUI();
+                    }
+                }
+                this.closeModal('modal-add-funds');
+                this.showToast("Funds added!");
             },
 
             updateGoalsUI() {
                 const listEl = document.getElementById('goals-list');
+                if (!listEl) return;
                 listEl.innerHTML = '';
                 let totalSaved = 0;
 
@@ -2626,13 +2632,151 @@
                     `;
                     listEl.insertAdjacentHTML('beforeend', html);
                 });
-                
+
                 document.getElementById('goals-total-saved').textContent = this.formatPeso(totalSaved);
+                this.renderBadges();
+            },
+
+            renderBadges() {
+                const container = document.getElementById('badges-container');
+                if (!container) return;
+                container.innerHTML = '';
+                this.state.badges.forEach(b => {
+                    const html = `
+                        <div class="badge-box ${b.unlocked ? 'unlocked' : ''}">
+                            <div class="badge-icon">${b.icon}</div>
+                            <div style="font-size: 0.75rem; font-weight:800;">${b.name}</div>
+                            <div style="font-size: 0.65rem; color: var(--text-gray);">${b.desc}</div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+            },
+
+            renderInsightsCharts() {
+                if (typeof Chart === 'undefined') return;
+
+                // 1. Calculate Category Totals from State
+                const categoryTotals = {};
+                this.state.recentExpenses.forEach(exp => {
+                    categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+                });
+
+                const catLabels = Object.keys(categoryTotals).length ? Object.keys(categoryTotals) : ['Food', 'Transport', 'Coffee'];
+                const catData = Object.keys(categoryTotals).length ? Object.values(categoryTotals) : [120, 30, 85];
+
+                // Render Category Donut Chart
+                const donutCtx = document.getElementById('categoryDonutChart')?.getContext('2d');
+                if (donutCtx) {
+                    if (this.charts.donut) this.charts.donut.destroy();
+                    this.charts.donut = new Chart(donutCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: catLabels,
+                            datasets: [{
+                                data: catData,
+                                backgroundColor: ['#10b981', '#3b82f6', '#f97316', '#8b5cf6', '#ef4444']
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
+
+                // 2. Render Allowance Burn Rate Line Chart
+                const burnCtx = document.getElementById('burnRateChart')?.getContext('2d');
+                if (burnCtx) {
+                    if (this.charts.burn) this.charts.burn.destroy();
+                    this.charts.burn = new Chart(burnCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4'],
+                            datasets: [{
+                                label: 'Remaining Balance',
+                                data: [this.state.balance + 300, this.state.balance + 150, this.state.balance, Math.max(0, this.state.balance - 100)],
+                                borderColor: '#8b5cf6',
+                                fill: false,
+                                tension: 0.3
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
+
+                // 3. Daily Limit vs Spent Bar Chart
+                const barCtx = document.getElementById('dailyBarChart')?.getContext('2d');
+                if (barCtx) {
+                    if (this.charts.bar) this.charts.bar.destroy();
+                    this.charts.bar = new Chart(barCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                            datasets: [{
+                                label: 'Spent Today',
+                                data: [30, 45, 150, 20, 80],
+                                backgroundColor: '#10b981'
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
+            },
+
+            openModal(id) {
+                document.getElementById(id)?.classList.add('active');
+            },
+
+            closeModal(id) {
+                document.getElementById(id)?.classList.remove('active');
+            },
+
+            openEditAllowanceModal() {
+                document.getElementById('edit-allowance-amount').value = this.state.balance;
+                this.openModal('modal-edit-allowance');
+            },
+
+            confirmEditAllowance() {
+                const amt = parseFloat(document.getElementById('edit-allowance-amount').value);
+                const dateVal = document.getElementById('edit-allowance-date').value;
+
+                if (!isNaN(amt) && amt >= 0) {
+                    this.state.balance = amt;
+                }
+                if (dateVal) {
+                    this.state.targetAllowanceDate = new Date(dateVal).toISOString();
+                }
+
+                this.recalculateDailyLimit();
+                this.saveState();
+                this.updateHomeUI();
+                this.closeModal('modal-edit-allowance');
+                this.showToast("Allowance & target date updated!");
+            },
+
+            toggleDarkMode() {
+                this.state.darkMode = !this.state.darkMode;
+                const appEl = document.getElementById('app');
+                const darkToggle = document.getElementById('dark-mode-toggle');
+                
+                if (this.state.darkMode) {
+                    appEl.classList.add('dark-theme');
+                    darkToggle.classList.add('active');
+                } else {
+                    appEl.classList.remove('dark-theme');
+                    darkToggle.classList.remove('active');
+                }
+                this.saveState();
+            },
+
+            toggleNotifications() {
+                this.state.notificationsEnabled = !this.state.notificationsEnabled;
+                document.getElementById('notif-toggle').classList.toggle('active', this.state.notificationsEnabled);
+                this.saveState();
+                this.showToast(`Notifications ${this.state.notificationsEnabled ? 'enabled' : 'disabled'}`);
             }
         };
 
-        // Initialize App
-        window.addEventListener('DOMContentLoaded', () => {
+        // Initialize application on DOM content loaded
+        document.addEventListener('DOMContentLoaded', () => {
             app.init();
         });
     </script>
