@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BudgetBuddy | Developer Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+    <!-- Firebase SDKs (v9 Compat Mode) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .admin-card {
+            background: #1e293b;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            border: 2px solid #334155;
+        }
+        h1 {
+            color: #ef4444;
+            margin-bottom: 0.5rem;
+        }
+        p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            font-family: 'Nunito', sans-serif;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+        .btn-danger:active {
+            transform: scale(0.98);
+        }
+        #status-msg {
+            margin-top: 1.5rem;
+            font-weight: 700;
+            min-height: 24px;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-card">
+        <h1>⚠ System Reset</h1>
+        <p>This will completely wipe local storage state and reset the active Firebase user data back to application defaults. Use only for development.</p>
+        
+        <button class="btn-danger" onclick="factoryReset()">
+            NUKE & RESET SYSTEM
+        </button>
+
+        <div id="status-msg"></div>
+    </div>
+
+    <script>
+        // BudgetBuddy Firebase Configuration[cite: 2]
+        const firebaseConfig = {
+            apiKey: "AIzaSyCRlksU0fope2AvXHi6XTlnEKZe-v1eTIc",
+            authDomain: "budget-buddy-75044.firebaseapp.com",
+            projectId: "budget-buddy-75044",
+            storageBucket: "budget-buddy-75044.firebasestorage.app",
+            messagingSenderId: "13838646881",
+            appId: "1:13838646881:web:27bf59c84ad28b34d37420",
+            measurementId: "G-X0XS31QNEB"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        function showStatus(msg, type) {
+            const el = document.getElementById('status-msg');
+            el.textContent = msg;
+            el.className = type;
+            setTimeout(() => { el.textContent = ''; el.className = ''; }, 4000);
+        }
+
+        async function factoryReset() {
+            const confirmAction = confirm("Are you sure? This will permanently delete the active app state.");
+            if (!confirmAction) return;
+
+            try {
+                // 1. Wipe LocalStorage
+                localStorage.removeItem('budget_app_state');
+
+                // 2. Wipe/Reset Firebase if active and logged in
+                if (auth && auth.currentUser && db) {
+                    const uid = auth.currentUser.uid;
+                    
+                    // Overwrite with base default state to avoid registration bugs
+                    await db.collection('users').doc(uid).set({
+                        isLoggedIn: true,
+                        balance: 1450,
+                        remainingDays: 29,
+                        dailyLimit: 50,
+                        streakDays: 0,
+                        recentExpenses: [],
+                        goals: [],
+                        upcomingExpenses: [],
+                        badges: []
+                    }, { merge: false });
+                }
+
+                showStatus("System successfully reset! You can now reload the main app.", "success");
+            } catch (error) {
+                console.error(error);
+                showStatus("Error during reset. Check console.", "error");
+            }
+        }
+    </script>
+</body>
+</html>
