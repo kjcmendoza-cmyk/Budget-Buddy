@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BudgetBuddy - Digital Logbook System</title>
+    <title>BudgetBuddy</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
@@ -1935,10 +1935,10 @@
         const app = {
             state: {
                 isLoggedIn: false,
-                userName: 'User',
-                userEmail: 'user@example.com',
-                userPassword: 'password',
-                userPin: '1234',
+                userName: '',
+                userEmail: '',
+                userPassword: '',
+                userPin: '',
                 enteredPin: '',
                 authTab: 'signin',
                 balance: 1450,
@@ -2006,7 +2006,7 @@
                     });
                 }
 
-                // Screen routing check
+                // Check authorization status for chronological open ordering
                 if (this.state.isLoggedIn) {
                     this.showScreen('lock-screen');
                 } else {
@@ -2125,6 +2125,7 @@
                             alert("Firebase Sign In Error: " + err.message);
                         }
                     } else {
+                        // Local fallback mode
                         if (email.toLowerCase() === this.state.userEmail.toLowerCase() && pass === this.state.userPassword) {
                             this.state.isLoggedIn = true;
                             this.saveState();
@@ -2612,7 +2613,7 @@
                                     <div class="goal-icon" style="color: ${goal.color}; background: ${lightBg};"><i class="fa-solid ${goal.icon}"></i></div>
                                     <div class="goal-title">${goal.name}</div>
                                 </div>
-                                <div class="text-sm" style="font-weight:700; color:${goal.color}">${percent}%</div>
+                                <div class="text-sm" style="font-weight:800;">${percent}%</div>
                             </div>
                             <div class="progress-bar-bg">
                                 <div class="progress-bar-fill" style="width: ${percent}%; background: ${goal.color};"></div>
@@ -2621,285 +2622,17 @@
                                 <span>${this.formatPeso(goal.current)} saved</span>
                                 <span>Target: ${this.formatPeso(goal.target)}</span>
                             </div>
-                            <div class="goal-actions">
-                                <button class="delete-btn" onclick="app.deleteGoal(${goal.id})" title="Delete Goal"><i class="fa-solid fa-trash-can"></i></button>
-                                <button onclick="app.openAddFundsModal(${goal.id})" style="background: ${goal.color}; color: white; border: none; padding: 6px 12px; border-radius: 10px; font-family: 'Nunito'; font-weight: 700; font-size: 0.8rem; cursor: pointer;">
-                                    + Deposit
-                                </button>
-                            </div>
                         </div>
                     `;
                     listEl.insertAdjacentHTML('beforeend', html);
                 });
-
+                
                 document.getElementById('goals-total-saved').textContent = this.formatPeso(totalSaved);
-                this.renderBadgesUI();
-            },
-
-            renderBadgesUI() {
-                const container = document.getElementById('badges-container');
-                if (!container) return;
-                container.innerHTML = '';
-
-                this.state.badges.forEach(b => {
-                    const html = `
-                        <div class="badge-box ${b.unlocked ? 'unlocked' : ''}">
-                            <div class="badge-icon">${b.icon}</div>
-                            <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-dark);">${b.name}</div>
-                            <div style="font-size: 0.65rem; color: var(--text-gray);">${b.desc}</div>
-                        </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', html);
-                });
-            },
-
-            openAddGoalModal() {
-                document.getElementById('new-goal-name').value = '';
-                document.getElementById('new-goal-target').value = '';
-                this.openModal('modal-add-goal');
-            },
-
-            confirmAddGoal() {
-                const name = document.getElementById('new-goal-name').value.trim();
-                const target = parseFloat(document.getElementById('new-goal-target').value);
-
-                if (!name || isNaN(target) || target <= 0) {
-                    alert("Please enter a valid Goal Name and Target Amount.");
-                    return;
-                }
-
-                const colors = ['var(--primary-green)', 'var(--accent-blue)', 'var(--secondary-purple)', 'var(--accent-orange)'];
-                const lightColors = ['var(--primary-green-light)', 'var(--accent-blue-light)', 'var(--secondary-purple-light)', 'var(--accent-orange-light)'];
-                const randIdx = Math.floor(Math.random() * colors.length);
-
-                const newGoal = {
-                    id: Date.now(),
-                    name: name,
-                    target: target,
-                    current: 0,
-                    icon: 'fa-bullseye',
-                    color: colors[randIdx],
-                    lightColor: lightColors[randIdx]
-                };
-
-                this.state.goals.push(newGoal);
-                
-                // Unlock Goal Getter Badge
-                const b = this.state.badges.find(x => x.id === 1);
-                if (b) b.unlocked = true;
-
-                this.saveState();
-                this.closeModal('modal-add-goal');
-                this.updateGoalsUI();
-                this.showToast("Goal created successfully!");
-            },
-
-            openAddFundsModal(id) {
-                this.state.activeGoalId = id;
-                const goal = this.state.goals.find(g => g.id === id);
-                if (goal) {
-                    document.getElementById('funds-target-name').textContent = `Depositing into: ${goal.name}`;
-                    document.getElementById('add-funds-amount').value = '';
-                    this.openModal('modal-add-funds');
-                }
-            },
-
-            confirmAddFunds() {
-                const amount = parseFloat(document.getElementById('add-funds-amount').value);
-                if (isNaN(amount) || amount <= 0) {
-                    alert("Please enter a valid deposit amount.");
-                    return;
-                }
-
-                const goal = this.state.goals.find(g => g.id === this.state.activeGoalId);
-                if (goal) {
-                    goal.current += amount;
-                    
-                    // Super saver badge check
-                    if (goal.current >= 1000) {
-                        const b = this.state.badges.find(x => x.id === 3);
-                        if (b) b.unlocked = true;
-                    }
-
-                    this.saveState();
-                    this.closeModal('modal-add-funds');
-                    this.updateGoalsUI();
-                    this.showToast(`Deposited ${this.formatPeso(amount)} to ${goal.name}!`);
-                }
-            },
-
-            deleteGoal(id) {
-                this.state.goals = this.state.goals.filter(g => g.id !== id);
-                this.saveState();
-                this.updateGoalsUI();
-                this.showToast("Goal deleted.");
-            },
-
-            renderInsightsCharts() {
-                const burnCtx = document.getElementById('burnRateChart')?.getContext('2d');
-                const donutCtx = document.getElementById('categoryDonutChart')?.getContext('2d');
-                const barCtx = document.getElementById('dailyBarChart')?.getContext('2d');
-
-                if (!burnCtx || !donutCtx || !barCtx) return;
-
-                // Destroy old chart instances to avoid overlap on tab switch
-                if (this.charts.burn) this.charts.burn.destroy();
-                if (this.charts.donut) this.charts.donut.destroy();
-                if (this.charts.bar) this.charts.bar.destroy();
-
-                // 1. Burn Rate Chart
-                this.charts.burn = new Chart(burnCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4'],
-                        datasets: [
-                            { label: 'Actual Balance', data: [2000, 1600, 1450, 900], borderColor: '#10b981', tension: 0.3, fill: false },
-                            { label: 'Ideal Target', data: [2000, 1500, 1000, 500], borderColor: '#cbd5e1', borderDash: [5, 5], fill: false }
-                        ]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-                });
-
-                // 2. Category Donut Chart
-                this.charts.donut = new Chart(donutCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Food', 'Transport', 'Coffee', 'School', 'Shopping'],
-                        datasets: [{
-                            data: [45, 20, 15, 12, 8],
-                            backgroundColor: ['#10b981', '#3b82f6', '#f97316', '#8b5cf6', '#ef4444']
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-                });
-
-                // Render Category Breakdown Pills below Chart
-                const pillContainer = document.getElementById('category-breakdown-list');
-                if (pillContainer) {
-                    pillContainer.innerHTML = `
-                        <div class="cat-pill-item selected">
-                            <div class="cat-pill-left"><div class="cat-pill-dot" style="background:#10b981;"></div>Food</div>
-                            <span style="font-weight:800;">45% (₱650)</span>
-                        </div>
-                        <div class="cat-pill-item">
-                            <div class="cat-pill-left"><div class="cat-pill-dot" style="background:#3b82f6;"></div>Transport</div>
-                            <span style="font-weight:800;">20% (₱290)</span>
-                        </div>
-                        <div class="cat-pill-item">
-                            <div class="cat-pill-left"><div class="cat-pill-dot" style="background:#f97316;"></div>Coffee</div>
-                            <span style="font-weight:800;">15% (₱215)</span>
-                        </div>
-                    `;
-                }
-
-                // 3. Daily Limit vs Spent Bar Chart
-                this.charts.bar = new Chart(barCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                        datasets: [{
-                            label: 'Spent (₱)',
-                            data: [45, 30, 85, 40, 120, 60, 25],
-                            backgroundColor: [
-                                '#10b981', '#10b981', '#ef4444', '#10b981', '#ef4444', '#ef4444', '#10b981'
-                            ],
-                            borderRadius: 8
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-                });
-            },
-
-            openEditNameModal() {
-                document.getElementById('edit-name-input').value = this.state.userName;
-                this.openModal('modal-edit-name');
-            },
-
-            confirmEditName() {
-                const newName = document.getElementById('edit-name-input').value.trim();
-                if (!newName) {
-                    alert("Name cannot be empty.");
-                    return;
-                }
-                this.state.userName = newName;
-                this.saveState();
-                this.closeModal('modal-edit-name');
-                this.updateHomeUI();
-                this.showToast("Profile name updated!");
-            },
-
-            openEditAllowanceModal() {
-                document.getElementById('edit-allowance-amount').value = this.state.balance;
-                
-                let isoDate = "";
-                if (this.state.targetAllowanceDate) {
-                    const d = new Date(this.state.targetAllowanceDate);
-                    if (!isNaN(d.getTime())) {
-                        isoDate = d.toISOString().split('T')[0];
-                    }
-                }
-                document.getElementById('edit-allowance-date').value = isoDate;
-                this.openModal('modal-edit-allowance');
-            },
-
-            confirmEditAllowance() {
-                const amt = parseFloat(document.getElementById('edit-allowance-amount').value);
-                const dateVal = document.getElementById('edit-allowance-date').value;
-
-                if (isNaN(amt) || amt < 0) {
-                    alert("Please enter a valid allowance amount.");
-                    return;
-                }
-                if (!dateVal) {
-                    alert("Please choose a next allowance date.");
-                    return;
-                }
-
-                this.state.balance = amt;
-                this.state.targetAllowanceDate = new Date(dateVal).toISOString();
-                this.recalculateDailyLimit();
-                this.saveState();
-                this.closeModal('modal-edit-allowance');
-                this.updateHomeUI();
-                this.showToast("Allowance & cycle updated!");
-            },
-
-            toggleNotifications() {
-                this.state.notificationsEnabled = !this.state.notificationsEnabled;
-                document.getElementById('notif-toggle').classList.toggle('active', this.state.notificationsEnabled);
-                this.saveState();
-                this.showToast(this.state.notificationsEnabled ? "Notifications enabled" : "Notifications disabled");
-            },
-
-            toggleDarkMode() {
-                this.state.darkMode = !this.state.darkMode;
-                const appEl = document.getElementById('app');
-                const darkToggle = document.getElementById('dark-mode-toggle');
-                
-                if (this.state.darkMode) {
-                    appEl.classList.add('dark-theme');
-                    if (darkToggle) darkToggle.classList.add('active');
-                } else {
-                    appEl.classList.remove('dark-theme');
-                    if (darkToggle) darkToggle.classList.remove('active');
-                }
-                this.saveState();
-                this.showToast(this.state.darkMode ? "Dark mode enabled" : "Light mode enabled");
-            },
-
-            openModal(modalId) {
-                const modal = document.getElementById(modalId);
-                if (modal) modal.classList.add('active');
-            },
-
-            closeModal(modalId) {
-                const modal = document.getElementById(modalId);
-                if (modal) modal.classList.remove('active');
             }
         };
 
-        // Initialize application when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
             app.init();
         });
     </script>
