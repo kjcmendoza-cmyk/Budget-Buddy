@@ -1503,6 +1503,7 @@
                     <div class="text-xs text-gray" style="font-weight: 700; text-transform: uppercase;">Safe to spend today</div>
                     <div class="amount" id="home-daily-limit">₱0</div>
                     <div class="text-xs text-gray">Daily limit</div>
+                    <div class="text-sm mt-2" id="home-safe-remaining" style="font-weight: 800; color: var(--primary-green);">₱0 left today</div>
                 </div>
                 <div class="safe-right">
                     <div class="mascot-area">
@@ -2350,9 +2351,23 @@
             updateMascot() {
                 const todayTotal = this.getTodayTotal();
                 const limit = this.state.dailyLimit;
+                const remainingSafe = limit - todayTotal;
                 
                 const mascotBubble = document.getElementById('mascot-bubble');
                 const mascotIcon = document.getElementById('mascot-icon');
+                const remainingEl = document.getElementById('home-safe-remaining');
+                
+                // Update the remaining "Safe to spend" balance
+                if (remainingEl) {
+                    if (remainingSafe >= 0) {
+                        remainingEl.textContent = this.formatPeso(remainingSafe) + " left today";
+                        remainingEl.style.color = "var(--primary-green)";
+                    } else {
+                        remainingEl.textContent = this.formatPeso(Math.abs(remainingSafe)) + " overspent";
+                        remainingEl.style.color = "var(--danger-red)";
+                    }
+                }
+
                 if (!mascotBubble) return;
 
                 if (limit === 0 && todayTotal === 0) {
