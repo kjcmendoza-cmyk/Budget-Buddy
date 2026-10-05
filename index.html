@@ -2654,7 +2654,60 @@
                 }
                 return "Not set";
             },
+getAllowanceTargetDate() {
+            if (this.state.targetAllowanceDate) {
+                const rawDate = new Date(this.state.targetAllowanceDate);
+                if (!isNaN(rawDate.getTime())) {
+                    return rawDate.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                }
+            }
+            return "Not set";
+        },
 
+        renderBurnRateChart() {
+            const ctx = document.getElementById('burnRateChart');
+            if (!ctx) return;
+
+            if (this.charts.burnRate) {
+                this.charts.burnRate.destroy();
+            }
+
+            const currentBalance = this.state.balance || 150000;
+
+            this.charts.burnRate = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+                    datasets: [{
+                        label: 'Allowance Balance',
+                        data: [currentBalance, currentBalance - 500, currentBalance - 1200, currentBalance - 2100, currentBalance - 2800, currentBalance - 3500, currentBalance - 4200],
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: currentBalance, // Sets exact top limit to 150,000 instead of 225,000
+                            ticks: {
+                                callback: function(value) {
+                                    return '₱' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        },
             checkDueExpenses() {
                 const today = new Date().toISOString().split('T')[0];
 
