@@ -17,6 +17,7 @@
     
     <style>
         :root {
+        
             /* Color Palette */
             --primary-green: #10b981;
             --primary-green-dark: #059669;
@@ -59,6 +60,32 @@
             --accent-blue-light: rgba(59, 130, 246, 0.2);
             --danger-red-light: rgba(239, 68, 68, 0.2);
         }
+
+.view-toggle-btns {
+    display: flex;
+    background: var(--bg-color);
+    padding: 2px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.view-toggle-btn {
+    padding: 4px 10px;
+    border: none;
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-gray);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-toggle-btn.active {
+    background: var(--primary-green);
+    color: white;
+}
 
         * {
             box-sizing: border-box;
@@ -1865,18 +1892,23 @@
             </div>
 
             <!-- 1. Allowance Pace & Burn Rate (Line Chart) -->
-            <div class="card mb-4">
-                <div class="chart-card-header">
-                    <div class="chart-card-title">
-                        <i class="fa-solid fa-chart-line text-purple"></i> Allowance Burn Rate
-                    </div>
-                    <span class="text-xs text-gray" id="burn-rate-cycle-label" style="font-weight: 700;">0-Day Cycle</span>
-                </div>
-                <div class="chart-container" style="height: 180px;">
-                    <canvas id="burnRateChart"></canvas>
-                </div>
+            <!-- 1. Allowance Pace & Burn Rate (Line Chart) -->
+    <div class="card mb-4">
+        <div class="chart-card-header d-flex justify-content-between align-items-center">
+            <div class="chart-card-title">
+                <i class="fa-solid fa-chart-line text-purple"></i> Allowance Burn Rate
             </div>
-
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" id="btn-view-31d" class="btn btn-outline-primary active" onclick="app.setBurnRateView('31days')">31 Days</button>
+                <button type="button" id="btn-view-5w" class="btn btn-outline-primary" onclick="app.setBurnRateView('5weeks')">5 Weeks</button>
+            </div>
+        </div>
+        <div class="card-body p-3">
+            <div style="height: 250px; position: relative;">
+                <canvas id="burnRateChart"></canvas>
+            </div>
+        </div>
+    </div>
             <!-- 2. Category Spending Breakdown (Donut Chart) -->
             <div class="card mb-4">
                 <div class="chart-card-header">
@@ -2171,6 +2203,7 @@
 
         const app = {
             state: {
+                burnRateView: '31days',
                 isLoggedIn: false,
                 userName: '',
                 userEmail: '',
@@ -2203,6 +2236,115 @@
             },
 
             charts: {},
+
+            setBurnRateView(view) {
+        this.state.burnRateView = view;
+        document.getElementById('btn-view-31d')?.classList.toggle('active', view === '31days');
+        document.getElementById('btn-view-5w')?.classList.toggle('active', view === '5weeks');
+        this.renderBurnRateChart();
+    },
+
+    renderBurnRateChart() {
+        const ctx = document.getElementById('burnRateChart')?.getContext('2d');
+        if (!ctx) return;
+
+        if (this.charts.burnRateChart) {
+            this.charts.burnRateChart.destroy();
+        }
+
+        const is31Days = this.state.burnRateView === '31days';
+        let labels = [];
+        let dataPoints = [];
+
+        if (is31Days) {
+            labels = Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`);
+            const startBalance = this.state.balance || 0;
+            let cumulativeSpent = 0;
+
+            dataPoints = labels.map((_, index) => {
+                const dayNum = index + 1;
+                const dayExpenses = (this.state.recentExpenses || []).filter(e => {
+                    const eDay = new Date(e.date || Date.now()).getDate();
+                    return eDay === dayNum;
+                }).reduce((sum, e) => sum + e.amount, 0);
+
+                cumulativeSpent += dayExpenses;
+                return Math.max(0, startBalance - cumulativeSpent);
+            });
+        } else {
+            labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'];
+            const startBalance = this.state.balance || 0;
+            let cumulativeSpent = 0;
+
+            dataPoints = labels.map((_, weekIndex) => {
+                const weekExpenses = (this.state.recentExpenses || []).filter(e => {
+                    const eDay = new Date(e.date || Date.now()).getDate();
+                    return eDay > weekIndex * 7 && eDay <= (weekIndex + 1) * 7;
+                }).reduce((sum, e) => sum + e.amount, 0);
+
+                cumulativeSpent += weekExpenses;
+                return Math.max(0, startBalance - cumulativeSpent);
+            });
+        }
+
+        this.charts.burnRateChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Remaining Balance',
+                    data: dataPoints,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: is31Days ? 3.5 : 5,
+                    pointHoverRadius: is31Days ? 6 : 7,
+                    pointBackgroundColor: '#10b981',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 1.5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `Balance: ₱${ctx.raw.toLocaleString()}`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 10, family: 'Nunito' },
+                            autoSkip: false,
+                            callback: function(val, index) {
+                                if (is31Days) {
+                                    const dayNum = index + 1;
+                                    if (dayNum === 1 || dayNum % 5 === 0 || dayNum === 31) {
+                                        return `Day ${dayNum}`;
+                                    }
+                                    return '';
+                                }
+                                return labels[index];
+                            }
+                        }
+                    },
+                    y: {
+                        grid: { color: 'rgba(226, 232, 240, 0.5)' },
+                        ticks: {
+                            font: { size: 10, family: 'Nunito' },
+                            callback: (val) => `₱${val}`
+                        }
+                    }
+                }
+            }
+        });
+    },
 
             init() {
                 this.loadState();
@@ -3576,46 +3718,16 @@ getAllowanceTargetDate() {
                 this.showToast(`Dark mode ${this.state.darkMode ? 'ON' : 'OFF'}`);
             },
 
-            renderInsightsCharts() {
-                // Destroy old charts to prevent duplicate canvas overlay
-                if (this.charts.burn) this.charts.burn.destroy();
-                if (this.charts.donut) this.charts.donut.destroy();
-                if (this.charts.bar) this.charts.bar.destroy();
+ renderInsightsCharts() {
+        // Destroy old charts to prevent duplicate canvas overlay
+        if (this.charts.burn) this.charts.burn.destroy();
+        if (this.charts.donut) this.charts.donut.destroy();
+        if (this.charts.bar) this.charts.bar.destroy();
 
-                const isDark = this.state.darkMode;
-                const textColor = isDark ? '#f8fafc' : '#1e293b';
+        this.renderBurnRateChart();
 
-                // Update burn rate label
-                const burnLabel = document.getElementById('burn-rate-cycle-label');
-                if (burnLabel) burnLabel.textContent = `${this.state.remainingDays}-Day Cycle`;
-
-                // 1. Burn Rate Chart
-                const burnCtx = document.getElementById('burnRateChart')?.getContext('2d');
-                if (burnCtx) {
-                    this.charts.burn = new Chart(burnCtx, {
-                        type: 'line',
-                        data: {
-                            labels: ['Start', 'Day 3', 'Day 7', 'Day 10', 'Today'],
-                            datasets: [{
-                                label: 'Remaining Balance',
-                                data: [this.state.balance * 1.5, this.state.balance * 1.3, this.state.balance * 1.1, this.state.balance * 1.05, this.state.balance],
-                                borderColor: '#8b5cf6',
-                                backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                                fill: true,
-                                tension: 0.4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                x: { ticks: { color: textColor } },
-                                y: { ticks: { color: textColor } }
-                            }
-                        }
-                    });
-                }
+        const isDark = this.state.darkMode;
+        const textColor = isDark ? '#f8fafc' : '#1e293b';
 
                 // 2. Category Donut Chart & Breakdown List
                 const catTotals = {};
