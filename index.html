@@ -2351,9 +2351,23 @@
             updateMascot() {
                 const todayTotal = this.getTodayTotal();
                 const limit = this.state.dailyLimit;
+                const remainingSafe = limit - todayTotal;
                 
                 const mascotBubble = document.getElementById('mascot-bubble');
                 const mascotIcon = document.getElementById('mascot-icon');
+                const remainingEl = document.getElementById('home-safe-remaining');
+                
+                // Update the remaining "Safe to spend" balance
+                if (remainingEl) {
+                    if (remainingSafe >= 0) {
+                        remainingEl.textContent = this.formatPeso(remainingSafe) + " left today";
+                        remainingEl.style.color = "var(--primary-green)";
+                    } else {
+                        remainingEl.textContent = this.formatPeso(Math.abs(remainingSafe)) + " overspent";
+                        remainingEl.style.color = "var(--danger-red)";
+                    }
+                }
+
                 if (!mascotBubble) return;
 
                 if (limit === 0 && todayTotal === 0) {
