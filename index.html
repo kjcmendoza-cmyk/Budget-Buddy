@@ -1866,16 +1866,22 @@
 
             <!-- 1. Allowance Pace & Burn Rate (Line Chart) -->
             <div class="card mb-4">
-                <div class="chart-card-header">
-                    <div class="chart-card-title">
-                        <i class="fa-solid fa-chart-line text-purple"></i> Allowance Burn Rate
-                    </div>
-                    <span class="text-xs text-gray" id="burn-rate-cycle-label" style="font-weight: 700;">0-Day Cycle</span>
-                </div>
-                <div class="chart-container" style="height: 180px;">
-                    <canvas id="burnRateChart"></canvas>
-                </div>
-            </div>
+    <div class="chart-card-header">
+        <div class="chart-card-title">
+            <i class="fa-solid fa-chart-line text-purple"></i> Allowance Burn Rate
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <select id="burnRateToggle" onchange="app.toggleBurnRateView(this.value)" style="border:none; background:transparent; font-family: 'Nunito'; color: var(--text-gray); font-size: 0.875rem; font-weight: 700; outline:none; cursor:pointer;">
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+            </select>
+            <span class="text-xs text-gray" id="burn-rate-cycle-label" style="font-weight: 700;">0-Day Cycle</span>
+        </div>
+    </div>
+    <div class="chart-container" style="height: 180px;">
+        <canvas id="burnRateChart"></canvas>
+    </div>
+</div>
 
             <!-- 2. Category Spending Breakdown (Donut Chart) -->
             <div class="card mb-4">
@@ -2199,11 +2205,71 @@
                 activeGoalId: null,
                 calYear: new Date().getFullYear(),
                 calMonth: new Date().getMonth(),
-                calSelectedDate: null
+                calSelectedDate: null,
+                burnRateViewMode: 'daily'
             },
 
             charts: {},
+toggleBurnRateView(mode) {
+        this.state.burnRateViewMode = mode;
+        this.renderBurnRateChart();
+    },
 
+    renderBurnRateChart() {
+        const ctx = document.getElementById('burnRateChart');
+        if (!ctx) return;
+        
+        // Destroy existing chart instance to prevent overlaps
+        if (this.charts.burnRate) {
+            this.charts.burnRate.destroy();
+        }
+
+        const isDaily = this.state.burnRateViewMode === 'daily';
+        
+        // Generate X-axis labels based on the selected mode
+        const labels = isDaily 
+            ? Array.from({length: 31}, (_, i) => `Day ${i + 1}`) 
+            : Array.from({length: 5}, (_, i) => `Week ${i + 1}`);
+            
+        // Generate placeholder data (Replace this with your actual spending data mapping)
+        const data = isDaily
+            ? Array.from({length: 31}, () => Math.floor(Math.random() * 500) + 100)
+            : Array.from({length: 5}, () => Math.floor(Math.random() * 3500) + 700);
+
+        // Render the Chart
+        this.charts.burnRate = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Burn Rate (₱)',
+                    data: data,
+                    borderColor: '#8b5cf6', // var(--secondary-purple)
+                    backgroundColor: 'rgba(139, 92, 246, 0.2)', // var(--secondary-purple-light)
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: isDaily ? 1 : 4 // Smaller points for daily to prevent crowding
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { 
+                        display: true,
+                        ticks: {
+                            maxTicksLimit: isDaily ? 7 : 5 // Show fewer labels on X axis for daily view
+                        }
+                    },
+                    y: { display: true, beginAtZero: true }
+                }
+            }
+        });
+    },
             init() {
                 this.loadState();
                 
@@ -2351,23 +2417,9 @@
             updateMascot() {
                 const todayTotal = this.getTodayTotal();
                 const limit = this.state.dailyLimit;
-                const remainingSafe = limit - todayTotal;
                 
                 const mascotBubble = document.getElementById('mascot-bubble');
                 const mascotIcon = document.getElementById('mascot-icon');
-                const remainingEl = document.getElementById('home-safe-remaining');
-                
-                // Update the remaining "Safe to spend" balance
-                if (remainingEl) {
-                    if (remainingSafe >= 0) {
-                        remainingEl.textContent = this.formatPeso(remainingSafe) + " left today";
-                        remainingEl.style.color = "var(--primary-green)";
-                    } else {
-                        remainingEl.textContent = this.formatPeso(Math.abs(remainingSafe)) + " overspent";
-                        remainingEl.style.color = "var(--danger-red)";
-                    }
-                }
-
                 if (!mascotBubble) return;
 
                 if (limit === 0 && todayTotal === 0) {
@@ -3528,41 +3580,13 @@
                 if (this.charts.burn) this.charts.burn.destroy();
                 if (this.charts.donut) this.charts.donut.destroy();
                 if (this.charts.bar) this.charts.bar.destroy();
-
+this.renderBurnRateChart();
                 const isDark = this.state.darkMode;
                 const textColor = isDark ? '#f8fafc' : '#1e293b';
 
                 // Update burn rate label
                 const burnLabel = document.getElementById('burn-rate-cycle-label');
                 if (burnLabel) burnLabel.textContent = `${this.state.remainingDays}-Day Cycle`;
-
-                // 1. Burn Rate Chart
-                const burnCtx = document.getElementById('burnRateChart')?.getContext('2d');
-                if (burnCtx) {
-                    this.charts.burn = new Chart(burnCtx, {
-                        type: 'line',
-                        data: {
-                            labels: ['Start', 'Day 3', 'Day 7', 'Day 10', 'Today'],
-                            datasets: [{
-                                label: 'Remaining Balance',
-                                data: [this.state.balance * 1.5, this.state.balance * 1.3, this.state.balance * 1.1, this.state.balance * 1.05, this.state.balance],
-                                borderColor: '#8b5cf6',
-                                backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                                fill: true,
-                                tension: 0.4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                x: { ticks: { color: textColor } },
-                                y: { ticks: { color: textColor } }
-                            }
-                        }
-                    });
-                }
 
                 // 2. Category Donut Chart & Breakdown List
                 const catTotals = {};
