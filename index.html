@@ -2345,12 +2345,14 @@
 }
                     },
                     y: {
-                        grid: { color: 'rgba(226, 232, 240, 0.5)' },
-                        ticks: {
-                            font: { size: 10, family: 'Nunito' },
-                            callback: (val) => `₱${val.toLocaleString()}`
-                        }
-                    }
+                beginAtZero: true,
+                grid: { color: 'rgba(226, 232, 240, 0.5)' },
+                ticks: {
+                    maxTicksLimit: 11,
+                    font: { size: 10, family: 'Nunito' },
+                    callback: (val) => `₱${val.toLocaleString()}`
+                }
+            }
                 }
             }
         });
