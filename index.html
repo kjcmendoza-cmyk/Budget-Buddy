@@ -2319,12 +2319,24 @@ setBurnRateView(view) {
         this.charts.burndown.destroy();
     }
 
+    // Local date formatter (YYYY-MM-DD) to prevent timezone shifts from toISOString
+    const formatLocalDateKey = (d) => {
+        const dateObj = new Date(d);
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    };
+
     // 1. Determine Cycle Date Bounds
-    const startDateStr = this.state.allowanceStartDate || new Date().toISOString().split('T')[0];
+    const startDateStr = this.state.allowanceStartDate || formatLocalDateKey(new Date());
     const endDateStr = this.state.targetAllowanceDate;
 
     const startDate = new Date(startDateStr);
+    startDate.setHours(0, 0, 0, 0);
+
     let endDate = endDateStr ? new Date(endDateStr) : new Date(startDate);
+    endDate.setHours(0, 0, 0, 0);
     
     if (!endDateStr || endDate <= startDate) {
         endDate = new Date(startDate);
@@ -2333,7 +2345,8 @@ setBurnRateView(view) {
 
     const totalCycleDays = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
     const today = new Date();
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
+    const todayKey = formatLocalDateKey(today);
 
     // 2. Build Labels & Data Points
     const labels = [];
@@ -2343,10 +2356,11 @@ setBurnRateView(view) {
     const initialAllowance = this.state.initialAllowance || this.state.balance || 0;
     let currentActualBal = initialAllowance;
 
+    // Group expenses by local date key
     const expensesByDate = {};
     (this.state.recentExpenses || []).forEach(exp => {
-        if (exp.rawDate) {
-            const dKey = exp.rawDate.split('T')[0];
+        if (exp.rawDate || exp.date) {
+            const dKey = formatLocalDateKey(exp.rawDate || exp.date);
             expensesByDate[dKey] = (expensesByDate[dKey] || 0) + exp.amount;
         }
     });
@@ -2354,23 +2368,29 @@ setBurnRateView(view) {
     for (let i = 0; i <= totalCycleDays; i++) {
         const currDate = new Date(startDate);
         currDate.setDate(currDate.getDate() + i);
-        currDate.setHours(0,0,0,0);
+        currDate.setHours(0, 0, 0, 0);
 
         const dateStr = currDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         labels.push(dateStr);
 
+        // Ideal burndown pace
         const idealVal = Math.max(0, initialAllowance - (i * (initialAllowance / totalCycleDays)));
         idealData.push(Math.round(idealVal));
 
-        const isoKey = currDate.toISOString().split('T')[0];
+        const dateKey = formatLocalDateKey(currDate);
+
+        // Deduct expenses for this specific date
         if (i === 0) {
-            currentActualBal = initialAllowance - (expensesByDate[isoKey] || 0);
+            currentActualBal = initialAllowance - (expensesByDate[dateKey] || 0);
         } else {
-            currentActualBal -= (expensesByDate[isoKey] || 0);
+            currentActualBal -= (expensesByDate[dateKey] || 0);
         }
 
-        if (currDate <= today) {
+        if (currDate < today) {
             actualData.push(Math.max(0, Math.round(currentActualBal)));
+        } else if (dateKey === todayKey) {
+            // Explicitly sync today's plot point to live account balance
+            actualData.push(Math.max(0, Math.round(this.state.balance)));
         } else {
             actualData.push(null);
         }
@@ -2381,7 +2401,10 @@ setBurnRateView(view) {
         labelEl.textContent = `${totalCycleDays}-Day Cycle (${labels[0]} - ${labels[labels.length - 1]})`;
     }
 
-    // 3. Render Chart.js Burndown Line Graph with Interactive Scrubbing
+    // 3. Render Chart.js Burndown Line Graph
+    const textColor = this.state.darkMode ? '#f8fafc' : '#1e293b';
+    const gridColor = this.state.darkMode ? '#334155' : '#e2e8f0';
+
     this.charts.burndown = new Chart(ctx, {
         type: 'line',
         data: {
@@ -2391,82 +2414,38 @@ setBurnRateView(view) {
                     label: 'Ideal Pace',
                     data: idealData,
                     borderColor: '#94a3b8',
-                    borderDash: [6, 6],
+                    borderDash: [5, 5],
                     borderWidth: 2,
-                    pointRadius: 0,
-                    pointHoverRadius: 4,
                     fill: false,
-                    tension: 0
+                    pointRadius: 0
                 },
                 {
                     label: 'Actual Balance',
                     data: actualData,
                     borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
                     borderWidth: 3,
-                    pointRadius: 3,
-                    pointHoverRadius: 6,
-                    pointBackgroundColor: '#10b981',
                     fill: true,
-                    spanGaps: false,
-                    tension: 0.2
+                    tension: 0.2,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#10b981'
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            // Enables tapping/dragging anywhere along the vertical slice
-            interaction: {
-                mode: 'index',
-                intersect: false
-            },
-            hover: {
-                mode: 'index',
-                intersect: false
-            },
             plugins: {
-                legend: { display: false },
-                tooltip: {
-                    enabled: true,
-                    mode: 'index',
-                    intersect: false,
-                    backgroundColor: '#1e293b',
-                    titleFont: { family: 'Nunito', size: 12, weight: 'bold' },
-                    bodyFont: { family: 'Nunito', size: 12 },
-                    padding: 10,
-                    cornerRadius: 8,
-                    displayColors: true,
-                    callbacks: {
-                        title: (tooltipItems) => {
-                            return `Date: ${tooltipItems[0].label}`;
-                        },
-                        label: (ctx) => {
-                            if (ctx.parsed.y !== null && ctx.parsed.y !== undefined) {
-                                return `${ctx.dataset.label}: ₱${Number(ctx.parsed.y).toLocaleString('en-PH')}`;
-                            }
-                            return null;
-                        }
-                    }
-                }
+                legend: { display: false }
             },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        font: { family: 'Nunito', size: 10 },
-                        callback: (v) => '₱' + v
-                    },
-                    grid: { color: 'rgba(0,0,0,0.05)' }
-                },
                 x: {
-                    ticks: {
-                        font: { family: 'Nunito', size: 10 },
-                        maxRotation: 0,
-                        autoSkip: true,
-                        maxTicksLimit: 7
-                    },
-                    grid: { display: false }
+                    grid: { display: false },
+                    ticks: { color: textColor }
+                },
+                y: {
+                    grid: { color: gridColor },
+                    ticks: { color: textColor }
                 }
             }
         }
