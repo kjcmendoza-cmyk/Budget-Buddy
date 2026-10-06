@@ -1886,29 +1886,23 @@
             </div>
 
             <!-- Allowance Burn Rate Pace Warning -->
-            <div class="insight-banner-warning">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <p id="insight-banner-text">Start spending to see your insights and burn rate projections!</p>
-            </div>
-
-            <!-- 1. Allowance Pace & Burn Rate (Line Chart) -->
-            <!-- 1. Allowance Pace & Burn Rate (Line Chart) -->
-    <div class="card mb-4">
-        <div class="chart-card-header d-flex justify-content-between align-items-center">
-            <div class="chart-card-title">
-                <i class="fa-solid fa-chart-line text-purple"></i> Allowance Burn Rate
-            </div>
-            <div class="btn-group btn-group-sm" role="group">
-                <button type="button" id="btn-view-31d" class="btn btn-outline-primary active" onclick="app.setBurnRateView('31days')">31 Days</button>
-                <button type="button" id="btn-view-5w" class="btn btn-outline-primary" onclick="app.setBurnRateView('5weeks')">5 Weeks</button>
-            </div>
+            <!-- Allowance Burndown Chart Card -->
+<div class="card mb-4">
+    <div class="chart-card-header">
+        <div class="chart-card-title">
+            <i class="fa-solid fa-chart-line text-green" style="color: var(--primary-green);"></i> Allowance Burndown
         </div>
-        <div class="card-body p-3">
-            <div style="height: 250px; position: relative;">
-                <canvas id="burnRateChart"></canvas>
-            </div>
-        </div>
+        <span class="text-xs text-gray" id="burndown-cycle-label" style="font-weight: 700;">Cycle Pace</span>
     </div>
+    <div class="chart-container" style="height: 200px;">
+        <canvas id="burndownChart"></canvas>
+    </div>
+    <div class="flex justify-between items-center mt-2 text-xs text-gray" style="font-weight:700; padding: 0 5px;">
+        <span style="color: #94a3b8;"><i class="fa-solid fa-minus"></i> Ideal Pace</span>
+        <span style="color: var(--primary-green);"><i class="fa-solid fa-square"></i> Actual Balance</span>
+    </div>
+</div>
+
             <!-- 2. Category Spending Breakdown (Donut Chart) -->
             <div class="card mb-4">
                 <div class="chart-card-header">
@@ -2216,6 +2210,8 @@
                 dailyLimit: 0,
                 streakDays: 0,
                 targetAllowanceDate: "",
+                allowanceStartDate: "", // Tracks cycle start date
+                initialAllowance: 0,    // Tracks baseline budget at start of cycle
                 notificationsEnabled: true,
                 darkMode: false,
                 recentExpenses: [],
@@ -2237,126 +2233,149 @@
 
             charts: {},
 
-            setBurnRateView(view) {
-        this.state.burnRateView = view;
-        document.getElementById('btn-view-31d')?.classList.toggle('active', view === '31days');
-        document.getElementById('btn-view-5w')?.classList.toggle('active', view === '5weeks');
-        this.renderBurnRateChart();
-    },
-
-    renderBurnRateChart() {
-        const ctx = document.getElementById('burnRateChart')?.getContext('2d');
-        if (!ctx) return;
-
-        if (this.charts.burnRateChart) {
-            this.charts.burnRateChart.destroy();
-        }
-
-        const is31Days = this.state.burnRateView === '31days';
-        let labels = [];
-        let dataPoints = [];
-
-        // Helper to handle "Today" string dates without NaN errors
-        const getExpenseDay = (exp) => {
-            if (!exp) return null;
-            if (exp.date === 'Today') return new Date().getDate();
-            const parsedDate = new Date(exp.date || exp.timestamp || Date.now());
-            return isNaN(parsedDate.getTime()) ? null : parsedDate.getDate();
-        };
-
-        if (is31Days) {
-            labels = Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`);
-            const startBalance = Number(this.state.balance) || 0;
-            let cumulativeSpent = 0;
-
-            dataPoints = labels.map((_, index) => {
-                const dayNum = index + 1;
-                const dayExpenses = (this.state.recentExpenses || [])
-                    .filter(e => getExpenseDay(e) === dayNum)
-                    .reduce((sum, e) => sum + Number(e.amount || 0), 0);
-
-                cumulativeSpent += dayExpenses;
-                return Math.max(0, startBalance - cumulativeSpent);
-            });
-        } else {
-            labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'];
-            const startBalance = Number(this.state.balance) || 0;
-            let cumulativeSpent = 0;
-
-            dataPoints = labels.map((_, weekIndex) => {
-                const weekExpenses = (this.state.recentExpenses || [])
-                    .filter(e => {
-                        const day = getExpenseDay(e);
-                        return day !== null && day > weekIndex * 7 && day <= (weekIndex + 1) * 7;
-                    })
-                    .reduce((sum, e) => sum + Number(e.amount || 0), 0);
-
-                cumulativeSpent += weekExpenses;
-                return Math.max(0, startBalance - cumulativeSpent);
-            });
-        }
-
-        this.charts.burnRateChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Remaining Balance',
-                    data: dataPoints,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.12)',
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: is31Days ? 2 : 4,
-                    pointHoverRadius: is31Days ? 5 : 6,
-                    pointBackgroundColor: '#10b981',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 1.5
-                }]
+setBurnRateView(view) {
+                // Safely removed
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: (ctx) => `Balance: ₱${ctx.raw.toLocaleString()}`
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: { display: false },
-                        ticks: {
-    font: { size: 9, family: 'Nunito' },
-    autoSkip: false,
-    maxRotation: 0,
-    callback: function(val, index) {
-        if (is31Days) {
-            const dayNum = index + 1;
-            if (dayNum === 1 || (dayNum % 5 === 0 && dayNum !== 30) || dayNum === 31) {
-                return `Day ${dayNum}`;
-            }
-            return '';
-        }
-        return labels[index];
+
+            renderBurndownChart() {
+    const canvas = document.getElementById('burndownChart');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (this.charts.burndown) {
+        this.charts.burndown.destroy();
     }
-}
+
+    // 1. Determine Cycle Date Bounds
+    const startDateStr = this.state.allowanceStartDate || new Date().toISOString().split('T')[0];
+    const endDateStr = this.state.targetAllowanceDate;
+
+    const startDate = new Date(startDateStr);
+    let endDate = endDateStr ? new Date(endDateStr) : new Date(startDate);
+    
+    // Fallback: If no target date set or invalid, default cycle length to 14 days
+    if (!endDateStr || endDate <= startDate) {
+        endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 14);
+    }
+
+    const totalCycleDays = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    // 2. Build Labels & Ideal/Actual Data Points across Cycle
+    const labels = [];
+    const idealData = [];
+    const actualData = [];
+
+    const initialAllowance = this.state.initialAllowance || this.state.balance || 0;
+    let currentActualBal = initialAllowance;
+
+    // Group expenses by date string (YYYY-MM-DD)
+    const expensesByDate = {};
+    (this.state.recentExpenses || []).forEach(exp => {
+        if (exp.rawDate) {
+            const dKey = exp.rawDate.split('T')[0];
+            expensesByDate[dKey] = (expensesByDate[dKey] || 0) + exp.amount;
+        }
+    });
+
+    for (let i = 0; i <= totalCycleDays; i++) {
+        const currDate = new Date(startDate);
+        currDate.setDate(currDate.getDate() + i);
+        currDate.setHours(0,0,0,0);
+
+        const dateStr = currDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        labels.push(dateStr);
+
+        // Ideal linear depletion: Initial down to 0 on last day
+        const idealVal = Math.max(0, initialAllowance - (i * (initialAllowance / totalCycleDays)));
+        idealData.push(Math.round(idealVal));
+
+        // Actual balance tracking up to current date
+        const isoKey = currDate.toISOString().split('T')[0];
+        if (i === 0) {
+            currentActualBal = initialAllowance - (expensesByDate[isoKey] || 0);
+        } else {
+            currentActualBal -= (expensesByDate[isoKey] || 0);
+        }
+
+        if (currDate <= today) {
+            actualData.push(Math.max(0, Math.round(currentActualBal)));
+        } else {
+            actualData.push(null); // Future cycle days remain unplotted
+        }
+    }
+
+    // Update Cycle Header Label
+    const labelEl = document.getElementById('burndown-cycle-label');
+    if (labelEl) {
+        labelEl.textContent = `${totalCycleDays}-Day Cycle (${labels[0]} - ${labels[labels.length - 1]})`;
+    }
+
+    // 3. Render Chart.js Burndown Line Graph
+    this.charts.burndown = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Ideal Pace',
+                    data: idealData,
+                    borderColor: '#94a3b8',
+                    borderDash: [6, 6],
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: false,
+                    tension: 0
+                },
+                {
+                    label: 'Actual Balance',
+                    data: actualData,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#10b981',
+                    fill: true,
+                    spanGaps: false,
+                    tension: 0.2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `${ctx.dataset.label}: ₱${ctx.parsed.y}`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        font: { family: 'Nunito', size: 10 },
+                        callback: (v) => '₱' + v
                     },
-                    y: {
-                beginAtZero: true,
-                grid: { color: 'rgba(226, 232, 240, 0.5)' },
-                ticks: {
-                    maxTicksLimit: 11,
-                    font: { size: 10, family: 'Nunito' },
-                    callback: (val) => `₱${val.toLocaleString()}`
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                x: {
+                    ticks: {
+                        font: { family: 'Nunito', size: 10 },
+                        maxRotation: 0,
+                        autoSkip: true,
+                        maxTicksLimit: 7
+                    },
+                    grid: { display: false }
                 }
             }
-                }
-            }
-        });
-    },
+        }
+    });
+},  
 
             init() {
                 this.loadState();
@@ -2531,8 +2550,8 @@
                     mascotBubble.innerHTML = "You're on track!<br>Keep it up!";
                     if (mascotIcon) mascotIcon.textContent = "🤖";
                 } else {
-                    mascotBubble.innerHTML = "Oops, we went a bit over today. Let's adjust tomorrow's limit!";
-                    if (mascotIcon) mascotIcon.textContent = "🚨";
+                    mascotBubble.innerHTML = "Oops, we went a bit over today. Let's adjust tomorrow!";
+        if (mascotIcon) mascotIcon.textContent = "🚨";
                 }
             },
 
@@ -3649,23 +3668,32 @@ getAllowanceTargetDate() {
             },
 
             confirmEditAllowance() {
-                const amt = parseFloat(document.getElementById('edit-allowance-amount').value);
-                const dateVal = document.getElementById('edit-allowance-date').value;
+    const amt = parseFloat(document.getElementById('edit-allowance-amount').value);
+    const dateVal = document.getElementById('edit-allowance-date').value;
 
-                if (isNaN(amt)) {
-                    alert("Please enter a valid balance amount.");
-                    return;
-                }
+    // 1. Validate inputs first
+    if (isNaN(amt) || amt < 0) {
+        alert("Please enter a valid allowance amount.");
+        return;
+    }
 
-                this.state.balance = amt;
-                if (dateVal) this.state.targetAllowanceDate = dateVal;
+    const todayStr = new Date().toISOString().split('T')[0];
 
-                this.saveState();
-                this.recalculateDailyLimit();
-                this.closeModal('modal-edit-allowance');
-                this.updateHomeUI();
-                this.showToast("Allowance & cycle updated!");
-            },
+    // 2. Update cycle state with matching variable names
+    this.state.balance = amt;
+    this.state.initialAllowance = amt;
+    this.state.allowanceStartDate = todayStr;
+    if (dateVal) {
+        this.state.targetAllowanceDate = dateVal;
+    }
+
+    // 3. Recalculate and refresh UI
+    this.recalculateDailyLimit();
+    this.saveState();
+    this.updateHomeUI();
+    this.closeModal('modal-edit-allowance');
+    this.showToast("Allowance & cycle updated!");
+},
 
             toggleNotifications() {
                 this.state.notificationsEnabled = !this.state.notificationsEnabled;
@@ -3692,11 +3720,11 @@ getAllowanceTargetDate() {
 
  renderInsightsCharts() {
         // Destroy old charts to prevent duplicate canvas overlay
-        if (this.charts.burn) this.charts.burn.destroy();
+        if (this.charts.burndown) this.charts.burndown.destroy();
         if (this.charts.donut) this.charts.donut.destroy();
         if (this.charts.bar) this.charts.bar.destroy();
 
-        this.renderBurnRateChart();
+        this.renderBurndownChart();
 
         const isDark = this.state.darkMode;
         const textColor = isDark ? '#f8fafc' : '#1e293b';
@@ -3793,6 +3821,7 @@ getAllowanceTargetDate() {
                     });
                 }
             }
+            
         };
 
         // Initialize App on DOM Loaded
