@@ -1821,9 +1821,9 @@
                     <h3 id="cal-month-year-title">October 2026</h3>
                     <button class="calendar-nav-btn" onclick="app.nextCalMonth()"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
-                <div class="calendar-days-header">
-                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-                </div>
+               <div class="calendar-days-header">
+    <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+</div>
                 <div class="calendar-grid" id="calendar-grid"></div>
                 <div id="cal-filter-status" class="text-xs text-gray mt-2 flex justify-between items-center" style="display:none; font-weight:700;">
                     <span id="cal-filter-text">Filtered by date</span>
@@ -2235,50 +2235,76 @@
             charts: {},
 
 checkWeeklyReset() {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0); // Start of today
+
+    // Get the day of the week (0 = Sunday, 1 = Monday, etc.)
+    const dayOfWeek = now.getDay(); 
+    
+    // Calculate the date of the most recent Monday
+    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const lastMonday = new Date(now);
+    lastMonday.setDate(now.getDate() - diffToMonday);
+
+    // Format Monday as YYYY-MM-DD 
+    const y = lastMonday.getFullYear();
+    const m = String(lastMonday.getMonth() + 1).padStart(2, '0');
+    const d = String(lastMonday.getDate()).padStart(2, '0');
+    const mondayStr = `${y}-${m}-${d}`;
+
+    // Initialize if it's the user's first time tracking
+    if (!this.state.lastResetTimestamp) {
+        this.state.lastResetTimestamp = lastMonday.getTime();
+        this.state.allowanceStartDate = mondayStr; // Lock start date to Monday
+        
+        // Auto-set target to Sunday (Monday + 6 days)
+        const nextSun = new Date(lastMonday);
+        nextSun.setDate(nextSun.getDate() + 6);
+        this.state.targetAllowanceDate = `${nextSun.getFullYear()}-${String(nextSun.getMonth() + 1).padStart(2, '0')}-${String(nextSun.getDate()).padStart(2, '0')}`;
+        
+        if (typeof this.saveState === 'function') this.saveState();
+        return;
+    }
+
+    // If the stored reset date is older than the most recent Monday, trigger a reset
+    if (this.state.lastResetTimestamp < lastMonday.getTime()) {
+        this.resetWeeklyData(mondayStr);
+        this.state.lastResetTimestamp = lastMonday.getTime();
+    }
+},
+
+resetWeeklyData(mondayStr) {
+    // 1. Restore balance back to the initial weekly allowance
+    this.state.balance = this.state.initialAllowance || 0;
+    
+    // 2. Clear recent expenses for the new week
+    this.state.recentExpenses = [];
+    
+    // 3. Reset allowance start date strictly to Monday
+    if (mondayStr) {
+        this.state.allowanceStartDate = mondayStr;
+    } else {
         const now = new Date();
-        now.setHours(0, 0, 0, 0); // Start of today
+        const diff = now.getDay() === 0 ? 6 : now.getDay() - 1;
+        const mon = new Date(now.setDate(now.getDate() - diff));
+        this.state.allowanceStartDate = `${mon.getFullYear()}-${String(mon.getMonth() + 1).padStart(2, '0')}-${String(mon.getDate()).padStart(2, '0')}`;
+    }
 
-        // Get the day of the week (0 = Sunday, 1 = Monday, etc.)
-        const dayOfWeek = now.getDay(); 
-        
-        // Calculate the date of the most recent Monday (Start of the Mon-Sun cycle)
-        const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        const lastMonday = new Date(now);
-        lastMonday.setDate(now.getDate() - diffToMonday);
+    // Lock cycle end date to Sunday (7-day cycle)
+    const start = new Date(this.state.allowanceStartDate);
+    start.setDate(start.getDate() + 6);
+    this.state.targetAllowanceDate = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
 
-        // Initialize if it's the user's first time tracking
-        if (!this.state.lastResetTimestamp) {
-            this.state.lastResetTimestamp = lastMonday.getTime();
-            return;
-        }
+    // 4. Save to storage & refresh UI / Charts
+    if (typeof this.saveState === 'function') this.saveState();
+    if (typeof this.recalculateDailyLimit === 'function') this.recalculateDailyLimit();
+    if (typeof this.updateHomeUI === 'function') this.updateHomeUI();
+    if (typeof this.renderBurndownChart === 'function') {
+        this.renderBurndownChart();
+    }
 
-        // If the stored reset date is older than the most recent Monday, trigger a reset
-        if (this.state.lastResetTimestamp < lastMonday.getTime()) {
-            this.resetWeeklyData();
-            this.state.lastResetTimestamp = lastMonday.getTime();
-        }
-    },
-
-    resetWeeklyData() {
-        // 1. Restore balance back to the initial weekly allowance
-        this.state.balance = this.state.initialAllowance || 0;
-        
-        // 2. Clear recent expenses for the new week
-        this.state.recentExpenses = [];
-        
-        // 3. Reset allowance start date to today
-        this.state.allowanceStartDate = new Date().toISOString().split('T')[0];
-
-        // 4. Save to storage & refresh UI / Charts
-        this.saveState();
-        this.recalculateDailyLimit();
-        this.updateHomeUI();
-        if (typeof this.renderDailyVsSpentChart === 'function') {
-            this.renderDailyVsSpentChart();
-        }
-
-        this.showToast("New week! Your budget has been reset.");
-    },
+    this.showToast("New week! Your budget has been reset.");
+},
 
 setBurnRateView(view) {
                 // Safely removed
@@ -2862,27 +2888,23 @@ setBurnRateView(view) {
             },
 
             recalculateDailyLimit() {
-                // Smart Balance Reservation: Deduct pending expenses
-                let reservedAmount = 0;
-                if (this.state.upcomingExpenses) {
-                    this.state.upcomingExpenses.forEach(exp => {
-                        if (exp.status === 'pending') {
-                            reservedAmount += exp.amount;
-                        }
-                    });
-                }
+    // Prevent division by zero if target date is missing or today
+    const daysLeft = getDaysLeft(this.state.targetAllowanceDate) || 1; 
+    this.state.remainingDays = daysLeft;
+    
+    // Calculate and assign the safe daily limit
+    this.state.dailyLimit = Math.max(0, this.state.balance / daysLeft);
 
-                const effectiveBalance = Math.max(0, this.state.balance - reservedAmount);
-
-                if (this.state.targetAllowanceDate) {
-                    this.state.remainingDays = getDaysLeft(this.state.targetAllowanceDate);
-                }
-                if (this.state.remainingDays > 0) {
-                    this.state.dailyLimit = Math.max(0, Math.round(effectiveBalance / this.state.remainingDays));
-                } else {
-                    this.state.dailyLimit = effectiveBalance;
-                }
-            },
+    // Update the dashboard UI
+    const limitEl = document.getElementById('home-daily-limit');
+    if (limitEl) limitEl.textContent = this.formatPeso(this.state.dailyLimit);
+    
+    // Update the chart header label
+    const chartLabel = document.getElementById('daily-limit-chart-label');
+    if (chartLabel) chartLabel.textContent = `Limit: ${this.formatPeso(this.state.dailyLimit)}/day`;
+    
+    if (typeof this.updateMascot === 'function') this.updateMascot();
+},
 
             getAllowanceTargetDate() {
                 if (this.state.targetAllowanceDate) {
@@ -2897,19 +2919,88 @@ setBurnRateView(view) {
                 }
                 return "Not set";
             },
-getAllowanceTargetDate() {
-            if (this.state.targetAllowanceDate) {
-                const rawDate = new Date(this.state.targetAllowanceDate);
-                if (!isNaN(rawDate.getTime())) {
-                    return rawDate.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                    });
+getDailyExpensesData(labels) {
+        // 1. Single pass: Aggregate amounts by exact ISO date string to prevent loop duplication
+        const expensesByDate = {};
+        (this.state.recentExpenses || []).forEach(exp => {
+            if (exp.rawDate) {
+                const dateKey = exp.rawDate.split('T')[0];
+                expensesByDate[dateKey] = (expensesByDate[dateKey] || 0) + exp.amount;
+            }
+        });
+
+        // 2. Map mapped sums to the exact dates requested by the chart
+        return labels.map(labelDateStr => {
+            const d = new Date(labelDateStr + ' ' + new Date().getFullYear());
+            const dateKey = d.toISOString().split('T')[0];
+            return expensesByDate[dateKey] || 0;
+        });
+    },
+
+    renderDailyBarChart() {
+        const canvas = document.getElementById('dailyBarChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        if (this.charts.dailyBar) {
+            this.charts.dailyBar.destroy();
+        }
+
+        // 1. Generate labels for the trailing 7 days
+        const labels = [];
+        const today = new Date();
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(d.getDate() - i);
+            labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        }
+
+        // 2. Safely grab aggregated data without spikes
+        const dailySpent = this.getDailyExpensesData(labels); 
+        const spentData = [];
+        const backgroundColors = [];
+
+        // 3. Assign colors matching the HTML legend (Teal = Under, Red = Over)
+        dailySpent.forEach(amount => {
+            spentData.push(amount);
+            if (amount > this.state.dailyLimit) {
+                backgroundColors.push('#ef4444'); // Danger Red for overspent
+            } else {
+                backgroundColors.push('#10b981'); // Primary Green for under budget
+            }
+        });
+
+        // 4. Render Chart
+        this.charts.dailyBar = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Spent',
+                    data: spentData,
+                    backgroundColor: backgroundColors,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { callback: v => '₱' + v, font: { family: 'Nunito', size: 10 } }
+                    },
+                    x: {
+                        ticks: { font: { family: 'Nunito', size: 10 } },
+                        grid: { display: false }
+                    }
                 }
             }
-            return "Not set";
-        },
+        });
+    },
 
             checkDueExpenses() {
                 const today = new Date().toISOString().split('T')[0];
@@ -3225,7 +3316,8 @@ getAllowanceTargetDate() {
 
                 grid.innerHTML = '';
 
-                const firstDayIndex = new Date(year, month, 1).getDay();
+                const firstDay = new Date(year, month, 1).getDay();
+const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
                 const totalDays = new Date(year, month + 1, 0).getDate();
                 const todayStr = new Date().toISOString().split('T')[0];
 
@@ -3857,29 +3949,49 @@ getAllowanceTargetDate() {
                 }
 
                 // 3. Daily Limit Bar Chart
-                const dailyCtx = document.getElementById('dailyBarChart')?.getContext('2d');
-                if (dailyCtx) {
-                    const todayLimit = this.state.dailyLimit;
-                    const todaySpent = this.getTodayTotal();
+const dailyCtx = document.getElementById('dailyBarChart')?.getContext('2d');
+if (dailyCtx) {
+    const todayLimit = this.state.dailyLimit;
 
-                    this.charts.bar = new Chart(dailyCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Today'],
-                            datasets: [
-                                {
-                                    label: 'Daily Limit',
-                                    data: [todayLimit, todayLimit, todayLimit, todayLimit, todayLimit],
-                                    backgroundColor: 'rgba(16, 185, 129, 0.3)'
-                                },
-                                {
-                                    label: 'Spent',
-                                    data: [todayLimit * 0.8, todayLimit * 0.9, todayLimit * 0.5, todayLimit * 1.1, todaySpent],
-                                    backgroundColor: '#8b5cf6'
-                                }
-                            ]
-                        },
-                        options: {
+    // Helper to calculate actual spent total for each day from Mon to Sun of current week
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    
+    const mondayDate = new Date(now);
+    mondayDate.setDate(now.getDate() - diffToMonday);
+    mondayDate.setHours(0, 0, 0, 0);
+
+    const weekSpent = [0, 0, 0, 0, 0, 0, 0]; // Mon, Tue, Wed, Thu, Fri, Sat, Sun
+
+    this.state.recentExpenses.forEach(exp => {
+        const expDate = new Date(exp.date);
+        expDate.setHours(0, 0, 0, 0);
+        
+        const diffDays = Math.floor((expDate - mondayDate) / (1000 * 60 * 60 * 24));
+        if (diffDays >= 0 && diffDays < 7) {
+            weekSpent[diffDays] += Number(exp.amount || 0);
+        }
+    });
+
+    this.charts.bar = new Chart(dailyCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [
+                {
+                    label: 'Daily Limit',
+                    data: Array(7).fill(todayLimit),
+                    backgroundColor: 'rgba(16, 185, 129, 0.3)'
+                },
+                {
+                    label: 'Spent',
+                    data: weekSpent,
+                    backgroundColor: '#8b5cf6'
+                }
+            ]
+        },
+        options: {
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: { legend: { display: false } },
@@ -3890,9 +4002,9 @@ getAllowanceTargetDate() {
                         }
                     });
                 }
-            }
-            
-        };
+            } // <--- Closes renderInsightsCharts() method
+
+        }; // Closes app object
 
         // Initialize App on DOM Loaded
         document.addEventListener('DOMContentLoaded', () => {
