@@ -2406,55 +2406,78 @@ setBurnRateView(view) {
     const gridColor = this.state.darkMode ? '#334155' : '#e2e8f0';
 
     this.charts.burndown = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Ideal Pace',
-                    data: idealData,
-                    borderColor: '#94a3b8',
-                    borderDash: [5, 5],
-                    borderWidth: 2,
-                    fill: false,
-                    pointRadius: 0
-                },
-                {
-                    label: 'Actual Balance',
-                    data: actualData,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.2,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#10b981'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Ideal Pace',
+                data: idealData,
+                borderColor: '#94a3b8',
+                borderDash: [5, 5],
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 2,           // Optional: makes hover targets easier to hit
+                pointHoverRadius: 5
             },
-            scales: {
-                x: {
-                    grid: { display: false },
-                    ticks: { color: textColor }
-                },
-                y: {
-                    grid: { color: gridColor },
-                    ticks: { color: textColor }
+            {
+                label: 'Actual Balance',
+                data: actualData,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                pointRadius: 3,
+                pointHoverRadius: 6
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',       // Shows values for both Ideal Pace & Actual Balance simultaneously
+            intersect: false     // Triggers hover anywhere along the vertical alignment of the broken line
+        },
+        plugins: {
+            tooltip: {
+                enabled: true,
+                mode: 'index',
+                intersect: false,
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed.y !== null) {
+                            label += '₱' + context.parsed.y.toLocaleString();
+                        }
+                        return label;
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: { color: textColor }
+            },
+            y: {
+                grid: { color: gridColor },
+                ticks: {
+                    color: textColor,
+                    callback: value => '₱' + value
                 }
             }
         }
-    });
-},
+    }
+});
+}, // <-- Add this brace to close the enclosing function/method
 
-            init() {
-                this.loadState();
-                this.checkWeeklyReset();
+init() {
+    this.loadState();
+    this.checkWeeklyReset();
                 const appEl = document.getElementById('app');
                 const darkToggle = document.getElementById('dark-mode-toggle');
                 if (this.state.darkMode) {
