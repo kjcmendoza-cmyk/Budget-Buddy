@@ -1897,11 +1897,6 @@
     <div class="chart-container" style="height: 200px;">
         <canvas id="burndownChart"></canvas>
     </div>
-...
-    <div class="flex justify-between items-center mt-2 text-xs text-gray" style="font-weight:700; padding: 0 5px;">
-        <span style="color: #94a3b8;"><i class="fa-solid fa-minus"></i> Ideal Pace</span>
-        <span style="color: var(--primary-green);"><i class="fa-solid fa-square"></i> Actual Balance</span>
-    </div>
 </div>
 
             <!-- 2. Category Spending Breakdown (Donut Chart) -->
@@ -1935,10 +1930,6 @@
                 </div>
                 <div class="chart-container" style="height: 180px;">
                     <canvas id="dailyBarChart"></canvas>
-                </div>
-                <div class="flex justify-between items-center mt-2 text-xs text-gray" style="font-weight:700; padding: 0 5px;">
-                    <span style="color: var(--primary-green);"><i class="fa-solid fa-square"></i> Under Budget</span>
-                    <span style="color: var(--danger-red);"><i class="fa-solid fa-square"></i> Overspent</span>
                 </div>
             </div>
 
@@ -2437,10 +2428,14 @@ setBurnRateView(view) {
         responsive: true,
         maintainAspectRatio: false,
         interaction: {
-            mode: 'index',       // Shows values for both Ideal Pace & Actual Balance simultaneously
-            intersect: false     // Triggers hover anywhere along the vertical alignment of the broken line
+            mode: 'index',       
+            intersect: false     
         },
         plugins: {
+            // Add the legend configuration here to right-align
+            legend: {
+                align: 'end'
+            },
             tooltip: {
                 enabled: true,
                 mode: 'index',
