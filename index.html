@@ -2197,6 +2197,7 @@
 
         const app = {
             state: {
+                lastResetTimestamp: null,
                 burnRateView: '31days',
                 isLoggedIn: false,
                 userName: '',
@@ -2233,6 +2234,52 @@
 
             charts: {},
 
+checkWeeklyReset() {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0); // Start of today
+
+        // Get the day of the week (0 = Sunday, 1 = Monday, etc.)
+        const dayOfWeek = now.getDay(); 
+        
+        // Calculate the date of the most recent Monday (Start of the Mon-Sun cycle)
+        const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        const lastMonday = new Date(now);
+        lastMonday.setDate(now.getDate() - diffToMonday);
+
+        // Initialize if it's the user's first time tracking
+        if (!this.state.lastResetTimestamp) {
+            this.state.lastResetTimestamp = lastMonday.getTime();
+            return;
+        }
+
+        // If the stored reset date is older than the most recent Monday, trigger a reset
+        if (this.state.lastResetTimestamp < lastMonday.getTime()) {
+            this.resetWeeklyData();
+            this.state.lastResetTimestamp = lastMonday.getTime();
+        }
+    },
+
+    resetWeeklyData() {
+        // 1. Restore balance back to the initial weekly allowance
+        this.state.balance = this.state.initialAllowance || 0;
+        
+        // 2. Clear recent expenses for the new week
+        this.state.recentExpenses = [];
+        
+        // 3. Reset allowance start date to today
+        this.state.allowanceStartDate = new Date().toISOString().split('T')[0];
+
+        // 4. Save to storage & refresh UI / Charts
+        this.saveState();
+        this.recalculateDailyLimit();
+        this.updateHomeUI();
+        if (typeof this.renderDailyVsSpentChart === 'function') {
+            this.renderDailyVsSpentChart();
+        }
+
+        this.showToast("New week! Your budget has been reset.");
+    },
+
 setBurnRateView(view) {
                 // Safely removed
             },
@@ -2253,7 +2300,6 @@ setBurnRateView(view) {
     const startDate = new Date(startDateStr);
     let endDate = endDateStr ? new Date(endDateStr) : new Date(startDate);
     
-    // Fallback: If no target date set or invalid, default cycle length to 14 days
     if (!endDateStr || endDate <= startDate) {
         endDate = new Date(startDate);
         endDate.setDate(endDate.getDate() + 14);
@@ -2263,7 +2309,7 @@ setBurnRateView(view) {
     const today = new Date();
     today.setHours(0,0,0,0);
 
-    // 2. Build Labels & Ideal/Actual Data Points across Cycle
+    // 2. Build Labels & Data Points
     const labels = [];
     const idealData = [];
     const actualData = [];
@@ -2271,7 +2317,6 @@ setBurnRateView(view) {
     const initialAllowance = this.state.initialAllowance || this.state.balance || 0;
     let currentActualBal = initialAllowance;
 
-    // Group expenses by date string (YYYY-MM-DD)
     const expensesByDate = {};
     (this.state.recentExpenses || []).forEach(exp => {
         if (exp.rawDate) {
@@ -2288,11 +2333,9 @@ setBurnRateView(view) {
         const dateStr = currDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         labels.push(dateStr);
 
-        // Ideal linear depletion: Initial down to 0 on last day
         const idealVal = Math.max(0, initialAllowance - (i * (initialAllowance / totalCycleDays)));
         idealData.push(Math.round(idealVal));
 
-        // Actual balance tracking up to current date
         const isoKey = currDate.toISOString().split('T')[0];
         if (i === 0) {
             currentActualBal = initialAllowance - (expensesByDate[isoKey] || 0);
@@ -2303,17 +2346,16 @@ setBurnRateView(view) {
         if (currDate <= today) {
             actualData.push(Math.max(0, Math.round(currentActualBal)));
         } else {
-            actualData.push(null); // Future cycle days remain unplotted
+            actualData.push(null);
         }
     }
 
-    // Update Cycle Header Label
     const labelEl = document.getElementById('burndown-cycle-label');
     if (labelEl) {
         labelEl.textContent = `${totalCycleDays}-Day Cycle (${labels[0]} - ${labels[labels.length - 1]})`;
     }
 
-    // 3. Render Chart.js Burndown Line Graph
+    // 3. Render Chart.js Burndown Line Graph with Interactive Scrubbing
     this.charts.burndown = new Chart(ctx, {
         type: 'line',
         data: {
@@ -2326,6 +2368,7 @@ setBurnRateView(view) {
                     borderDash: [6, 6],
                     borderWidth: 2,
                     pointRadius: 0,
+                    pointHoverRadius: 4,
                     fill: false,
                     tension: 0
                 },
@@ -2336,6 +2379,7 @@ setBurnRateView(view) {
                     backgroundColor: 'rgba(16, 185, 129, 0.1)',
                     borderWidth: 3,
                     pointRadius: 3,
+                    pointHoverRadius: 6,
                     pointBackgroundColor: '#10b981',
                     fill: true,
                     spanGaps: false,
@@ -2346,11 +2390,37 @@ setBurnRateView(view) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            // Enables tapping/dragging anywhere along the vertical slice
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            hover: {
+                mode: 'index',
+                intersect: false
+            },
             plugins: {
                 legend: { display: false },
                 tooltip: {
+                    enabled: true,
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: '#1e293b',
+                    titleFont: { family: 'Nunito', size: 12, weight: 'bold' },
+                    bodyFont: { family: 'Nunito', size: 12 },
+                    padding: 10,
+                    cornerRadius: 8,
+                    displayColors: true,
                     callbacks: {
-                        label: (ctx) => `${ctx.dataset.label}: ₱${ctx.parsed.y}`
+                        title: (tooltipItems) => {
+                            return `Date: ${tooltipItems[0].label}`;
+                        },
+                        label: (ctx) => {
+                            if (ctx.parsed.y !== null && ctx.parsed.y !== undefined) {
+                                return `${ctx.dataset.label}: ₱${Number(ctx.parsed.y).toLocaleString('en-PH')}`;
+                            }
+                            return null;
+                        }
                     }
                 }
             },
@@ -2375,11 +2445,11 @@ setBurnRateView(view) {
             }
         }
     });
-},  
+},
 
             init() {
                 this.loadState();
-                
+                this.checkWeeklyReset();
                 const appEl = document.getElementById('app');
                 const darkToggle = document.getElementById('dark-mode-toggle');
                 if (this.state.darkMode) {
