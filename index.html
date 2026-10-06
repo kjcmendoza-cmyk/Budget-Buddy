@@ -1899,6 +1899,20 @@
     </div>
 </div>
 
+<!-- Daily Limit vs Spent Chart Card -->
+<div class="card mb-4">
+    <div class="chart-card-header">
+        <div class="chart-card-title">
+            <i class="fa-solid fa-chart-bar text-green" style="color: var(--primary-green);"></i>
+            <span>Daily Limit vs. Spent</span>
+        </div>
+        <span class="text-xs text-gray" style="font-weight: 700;">Mon - Sun</span>
+    </div>
+    <div class="chart-container" style="height: 200px;">
+        <canvas id="dailyVsSpentChart"></canvas>
+    </div>
+</div>
+
             <!-- 2. Category Spending Breakdown (Donut Chart) -->
             <div class="card mb-4">
                 <div class="chart-card-header">
@@ -1917,19 +1931,6 @@
                 <div class="category-detail-box" id="cat-insight-detail">
                     <span>Awaiting data:</span>
                     <span style="color: var(--danger-red);">No categories yet</span>
-                </div>
-            </div>
-
-            <!-- 3. Safe-To-Spend vs. Actual Daily Comparison (Bar Chart) -->
-            <div class="card mb-4">
-                <div class="chart-card-header">
-                    <div class="chart-card-title">
-                        <i class="fa-solid fa-chart-column text-purple"></i> Daily Limit vs. Spent
-                    </div>
-                    <span class="text-xs text-gray" id="daily-limit-chart-label" style="font-weight: 700;">Limit: ₱0/day</span>
-                </div>
-                <div class="chart-container" style="height: 180px;">
-                    <canvas id="dailyBarChart"></canvas>
                 </div>
             </div>
 
@@ -2899,91 +2900,10 @@ init() {
     
     // Update the chart header label
     const chartLabel = document.getElementById('daily-limit-chart-label');
-   if (chartLabel) chartLabel.textContent = `Limit: ${this.formatPeso(this.state.dailyLimit)}/day`;
-
-this.renderDailyBarChart();
-
-if (typeof this.updateMascot === 'function') this.updateMascot();
+    if (chartLabel) chartLabel.textContent = `Limit: ${this.formatPeso(this.state.dailyLimit)}/day`;
+    
+    if (typeof this.updateMascot === 'function') this.updateMascot();
 },
-
-renderDailyBarChart() {
-        const canvas = document.getElementById('dailyBarChart');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-
-        if (this.charts && this.charts.dailyBar) {
-            this.charts.dailyBar.destroy();
-        }
-
-        const dailyLimit = this.state.dailyLimit || 500;
-        const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']; 
-        const actualSpend = [300, 550, 400, 200, 480, 800, 150]; // Map to your actual spending array
-
-        const barColors = actualSpend.map(amount => 
-            amount > dailyLimit ? '#ef4444' : '#10b981'
-        );
-
-        const textColor = this.state.darkMode ? '#f8fafc' : '#1e293b';
-        const gridColor = this.state.darkMode ? '#334155' : '#e2e8f0';
-
-        if (!this.charts) this.charts = {};
-
-        this.charts.dailyBar = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        type: 'line',
-                        label: 'Daily Limit',
-                        data: Array(7).fill(dailyLimit),
-                        borderColor: '#8b5cf6',
-                        borderWidth: 2,
-                        borderDash: [5, 5],
-                        pointRadius: 0,
-                        fill: false,
-                        order: 1
-                    },
-                    {
-                        type: 'bar',
-                        label: 'Actual Spent',
-                        data: actualSpend,
-                        backgroundColor: barColors,
-                        borderRadius: 6,
-                        barPercentage: 0.6,
-                        order: 2
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: (context) => this.formatPeso ? this.formatPeso(context.parsed.y) : '₱' + context.parsed.y
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: textColor, font: { family: 'Nunito', weight: 'bold' } }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: gridColor, borderDash: [3, 3] },
-                        ticks: {
-                            color: textColor,
-                            font: { family: 'Nunito' },
-                            callback: (value) => this.formatPeso ? this.formatPeso(value) : '₱' + value
-                        }
-                    }
-                }
-            }
-        });
-    },
 
             getAllowanceTargetDate() {
                 if (this.state.targetAllowanceDate) {
@@ -3016,72 +2936,109 @@ getDailyExpensesData(labels) {
         });
     },
 
-    renderDailyBarChart() {
-    const canvas = document.getElementById('dailyBarChart');
+    renderDailyVsSpentChart() {
+    const canvas = document.getElementById('dailyVsSpentChart');
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
 
-    // Destroy existing instance to prevent overlapping charts on re-renders
-    if (this.charts.dailyBar) {
-        this.charts.dailyBar.destroy();
+    const ctx = canvas.getContext('2d');
+    if (this.charts && this.charts.dailyVsSpent) {
+        this.charts.dailyVsSpent.destroy();
     }
 
-    // --- 1. Data Setup ---
-    const dailyLimit = this.state.dailyLimit || 500; // Pull from your state
-    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']; 
-    const actualSpend = [300, 550, 400, 200, 480, 800, 150]; // Replace with dynamic data mapped from this.state.recentExpenses
+    const formatLocalDateKey = (d) => {
+        if (!d) return '';
+        const dateObj = new Date(d);
+        if (isNaN(dateObj.getTime())) return '';
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    };
 
-    // --- 2. Color-Coding Logic ---
-    // Instant at-a-glance scanning: Green if under limit, Red if over limit
-    const barColors = actualSpend.map(amount => 
-        amount > dailyLimit ? '#ef4444' : '#10b981' // Maps to var(--danger-red) and var(--primary-green)
-    );
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const dayOfWeek = now.getDay(); 
+    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - diffToMonday);
 
-    // --- 3. Theme Colors ---
+    const expensesByDate = {};
+    const currentYear = now.getFullYear();
+
+    (this.state.recentExpenses || []).forEach(exp => {
+        let dKey = exp.rawDate;
+        if (!dKey && exp.date) {
+            dKey = formatLocalDateKey(`${exp.date}, ${currentYear}`);
+        }
+        if (dKey) {
+            expensesByDate[dKey] = (expensesByDate[dKey] || 0) + exp.amount;
+        }
+    });
+
+    const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const spentData = [];
+    const limitData = [];
+    const dailyLimitVal = this.state.dailyLimit || 0;
+
+    for (let i = 0; i < 7; i++) {
+        const currDate = new Date(monday);
+        currDate.setDate(monday.getDate() + i);
+        const dateKey = `${currDate.getFullYear()}-${String(currDate.getMonth() + 1).padStart(2, '0')}-${String(currDate.getDate()).padStart(2, '0')}`;
+
+        spentData.push(expensesByDate[dateKey] || 0);
+        limitData.push(dailyLimitVal);
+    }
+
     const textColor = this.state.darkMode ? '#f8fafc' : '#1e293b';
     const gridColor = this.state.darkMode ? '#334155' : '#e2e8f0';
 
-    // --- 4. Chart Configuration ---
-    this.charts.dailyBar = new Chart(ctx, {
-        type: 'bar', // Base chart type
+    this.charts.dailyVsSpent = new Chart(ctx, {
+        type: 'bar', // Set root type to bar
         data: {
-            labels: labels,
+            labels: daysOfWeek,
             datasets: [
                 {
-                    // The Benchmark Threshold Line
                     type: 'line',
                     label: 'Daily Limit',
-                    data: Array(7).fill(dailyLimit), // Flat line across all days
-                    borderColor: '#8b5cf6', // var(--secondary-purple)
+                    data: limitData,
+                    borderColor: '#f97316',
                     borderWidth: 2,
-                    borderDash: [5, 5], // Creates the dashed visual
-                    pointRadius: 0, // Removes dots on the line for a clean look
-                    fill: false,
-                    order: 1 // Renders on top of bars
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false
                 },
                 {
-                    // The Single Daily Spend Bars
                     type: 'bar',
-                    label: 'Actual Spent',
-                    data: actualSpend,
-                    backgroundColor: barColors,
-                    borderRadius: 6, // Rounded tops
-                    barPercentage: 0.6, // Wider, finger-friendly touch targets
-                    order: 2
+                    label: 'Spent',
+                    data: spentData,
+                    backgroundColor: '#10b981',
+                    borderRadius: 6,
+                    borderWidth: 0,
+                    barThickness: 18
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
             plugins: {
                 legend: {
-                    display: false // Reduces visual clutter as per your specs
+                    align: 'end',
+                    labels: { color: textColor }
                 },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return '₱' + context.parsed.y.toLocaleString();
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.parsed.y !== null) {
+                                label += '₱' + context.parsed.y.toLocaleString();
+                            }
+                            return label;
                         }
                     }
                 }
@@ -3089,14 +3046,13 @@ getDailyExpensesData(labels) {
             scales: {
                 x: {
                     grid: { display: false },
-                    ticks: { color: textColor, font: { family: 'Nunito', weight: 'bold' } }
+                    ticks: { color: textColor }
                 },
                 y: {
                     beginAtZero: true,
-                    grid: { color: gridColor, borderDash: [3, 3] },
+                    grid: { color: gridColor },
                     ticks: {
                         color: textColor,
-                        font: { family: 'Nunito' },
                         callback: value => '₱' + value
                     }
                 }
@@ -3542,37 +3498,32 @@ const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
             },
 
             updateHomeUI() {
-                const nameHeader = document.getElementById('home-greeting');
-                if (nameHeader) nameHeader.textContent = `Good morning, ${this.state.userName.split(' ')[0] || 'User'} 👋`;
-                
-                const balEl = document.getElementById('home-balance');
-                if (balEl) balEl.textContent = this.formatPeso(this.state.balance);
+    // 1. Calculate Today's Total Spent
+    const now = new Date();
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    
+    const spentToday = (this.state.recentExpenses || [])
+        .filter(exp => exp.rawDate === todayKey || exp.period === 'Today')
+        .reduce((sum, exp) => sum + exp.amount, 0);
 
-                const targetDateEl = document.getElementById('home-target-date');
-                if (targetDateEl) targetDateEl.textContent = this.getAllowanceTargetDate();
+    // 2. Compute Remaining Safe Limit
+    const dailyLimitVal = this.state.dailyLimit || 0;
+    const remainingSafeToday = Math.max(0, dailyLimitVal - spentToday);
 
-                const daysLeftEl = document.getElementById('home-days-left');
-                if (daysLeftEl) daysLeftEl.textContent = `${this.state.remainingDays} days left`;
+    // 3. Update Elements
+    const balEl = document.getElementById('home-balance');
+    if (balEl) balEl.textContent = this.formatPeso(this.state.balance);
 
-                const dailyLimitEl = document.getElementById('home-daily-limit');
-                if (dailyLimitEl) dailyLimitEl.textContent = this.formatPeso(this.state.dailyLimit);
+    const limitEl = document.getElementById('home-daily-limit');
+    if (limitEl) limitEl.textContent = this.formatPeso(dailyLimitVal);
 
-                let totalReserved = 0;
-                if (this.state.upcomingExpenses) {
-                    this.state.upcomingExpenses.forEach(exp => {
-                        if (exp.status === 'pending') totalReserved += exp.amount;
-                    });
-                }
-                const reservedEl = document.getElementById('home-total-reserved');
-                if (reservedEl) reservedEl.textContent = `Total reserved ${this.formatPeso(totalReserved)}`;
+    const safeRemEl = document.getElementById('home-safe-remaining');
+    if (safeRemEl) {
+        safeRemEl.textContent = `${this.formatPeso(remainingSafeToday)} left today (Spent: ${this.formatPeso(spentToday)})`;
+    }
 
-                this.evaluateStreak();
-                this.generatePeerInsights();
-                this.updateMascot();
-                this.generateTip();
-                
-                this.renderActionableNotifications();
-                this.filterRecentSpending('Today');
+    // Refresh recent spending list
+    this.filterRecentSpending(document.getElementById('recent-filter-select')?.value || 'Today');
 
                 const upcomingList = document.getElementById('home-upcoming-list');
                 if (upcomingList) {
@@ -3609,48 +3560,54 @@ const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
             },
 
             saveExpense() {
-                const amtInput = document.getElementById('expense-amount');
-                const noteInput = document.getElementById('expense-note');
-                const amount = parseFloat(amtInput.value);
+    const amtInput = document.getElementById('expense-amount');
+    const noteInput = document.getElementById('expense-note');
+    const amount = parseFloat(amtInput.value);
 
-                if (isNaN(amount) || amount <= 0) {
-                    this.showToast("Please enter a valid amount.");
-                    return;
-                }
+    if (isNaN(amount) || amount <= 0) {
+        this.showToast("Please enter a valid amount.");
+        return;
+    }
 
-                const catIcons = {
-                    'Food': 'fa-burger',
-                    'Transport': 'fa-car-side',
-                    'Coffee': 'fa-mug-hot',
-                    'School': 'fa-graduation-cap',
-                    'Shopping': 'fa-bag-shopping',
-                    'Entertainment': 'fa-gamepad',
-                    'Other': 'fa-ellipsis'
-                };
+    const catIcons = {
+        'Food': 'fa-burger',
+        'Transport': 'fa-car-side',
+        'Coffee': 'fa-mug-hot',
+        'School': 'fa-graduation-cap',
+        'Shopping': 'fa-bag-shopping',
+        'Entertainment': 'fa-gamepad',
+        'Other': 'fa-ellipsis'
+    };
 
-                const newTx = {
-                    id: Date.now(),
-                    name: noteInput.value.trim() || this.state.selectedCategory,
-                    category: this.state.selectedCategory,
-                    amount: amount,
-                    icon: catIcons[this.state.selectedCategory] || 'fa-receipt',
-                    color: "var(--primary-green)",
-                    period: 'Today',
-                    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                };
+    // Calculate local YYYY-MM-DD date key
+    const now = new Date();
+    const localIsoDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; 
 
-                this.state.recentExpenses.unshift(newTx);
-                this.state.balance = Math.max(0, this.state.balance - amount);
+    const newTx = {
+        id: Date.now(),
+        name: noteInput.value.trim() || this.state.selectedCategory,
+        category: this.state.selectedCategory,
+        amount: amount,
+        icon: catIcons[this.state.selectedCategory] || 'fa-receipt',
+        color: "var(--primary-green)",
+        period: 'Today',
+        rawDate: localIsoDate,
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    };
 
-                this.saveState();
-                this.recalculateDailyLimit();
+    this.state.recentExpenses.unshift(newTx);
+    this.state.balance = Math.max(0, this.state.balance - amount);
 
-                amtInput.value = '';
-                noteInput.value = '';
+    this.saveState();
+    this.recalculateDailyLimit();
+    this.updateHomeUI();
 
-                this.showScreen('home-screen');
-                this.showToast("Expense added!");
-            },
+    amtInput.value = '';
+    noteInput.value = '';
+
+    this.showScreen('home-screen');
+    this.showToast("Expense added!");
+},
 
             filterRecentSpending(filterVal) {
                 const container = document.getElementById('recent-spending-list');
@@ -3989,8 +3946,8 @@ const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
         if (this.charts.donut) this.charts.donut.destroy();
         if (this.charts.bar) this.charts.bar.destroy();
 
-        this.renderBurndownChart();
-
+this.renderBurndownChart();
+this.renderDailyVsSpentChart(); 
         const isDark = this.state.darkMode;
         const textColor = isDark ? '#f8fafc' : '#1e293b';
 
