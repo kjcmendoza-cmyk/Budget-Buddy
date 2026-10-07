@@ -4523,11 +4523,28 @@ filterRecentSpending(filterVal) {
                     msgEl.textContent = `👍 You can afford this! Your daily limit will adjust to ${this.formatPeso(afterLimit)}/day.`;
                 }
             },
+checkAchievements() {
+        // Goal Getter: At least 1 goal created
+        if (this.state.goals && this.state.goals.length > 0) {
+            this.state.badges[0].unlocked = true;
+        }
+        // Streak Master: 5+ day streak
+        if (this.state.streakDays >= 5) {
+            this.state.badges[1].unlocked = true;
+        }
+        // Super Saver: Total saved across goals >= ₱1,000
+        const totalSaved = (this.state.goals || []).reduce((sum, g) => sum + g.current, 0);
+        if (totalSaved >= 1000) {
+            this.state.badges[2].unlocked = true;
+        }
+    },
 
-            updateGoalsUI() {
-                const totalSavedEl = document.getElementById('goals-total-saved');
-                const listEl = document.getElementById('goals-list');
-                const badgesContainer = document.getElementById('badges-container');
+    updateGoalsUI() {
+        this.checkAchievements();
+
+        const totalSavedEl = document.getElementById('goals-total-saved');
+        const listEl = document.getElementById('goals-list');
+        const badgesContainer = document.getElementById('badges-container');
 
                 let totalSaved = 0;
                 if (this.state.goals) {
@@ -4537,18 +4554,18 @@ filterRecentSpending(filterVal) {
 
                 // Render Badges
                 if (badgesContainer) {
-                    badgesContainer.innerHTML = '';
-                    this.state.badges.forEach(b => {
-                        const html = `
-                            <div class="badge-box ${b.unlocked ? 'unlocked' : ''}">
-                                <div class="badge-icon">${b.icon}</div>
-                                <div style="font-size:0.75rem; font-weight:800;">${b.name}</div>
-                                <div style="font-size:0.65rem; color:var(--text-gray);">${b.desc}</div>
-                            </div>
-                        `;
-                        badgesContainer.insertAdjacentHTML('beforeend', html);
-                    });
-                }
+            badgesContainer.innerHTML = '';
+            this.state.badges.forEach(b => {
+                const html = `
+                    <div class="badge-box ${b.unlocked ? 'unlocked' : ''}" style="${!b.unlocked ? 'opacity: 0.45; filter: grayscale(100%);' : ''}">
+                        <div class="badge-icon">${b.unlocked ? b.icon : '🔒'}</div>
+                        <div style="font-size:0.75rem; font-weight:800;">${b.name}</div>
+                        <div style="font-size:0.65rem; color:var(--text-gray);">${b.desc}</div>
+                    </div>
+                `;
+                badgesContainer.insertAdjacentHTML('beforeend', html);
+            });
+        }
 
                 // Render Goals
                 if (listEl) {
