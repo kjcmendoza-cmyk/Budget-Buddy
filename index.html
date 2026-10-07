@@ -2641,10 +2641,19 @@
                 recentExpenses: [],
                 goals: [],
                 upcomingExpenses: [],
+                affordChecksCount: 0,
+                nightlyWrapCount: 0,
+                lastNightlyCheckDate: "",
+                wasOverspentYesterday: false,
                 badges: [
                     { id: 1, name: 'Goal Getter', icon: '🎯', unlocked: false, desc: 'Set first savings goal' },
-                    { id: 2, name: 'Streak Master', icon: '🔥', unlocked: false, desc: '5-Day budget streak' },
-                    { id: 3, name: 'Super Saver', icon: '💰', unlocked: false, desc: 'Save ₱1,000 extra' }
+    { id: 2, name: 'Streak Master', icon: '🔥', unlocked: false, desc: '5-Day budget streak' },
+    { id: 3, name: 'Nightly Wrap', icon: '🌙', unlocked: false, desc: 'Check app after 8 PM (3x)' },
+    { id: 4, name: 'Second Thought', icon: '🛒', unlocked: false, desc: 'Check "Can I Afford It?" 3x' },
+    { id: 5, name: 'Phoenix Spender', icon: '🦅', unlocked: false, desc: 'Bounce back after overspending' },
+    { id: 6, name: 'Super Saver', icon: '💰', unlocked: false, desc: 'Save ₱1,000 extra' },
+    { id: 7, name: 'Future Proof', icon: '📅', unlocked: false, desc: 'Schedule 3 upcoming bills' },
+    { id: 8, name: 'Health Pioneer', icon: '❤️', unlocked: false, desc: 'Reach Health Score of 80+' }
                 ],
                 selectedCategory: 'Food',
                 selectedIcon: 'fa-burger',
@@ -4487,7 +4496,10 @@ filterRecentSpending(filterVal) {
             calculateAffordability() {
                 const priceInput = document.getElementById('afford-price');
                 const price = parseFloat(priceInput?.value) || 0;
-
+                if (price > 0) {
+            this.state.affordChecksCount = (this.state.affordChecksCount || 0) + 1;
+            this.saveState();
+        }
                 const curBalEl = document.getElementById('afford-current-bal');
                 const purAmtEl = document.getElementById('afford-purchase-amt');
                 const newBalEl = document.getElementById('afford-new-bal');
@@ -4524,20 +4536,59 @@ filterRecentSpending(filterVal) {
                 }
             },
 checkAchievements() {
-        // Goal Getter: At least 1 goal created
-        if (this.state.goals && this.state.goals.length > 0) {
-            this.state.badges[0].unlocked = true;
+    if (!this.state.badges) return;
+
+    // Helper function to unlock by badge ID
+    const unlock = (id) => {
+        const badge = this.state.badges.find(b => b.id === id);
+        if (badge && !badge.unlocked) {
+            badge.unlocked = true;
+            this.showToast(`🏆 Badge Unlocked: ${badge.name}!`);
         }
-        // Streak Master: 5+ day streak
-        if (this.state.streakDays >= 5) {
-            this.state.badges[1].unlocked = true;
-        }
-        // Super Saver: Total saved across goals >= ₱1,000
-        const totalSaved = (this.state.goals || []).reduce((sum, g) => sum + g.current, 0);
-        if (totalSaved >= 1000) {
-            this.state.badges[2].unlocked = true;
-        }
-    },
+    };
+
+    // 1. Goal Getter: At least 1 goal created
+    if (this.state.goals && this.state.goals.length > 0) {
+        unlock(1);
+    }
+
+    // 2. Streak Master: 5+ day streak
+    if (this.state.streakDays >= 5) {
+        unlock(2);
+    }
+
+    // 3. Nightly Wrap: Checked app after 8 PM at least 3 times
+    if ((this.state.nightlyWrapCount || 0) >= 3) {
+        unlock(3);
+    }
+
+    // 4. Second Thought: Checked "Can I Afford It?" at least 3 times
+    if ((this.state.affordChecksCount || 0) >= 3) {
+        unlock(4);
+    }
+
+    // 5. Phoenix Spender: Bounced back and stayed under daily limit after overspending
+    if (this.state.wasOverspentYesterday && this.getTodayTotal() <= this.state.dailyLimit && this.getTodayTotal() > 0) {
+        unlock(5);
+    }
+
+    // 6. Super Saver: Total saved across goals >= ₱1,000
+    const totalSaved = (this.state.goals || []).reduce((sum, g) => sum + g.current, 0);
+    if (totalSaved >= 1000) {
+        unlock(6);
+    }
+
+    // 7. Future Proof: Scheduled 3+ upcoming bills
+    if ((this.state.upcomingExpenses || []).length >= 3) {
+        unlock(7);
+    }
+
+    // 8. Health Pioneer: Reached a Financial Health Score of 80+
+    const health = this.calculateFinancialHealthScore();
+    if (health && health.score >= 80) {
+        unlock(8);
+    }
+},
 
     updateGoalsUI() {
         this.checkAchievements();
