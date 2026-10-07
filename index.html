@@ -2060,10 +2060,15 @@
             </div>
 
             <!-- Gamification Badges Grid -->
-            <div class="card mb-4">
-                <h4 style="font-size: 0.9rem; margin-bottom: 8px;">🏆 Unlocked Achievements</h4>
-                <div class="badges-grid" id="badges-container"></div>
-            </div>
+<<div class="card mb-4">
+    <div class="flex justify-between items-center mb-2">
+        <h4 style="font-size: 0.9rem;">🏆 Unlocked Achievements</h4>
+        <button id="toggle-badges-btn" onclick="app.toggleBadgesCollapse()" style="background: none; border: none; color: var(--primary-green); font-family: 'Nunito'; font-weight: 700; font-size: 0.75rem; cursor: pointer;">
+            Show All
+        </button>
+    </div>
+    <div class="badges-grid" id="badges-container"></div>
+</div>
 
             <div class="card mb-4" style="background: var(--primary-green-light); border: 1px solid var(--primary-green);">
                 <div class="text-center">
@@ -2618,8 +2623,9 @@
 
         const app = {
             state: {
-            isRecurring: false,
-    subscriptions: [],
+                badgesCollapsed: true,
+                 isRecurring: false,
+                 subscriptions: [],
                 lastResetTimestamp: null,
                 burnRateView: '31days',
                 isLoggedIn: false,
@@ -3625,17 +3631,23 @@ toggleExpenseRecurringUI() {
                 }
             },
 
-            loadState() {
-                try {
-                    const saved = localStorage.getItem('budget_app_state');
-                    if (saved) {
-                        const parsed = JSON.parse(saved);
-                        this.state = { ...this.state, ...parsed };
-                    }
-                } catch (e) {
-                    console.error("Failed to load local state:", e);
-                }
-            },
+loadState() {
+    try {
+        const saved = localStorage.getItem('budget_app_state');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            
+            // Keep default badges if local storage has an outdated count
+            if (parsed.badges && parsed.badges.length < this.state.badges.length) {
+                delete parsed.badges;
+            }
+            
+            this.state = { ...this.state, ...parsed };
+        }
+    } catch (e) {
+        console.error("Failed to load local state:", e);
+    }
+},
 
             async fetchFirestoreData(uid) {
                 if (!db) return;
@@ -4265,6 +4277,14 @@ const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
             },
 
             updateHomeUI() {
+                const currentHour = new Date().getHours();
+        const todayDateStr = new Date().toISOString().split('T')[0];
+
+        if (currentHour >= 20 && this.state.lastNightlyCheckDate !== todayDateStr) {
+            this.state.nightlyWrapCount = (this.state.nightlyWrapCount || 0) + 1;
+            this.state.lastNightlyCheckDate = todayDateStr;
+            this.saveState();
+        }
     // 1. Calculate Today's Total Spent
     const now = new Date();
     const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -4589,26 +4609,37 @@ checkAchievements() {
         unlock(8);
     }
 },
-
-    updateGoalsUI() {
+toggleBadgesCollapse() {
+        this.state.badgesCollapsed = !this.state.badgesCollapsed;
+        this.saveState();
+        this.updateGoalsUI();
+    },
+updateGoalsUI() {
         this.checkAchievements();
 
         const totalSavedEl = document.getElementById('goals-total-saved');
         const listEl = document.getElementById('goals-list');
         const badgesContainer = document.getElementById('badges-container');
+        const toggleBtn = document.getElementById('toggle-badges-btn'); // 👈 Added line
 
-                let totalSaved = 0;
-                if (this.state.goals) {
-                    this.state.goals.forEach(g => totalSaved += g.current);
-                }
-                if (totalSavedEl) totalSavedEl.textContent = this.formatPeso(totalSaved);
+        let totalSaved = 0;
+        if (this.state.goals) {
+            this.state.goals.forEach(g => totalSaved += g.current);
+        }
+        if (totalSavedEl) totalSavedEl.textContent = this.formatPeso(totalSaved);
 
-                // Render Badges
-                if (badgesContainer) {
+        // Update Toggle Button Text
+        if (toggleBtn) {
+            toggleBtn.textContent = this.state.badgesCollapsed ? "Show All" : "Show Less";
+        }
+
+        // Render Badges (Hides items after index 2 when collapsed)
+        if (badgesContainer) {
             badgesContainer.innerHTML = '';
-            this.state.badges.forEach(b => {
+            this.state.badges.forEach((b, idx) => { // 👈 Added idx parameter
+                const isHidden = this.state.badgesCollapsed && idx >= 3; // 👈 Added isHidden check
                 const html = `
-                    <div class="badge-box ${b.unlocked ? 'unlocked' : ''}" style="${!b.unlocked ? 'opacity: 0.45; filter: grayscale(100%);' : ''}">
+                    <div class="badge-box ${b.unlocked ? 'unlocked' : ''}" style="${!b.unlocked ? 'opacity: 0.45; filter: grayscale(100%);' : ''} ${isHidden ? 'display: none;' : ''}">
                         <div class="badge-icon">${b.unlocked ? b.icon : '🔒'}</div>
                         <div style="font-size:0.75rem; font-weight:800;">${b.name}</div>
                         <div style="font-size:0.65rem; color:var(--text-gray);">${b.desc}</div>
