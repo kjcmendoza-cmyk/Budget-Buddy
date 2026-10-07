@@ -2656,6 +2656,33 @@
             },
 
             charts: {},
+            async nukeAndResetSystem() {
+        if (!confirm("Are you sure? This will permanently wipe local storage, Firebase database records, and log you out!")) {
+            return;
+        }
+
+        try {
+            // 1. Delete Firestore user document from cloud database
+            if (isFirebaseActive && db && auth && auth.currentUser) {
+                await db.collection('users').doc(auth.currentUser.uid).delete();
+            }
+
+            // 2. Sign out of Firebase Auth (clears IndexedDB auth session)
+            if (isFirebaseActive && auth) {
+                await auth.signOut();
+            }
+
+            // 3. Wipe browser localStorage completely
+            localStorage.clear();
+
+            // 4. Force hard reload to return to clean Sign Up screen
+            window.location.reload();
+
+        } catch (err) {
+            console.error("Reset Error:", err);
+            alert("Error resetting system: " + err.message);
+        }
+    },
 calculateFinancialHealthScore() {
                 // 1. Budget Adherence (40%)
                 const initialAllowance = this.state.initialAllowance || this.state.balance || 1;
@@ -3096,8 +3123,8 @@ setBurnRateView(view) {
 
 init() {
     this.loadState();
-    this.checkWeeklyReset();
-                const appEl = document.getElementById('app');
+    this.checkCycleReset();
+    const appEl = document.getElementById('app');
                 const darkToggle = document.getElementById('dark-mode-toggle');
                 if (this.state.darkMode) {
                     appEl.classList.add('dark-theme');
@@ -4251,6 +4278,15 @@ const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
     const safeRemEl = document.getElementById('home-safe-remaining');
     if (safeRemEl) {
         safeRemEl.textContent = `${this.formatPeso(remainingSafeToday)} left today (Spent: ${this.formatPeso(spentToday)})`;
+    }
+    // Update Next Allowance Date & Days Left on Dashboard
+    const targetDateEl = document.getElementById('home-target-date');
+    if (targetDateEl) targetDateEl.textContent = this.getAllowanceTargetDate();
+
+    const daysLeftEl = document.getElementById('home-days-left');
+    if (daysLeftEl) {
+        const days = getDaysLeft(this.state.targetAllowanceDate);
+        daysLeftEl.textContent = `${days} day${days === 1 ? '' : 's'} left`;
     }
 this.updateHealthScoreUI();
     // Refresh recent spending list
