@@ -121,17 +121,20 @@
                     const uid = auth.currentUser.uid;
                     
                     // Overwrite with base default state to avoid registration bugs
-                    await db.collection('users').doc(uid).set({
-                        isLoggedIn: true,
-                        balance: 1450,
-                        remainingDays: 29,
-                        dailyLimit: 50,
-                        streakDays: 0,
-                        recentExpenses: [],
-                        goals: [],
-                        upcomingExpenses: [],
-                        badges: []
-                    }, { merge: false });
+await db.collection('users').doc(uid).set({
+    isLoggedIn: true,
+    balance: 1450,
+    remainingDays: 29,
+    dailyLimit: 50,
+    streakDays: 0,
+    recentExpenses: [],
+    goals: [],
+    upcomingExpenses: [],
+    subscriptions: [],
+    badges: [],
+    affordChecksCount: 0,
+    nightlyWrapCount: 0
+}, { merge: false });
                 }
 
                 showStatus("System successfully reset! You can now reload the main app.", "success");

@@ -3659,20 +3659,41 @@ loadState() {
 },
 
             async fetchFirestoreData(uid) {
-                if (!db) return;
-                try {
-                    const doc = await db.collection('users').doc(uid).get();
-                    if (doc.exists) {
-                        const cloudData = doc.data();
-                        this.state = { ...this.state, ...cloudData };
-                        this.recalculateDailyLimit();
-                        this.updateHomeUI();
-                        this.updateUpcomingUI();
-                    }
-                } catch (err) {
-                    console.warn("Could not fetch Firestore document:", err);
-                }
-            },
+    if (!db) return;
+    try {
+        // Listen live for changes instead of fetching once
+        db.collection('users').doc(uid).onSnapshot((doc) => {
+            if (doc.exists) {
+                const cloudData = doc.data();
+                
+                // Overwrite memory and local storage with cloud updates
+                this.state = { ...this.state, ...cloudData };
+            } else {
+                // If the doc was deleted or reset from admin, clear state to defaults
+                this.state.recentExpenses = [];
+                this.state.goals = [];
+                this.state.upcomingExpenses = [];
+                this.state.subscriptions = [];
+                this.state.balance = 0;
+            }
+
+            // Sync updated state to localStorage across all devices
+            localStorage.setItem('budget_app_state', JSON.stringify(this.state));
+
+            // Re-render UI components in real time
+            this.recalculateDailyLimit();
+            this.updateHomeUI();
+            this.updateUpcomingUI();
+            if (this.charts && this.charts.burndown) {
+                this.renderBurndownChart();
+            }
+        }, (err) => {
+            console.warn("Firestore listener error:", err);
+        });
+    } catch (err) {
+        console.warn("Could not attach Firestore listener:", err);
+    }
+},
 
             recalculateDailyLimit() {
     // Prevent division by zero if target date is missing or today
