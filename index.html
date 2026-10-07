@@ -46,6 +46,26 @@
             --shadow-orange: 0 10px 20px rgba(249, 115, 22, 0.3);
         }
 
+/* Simulator Styles */
+        .sim-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--border-color);
+            outline: none;
+            margin-top: 10px;
+        }
+        .sim-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent-orange);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+        }
         #app.dark-theme {
             --bg-color: #0f172a;
             --card-bg: #1e293b;
@@ -501,44 +521,58 @@
         }
 
         /* --- SAFE TO SPEND LAYOUT FIX --- */
-        .safe-spend-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 0.85rem;
-            gap: 15px;
-        }
-        .safe-left {
-            flex: 0 0 35%;
-            min-width: 0; 
-        }
-        .safe-left .amount { font-size: clamp(1.2rem, 4.5vw, 1.75rem); font-weight: 800; color: var(--primary-green); }
-        
-        .safe-right {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            justify-content: flex-end;
-        }
-        
-        .mascot-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--primary-green-light);
-            padding: 8px 12px;
-            border-radius: 16px;
-            width: 100%;
-        }
-        .mascot-bubble { 
-            font-size: 0.75rem; 
-            color: var(--primary-green-dark); 
-            font-weight: 600; 
-            line-height: 1.2;
-            flex: 1;
-            word-wrap: break-word; 
-        }
-        .mascot-icon { font-size: 1.5rem; flex-shrink: 0; }
+.safe-spend-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.85rem;
+    gap: 12px;
+}
+
+/* Allow the left side to grow fluidly so numbers don't truncate */
+.safe-left {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.safe-left .amount { 
+    font-size: clamp(1.35rem, 5.2vw, 1.85rem); 
+    font-weight: 800; 
+    color: var(--primary-green);
+    line-height: 1.1;
+    margin: 2px 0 4px 0;
+}
+
+/* Compact the mascot badge to prevent crushing the left column */
+.safe-right {
+    flex: 0 0 auto;
+    max-width: 48%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.mascot-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary-green-light);
+    padding: 8px 10px;
+    border-radius: 14px;
+    width: auto;
+}
+
+.mascot-bubble { 
+    font-size: 0.72rem; 
+    color: var(--primary-green-dark); 
+    font-weight: 700; 
+    line-height: 1.2;
+    word-wrap: break-word; 
+}
+
+.mascot-icon { 
+    font-size: 1.35rem; 
+    flex-shrink: 0; 
+}
 
         .section-header {
             display: flex;
@@ -1373,6 +1407,200 @@
         #toast.show {
             transform: translateX(-50%) translateY(0);
         }
+
+    /* Subscriptions Tracker Styles */
+.recurring-toggle-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1rem;
+    margin-top: 1.25rem;
+}
+.recurring-options {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border-color);
+}
+.recurring-options.active {
+    display: block;
+}
+
+.total-drain-card {
+    background: linear-gradient(135deg, var(--danger-red), #b91c1c);
+    color: white;
+    border-radius: 20px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+}
+.total-drain-card h3 { color: white; opacity: 0.9; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; }
+.total-drain-card .drain-amount { font-size: 2rem; font-weight: 800; margin: 4px 0; }
+.total-drain-card .drain-subtext { font-size: 0.75rem; opacity: 0.9; }
+
+.sub-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 12px;
+}
+.sub-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.sub-card-title { font-weight: 800; font-size: 1rem; }
+.sub-impact-box {
+    background: var(--accent-orange-light);
+    border: 1px solid var(--accent-orange);
+    border-radius: 12px;
+    padding: 8px 12px;
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.sub-impact-text {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent-orange);
+}
+.sub-impact-toggle-btn {
+    background: var(--accent-orange);
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+/* Financial Health Score Gauge & Card */
+.health-score-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 1.25rem;
+    margin-top: 1rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.health-score-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+.health-score-card:active {
+    transform: scale(0.98);
+}
+.health-score-left {
+    flex: 1;
+    min-width: 0;
+}
+.health-score-title {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--text-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.health-score-val-text {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin: 4px 0 2px 0;
+    color: var(--text-dark);
+}
+.health-score-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+/* SVG Circular Ring Gauge */
+.gauge-ring-wrapper {
+    position: relative;
+    width: 68px;
+    height: 68px;
+    flex-shrink: 0;
+}
+.gauge-ring-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+.gauge-bg-circle {
+    fill: none;
+    stroke: var(--border-color);
+    stroke-width: 6;
+}
+.gauge-progress-circle {
+    fill: none;
+    stroke: var(--primary-green);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 188.4; /* 2 * PI * 30 */
+    stroke-dashoffset: 188.4;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease;
+}
+.gauge-score-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-dark);
+}
+
+/* Breakdown Panel & Advice Cards */
+.health-breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border-color);
+}
+.health-breakdown-item:last-child {
+    border-bottom: none;
+}
+.health-factor-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+.health-factor-sub {
+    font-size: 0.72rem;
+    color: var(--text-gray);
+}
+.health-factor-pts {
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+.health-advice-card {
+    background: var(--primary-green-light);
+    border: 1px solid var(--primary-green);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-top: 8px;
+    font-size: 0.78rem;
+    color: var(--text-dark);
+    line-height: 1.35;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
     </style>
 </head>
 <body>
@@ -1500,11 +1728,31 @@
                     <div class="days-left" id="home-days-left">0 days left</div>
                 </div>
                 <svg class="mini-graph" width="80" height="40" viewBox="0 0 80 40">
-                    <path d="M0,40 L15,30 L30,35 L45,20 L60,25 L80,5" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
+                <path d="M0,40 L15,30 L30,35 L45,20 L60,25 L80,5" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
 
-            <!-- Gamification Streak Card -->
+        <!-- Financial Health Score Card -->
+        <div class="health-score-card" onclick="app.openHealthScoreModal()" title="Click for health score breakdown">
+            <div class="health-score-left">
+                <div class="health-score-title">
+                    <i class="fa-solid fa-heart-pulse text-green" style="color: var(--primary-green);"></i> Financial Health
+                </div>
+                <div class="health-score-val-text">
+                    <span id="home-health-score">0</span><span style="font-size: 0.9rem; color: var(--text-gray);"> / 100</span>
+                </div>
+                <div>
+                    <span class="health-score-status-badge" id="home-health-status" style="background: var(--primary-green-light); color: var(--primary-green-dark);">Calculating...</span>
+                </div>
+            </div>
+            <div class="gauge-ring-wrapper">
+                <svg class="gauge-ring-svg" viewBox="0 0 70 70">
+                    <circle class="gauge-bg-circle" cx="35" cy="35" r="30"></circle>
+                    <circle class="gauge-progress-circle" id="home-health-gauge-circle" cx="35" cy="35" r="30"></circle>
+                </svg>
+                <div class="gauge-score-center" id="home-health-gauge-text">0</div>
+            </div>
+        </div>
             <div class="streak-card">
                 <div class="streak-badge">
                     <div class="streak-icon">🔥</div>
@@ -1562,7 +1810,17 @@
                     <div class="qa-icon-wrapper blue"><i class="fa-solid fa-chart-pie"></i></div>
                     <div class="qa-label">Insights</div>
                 </div>
-            </div>
+            <div class="qa-item" onclick="app.showScreen('simulator-screen'); app.runSimulator();">
+                    <div class="qa-icon-wrapper" style="background: var(--accent-orange-light); color: var(--accent-orange);"><i class="fa-solid fa-sliders"></i></div>
+                    <div class="qa-label">Simulator</div>
+                </div>
+                <div class="qa-item" onclick="app.showScreen('subscriptions-screen')">
+    <div class="qa-icon-wrapper" style="background: var(--danger-red-light); color: var(--danger-red);">
+        <i class="fa-solid fa-arrows-rotate"></i>
+    </div>
+    <div class="qa-label">Subscriptions<br>& Recurring</div>
+</div>
+            </div> 
 
             <!-- Action Banners (Manual / Hybrid Confirmations & Overdue Bills) -->
             <div id="home-action-banners"></div>
@@ -1667,6 +1925,27 @@
             <div class="note-area">
                 <label class="text-sm" style="font-weight: 700;">Add note (optional)</label>
                 <input type="text" id="expense-note" class="note-input" placeholder="e.g., lunch, jeep fare, milk tea...">
+            </div>
+
+            <!-- Recurring Expense Toggle -->
+            <div class="recurring-toggle-box">
+                <div class="flex justify-between items-center">
+                    <label class="text-sm" style="font-weight: 800;">🔄 Make Recurring (Subscription)</label>
+                    <div id="expense-recurring-toggle" class="toggle-switch" onclick="app.toggleExpenseRecurringUI()">
+                        <div class="toggle-circle"></div>
+                    </div>
+                </div>
+                <div id="expense-recurring-options" class="recurring-options">
+                    <div class="schedule-input-row">
+                        <select id="expense-frequency" class="schedule-input">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly" selected>Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                        <input type="date" id="expense-first-date" class="schedule-input">
+                    </div>
+                </div>
             </div>
 
             <button class="btn-large btn-green" onclick="app.saveExpense()">
@@ -1885,7 +2164,7 @@
                 </div>
             </div>
 
-<!-- <!-- Allowance Burndown Chart Card -->
+<!-- Allowance Burndown Chart Card -->
 <div class="card mb-4">
     <div class="chart-card-header">
         <div class="chart-card-title" style="white-space: nowrap; font-size: 0.92rem;">
@@ -2031,6 +2310,96 @@
             </div>
         </div>
 
+<!-- ==============================
+             SCREEN 8: WHAT-IF SIMULATOR
+             ============================== -->
+        <div id="simulator-screen" class="screen p-4">
+            <div class="screen-header">
+                <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
+                <div style="flex:1; text-align:center; padding-right: 40px;">
+                    <h2 style="color: var(--accent-orange);">"What-If" Simulator</h2>
+                </div>
+            </div>
+            
+            <p class="text-center text-sm text-gray mb-4" style="font-weight:600;">Test financial changes before making them.</p>
+
+            <!-- Flexible Income Card -->
+            <div class="card mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-sm text-gray" style="font-weight: 700;">Income Change</h3>
+                    <select id="sim-income-freq" class="history-filter" style="padding: 4px 8px; font-size: 0.75rem;" onchange="app.runSimulator()">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly" selected>Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="amount" style="color: var(--primary-green); font-size: 1.5rem; font-weight: 800;">₱<span id="sim-income-val">0</span></span>
+                </div>
+                <input type="range" id="sim-income-slider" min="-10000" max="10000" step="100" value="0" class="sim-slider" oninput="app.runSimulator()">
+            </div>
+
+            <!-- Flexible Expense Card -->
+            <div class="card mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-sm text-gray" style="font-weight: 700;">New Regular Expense</h3>
+                    <select id="sim-expense-freq" class="history-filter" style="padding: 4px 8px; font-size: 0.75rem;" onchange="app.runSimulator()">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly" selected>Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="amount" style="color: var(--danger-red); font-size: 1.5rem; font-weight: 800;">₱<span id="sim-expense-val">0</span></span>
+                </div>
+                <input type="range" id="sim-expense-slider" min="0" max="10000" step="100" value="0" class="sim-slider" oninput="app.runSimulator()">
+            </div>
+
+            <div class="impact-card" style="background: var(--primary-green-light);">
+                <h3 class="text-green mb-2 text-sm" style="color: var(--primary-green-dark);">The Domino Effect</h3>
+                <div class="card p-0" style="padding: 1rem; box-shadow: none; border: 1px solid var(--border-color); background: var(--card-bg);">
+                    <div class="impact-row">
+                        <span class="text-gray">Current Daily Limit:</span>
+                        <span id="sim-current-limit">₱0</span>
+                    </div>
+                    <div class="impact-row border-top" style="color: var(--primary-green-dark);">
+                        <span>New Daily Limit:</span>
+                        <span id="sim-new-limit">₱0</span>
+                    </div>
+                </div>
+                <p id="sim-goal-impact" class="text-xs mt-3 text-center" style="font-weight: 700; color: var(--text-dark);">Your savings timeline remains unchanged.</p>
+            </div>
+        </div>
+
+<!-- ==============================
+             SCREEN 9: SUBSCRIPTION TRACKER
+             ============================== -->
+        <div id="subscriptions-screen" class="screen p-4">
+            <div class="screen-header">
+                <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
+                <div style="flex:1; text-align:center; padding-right: 40px;">
+                    <h2 style="color: var(--danger-red);">Subscription Tracker 🔄</h2>
+                </div>
+            </div>
+
+            <!-- Total Drain Metric Banner -->
+            <div class="total-drain-card">
+                <h3>Total Subscription Drain</h3>
+                <div class="drain-amount" id="sub-total-drain">₱0/month</div>
+                <div class="drain-subtext" id="sub-total-drain-annual">Annual impact: ₱0/year quiet burn</div>
+            </div>
+
+            <div class="section-header">
+                <h2>Active Subscriptions</h2>
+                <span class="text-xs text-gray" id="sub-count-label" style="font-weight: 700;">0 active</span>
+            </div>
+
+            <!-- Active Subscriptions Ordered List -->
+            <div id="subscriptions-list" class="flex flex-col gap-2 mt-2"></div>
+        </div>
+
         <!-- ==============================
              BOTTOM NAVIGATION
              ============================== -->
@@ -2061,6 +2430,65 @@
         <!-- ==============================
              MODALS
              ============================== -->
+             <!-- Financial Health Score Modal -->
+        <div id="modal-health-score" class="modal-overlay">
+            <div class="modal-card" style="max-width: 360px; width: 90%;">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="modal-title" style="margin-bottom:0;">Financial Health</h3>
+                    <span class="text-xs text-gray" style="font-weight: 700;">Weighted Score</span>
+                </div>
+                
+                <div class="text-center my-3" style="background: var(--bg-color); padding: 12px; border-radius: 16px;">
+                    <div style="font-size: 2.4rem; font-weight: 800;" id="modal-health-score-big">0</div>
+                    <div class="text-xs" style="font-weight: 800;" id="modal-health-status-text">Calculating...</div>
+                </div>
+
+                <div style="margin-top: 12px;">
+                    <h4 class="text-xs text-gray" style="font-weight: 800; text-transform: uppercase;">Weighted Breakdown</h4>
+                    
+                    <div class="health-breakdown-item">
+                        <div>
+                            <div class="health-factor-name">Budget Adherence (40%)</div>
+                            <div class="health-factor-sub" id="breakdown-adherence-sub">Allowance tracking</div>
+                        </div>
+                        <div class="health-factor-pts" id="breakdown-adherence-pts">+0 pts</div>
+                    </div>
+
+                    <div class="health-breakdown-item">
+                        <div>
+                            <div class="health-factor-name">Savings Rate (30%)</div>
+                            <div class="health-factor-sub" id="breakdown-savings-sub">Goals & reserves</div>
+                        </div>
+                        <div class="health-factor-pts" id="breakdown-savings-pts">+0 pts</div>
+                    </div>
+
+                    <div class="health-breakdown-item">
+                        <div>
+                            <div class="health-factor-name">Bill Coverage (30%)</div>
+                            <div class="health-factor-sub" id="breakdown-coverage-sub">Upcoming bills vs balance</div>
+                        </div>
+                        <div class="health-factor-pts" id="breakdown-coverage-pts">+0 pts</div>
+                    </div>
+
+                    <div class="health-breakdown-item" id="breakdown-modifiers-row">
+                        <div>
+                            <div class="health-factor-name">Streak & Alert Modifiers</div>
+                            <div class="health-factor-sub" id="breakdown-modifiers-sub">Streak bonus / Bill alerts</div>
+                        </div>
+                        <div class="health-factor-pts" id="breakdown-modifiers-pts">+0 pts</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 14px;">
+                    <h4 class="text-xs text-gray" style="font-weight: 800; text-transform: uppercase;">🚀 Actionable Advice (+5 pts)</h4>
+                    <div id="health-advice-container"></div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="modal-btn btn-confirm" onclick="app.closeModal('modal-health-score')">Got it</button>
+                </div>
+            </div>
+        </div>
         <div id="modal-forgot-pin" class="modal-overlay">
             <div class="modal-card">
                 <h3 class="modal-title">Reset Your PIN</h3>
@@ -2190,6 +2618,8 @@
 
         const app = {
             state: {
+            isRecurring: false,
+    subscriptions: [],
                 lastResetTimestamp: null,
                 burnRateView: '31days',
                 isLoggedIn: false,
@@ -2226,78 +2656,270 @@
             },
 
             charts: {},
+calculateFinancialHealthScore() {
+                // 1. Budget Adherence (40%)
+                const initialAllowance = this.state.initialAllowance || this.state.balance || 1;
+                const totalSpent = (this.state.recentExpenses || []).reduce((sum, exp) => sum + (exp.amount || 0), 0);
+                let adherencePct = 100;
+                if (initialAllowance > 0) {
+                    const remainingRatio = Math.max(0, (initialAllowance - totalSpent) / initialAllowance);
+                    adherencePct = Math.min(100, Math.round(remainingRatio * 100));
+                }
+                const adherenceWeighted = Math.round((adherencePct / 100) * 40);
 
-checkWeeklyReset() {
+                // 2. Savings Rate (30%)
+                let totalGoalSavings = 0;
+                let totalGoalTargets = 0;
+                (this.state.goals || []).forEach(g => {
+                    totalGoalSavings += (g.current || 0);
+                    totalGoalTargets += (g.target || 0);
+                });
+                let savingsPct = 50;
+                if (totalGoalTargets > 0) {
+                    savingsPct = Math.min(100, Math.round((totalGoalSavings / totalGoalTargets) * 100));
+                } else if (initialAllowance > 0) {
+                    savingsPct = Math.min(100, Math.round((this.state.balance / initialAllowance) * 100));
+                }
+                const savingsWeighted = Math.round((savingsPct / 100) * 30);
+
+                // 3. Bill Coverage (30%)
+                const pendingBills = (this.state.upcomingExpenses || []).filter(e => e.status === 'pending');
+                const totalPendingBillAmount = pendingBills.reduce((sum, e) => sum + (e.amount || 0), 0);
+                let billCoveragePct = 100;
+                if (totalPendingBillAmount > 0) {
+                    billCoveragePct = this.state.balance >= totalPendingBillAmount 
+                        ? 100 
+                        : Math.round((this.state.balance / totalPendingBillAmount) * 100);
+                }
+                const coverageWeighted = Math.round((billCoveragePct / 100) * 30);
+
+                // 4. Streak Bonus & Overdue Penalty Modifiers
+                let streakBonus = 0;
+                if (this.state.streakDays >= 7) streakBonus = 10;
+                else if (this.state.streakDays >= 3) streakBonus = 5;
+
+                const todayStr = new Date().toISOString().split('T')[0];
+                const hasOverdue = pendingBills.some(e => e.date < todayStr);
+                const overduePenalty = hasOverdue ? -10 : 0;
+                const netModifier = streakBonus + overduePenalty;
+
+                // Weighted Total
+                const finalScore = Math.max(0, Math.min(100, adherenceWeighted + savingsWeighted + coverageWeighted + netModifier));
+
+                let status = "Needs Attention";
+                let color = "var(--danger-red)";
+                let bg = "var(--danger-red-light)";
+
+                if (finalScore >= 80) {
+                    status = "Strong";
+                    color = "var(--primary-green)";
+                    bg = "var(--primary-green-light)";
+                } else if (finalScore >= 60) {
+                    status = "Good";
+                    color = "var(--accent-blue)";
+                    bg = "var(--accent-blue-light)";
+                } else if (finalScore >= 40) {
+                    status = "Fair";
+                    color = "var(--accent-orange)";
+                    bg = "var(--accent-orange-light)";
+                }
+
+                return {
+                    score: finalScore,
+                    status,
+                    color,
+                    bg,
+                    factors: {
+                        adherencePct, adherencePts: adherenceWeighted,
+                        savingsPct, savingsPts: savingsWeighted,
+                        billCoveragePct, coveragePts: coverageWeighted,
+                        streakBonus, overduePenalty, netModifier,
+                        totalPendingBillAmount, hasOverdue
+                    }
+                };
+            },
+
+            updateHealthScoreUI() {
+                const data = this.calculateFinancialHealthScore();
+
+                const scoreEl = document.getElementById('home-health-score');
+                const statusEl = document.getElementById('home-health-status');
+                const gaugeTextEl = document.getElementById('home-health-gauge-text');
+                const gaugeCircle = document.getElementById('home-health-gauge-circle');
+
+                if (scoreEl) scoreEl.textContent = data.score;
+                if (gaugeTextEl) gaugeTextEl.textContent = data.score;
+                
+                if (statusEl) {
+                    statusEl.textContent = data.status;
+                    statusEl.style.color = data.color;
+                    statusEl.style.background = data.bg;
+                }
+
+                if (gaugeCircle) {
+                    const circumference = 188.4;
+                    const offset = circumference - (circumference * data.score / 100);
+                    gaugeCircle.style.strokeDashoffset = offset;
+                    gaugeCircle.style.stroke = data.color;
+                }
+            },
+
+            openHealthScoreModal() {
+                const data = this.calculateFinancialHealthScore();
+
+                const bigScoreEl = document.getElementById('modal-health-score-big');
+                const statusTextEl = document.getElementById('modal-health-status-text');
+                
+                if (bigScoreEl) {
+                    bigScoreEl.textContent = data.score;
+                    bigScoreEl.style.color = data.color;
+                }
+                if (statusTextEl) {
+                    statusTextEl.textContent = `${data.status} Financial Momentum`;
+                    statusTextEl.style.color = data.color;
+                }
+
+                document.getElementById('breakdown-adherence-sub').textContent = `${data.factors.adherencePct}% remaining allowance ratio`;
+                document.getElementById('breakdown-adherence-pts').textContent = `+${data.factors.adherencePts} pts`;
+
+                document.getElementById('breakdown-savings-sub').textContent = `${data.factors.savingsPct}% overall savings/goals ratio`;
+                document.getElementById('breakdown-savings-pts').textContent = `+${data.factors.savingsPts} pts`;
+
+                document.getElementById('breakdown-coverage-sub').textContent = `${data.factors.billCoveragePct}% bill coverage capacity`;
+                document.getElementById('breakdown-coverage-pts').textContent = `+${data.factors.coveragePts} pts`;
+
+                const modSub = document.getElementById('breakdown-modifiers-sub');
+                const modPts = document.getElementById('breakdown-modifiers-pts');
+                if (modSub && modPts) {
+                    modSub.textContent = `Streak (+${data.factors.streakBonus}) ${data.factors.hasOverdue ? '• Overdue Bill (-10)' : ''}`;
+                    modPts.textContent = `${data.factors.netModifier >= 0 ? '+' : ''}${data.factors.netModifier} pts`;
+                    modPts.style.color = data.factors.netModifier >= 0 ? 'var(--primary-green)' : 'var(--danger-red)';
+                }
+
+                const adviceContainer = document.getElementById('health-advice-container');
+                if (adviceContainer) {
+                    adviceContainer.innerHTML = '';
+                    const tips = [];
+
+                    if (data.factors.hasOverdue) {
+                        tips.push(`<b>Urgent Action:</b> Confirm or clear your overdue bill to eliminate the -10 point health penalty!`);
+                    } else if (data.factors.billCoveragePct < 100) {
+                        tips.push(`<b>Boost Coverage:</b> Reserve <b>${this.formatPeso(data.factors.totalPendingBillAmount)}</b> in balance to gain up to +15 pts.`);
+                    }
+
+                    if (this.state.streakDays < 3) {
+                        tips.push(`<b>Build a Streak:</b> Log expenses daily to hit a 3-day streak and earn a <b>+5 pt bonus</b>.`);
+                    }
+
+                    if (data.factors.savingsPct < 70) {
+                        tips.push(`<b>Boost Savings:</b> Deposit ₱100–₱200 into a goal to increase your Savings Rate score by +5 pts.`);
+                    }
+
+                    if (tips.length === 0) {
+                        tips.push(`🎉 <b>Great job!</b> You are maintaining peak financial momentum this week.`);
+                    }
+
+                    tips.slice(0, 2).forEach(tipText => {
+                        adviceContainer.insertAdjacentHTML('beforeend', `
+                            <div class="health-advice-card">
+                                <i class="fa-solid fa-lightbulb text-green" style="font-size: 1rem; color: var(--primary-green);"></i>
+                                <div>${tipText}</div>
+                            </div>
+                        `);
+                    });
+                }
+
+                this.openModal('modal-health-score');
+            },
+checkCycleReset() {
+    if (!this.state.targetAllowanceDate || !this.state.allowanceStartDate) return;
+
     const now = new Date();
-    now.setHours(0, 0, 0, 0); // Start of today
-
-    // Get the day of the week (0 = Sunday, 1 = Monday, etc.)
-    const dayOfWeek = now.getDay(); 
+    now.setHours(0, 0, 0, 0); 
     
-    // Calculate the date of the most recent Monday
-    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    const lastMonday = new Date(now);
-    lastMonday.setDate(now.getDate() - diffToMonday);
+    const endDate = new Date(this.state.targetAllowanceDate);
+    endDate.setHours(0, 0, 0, 0);
 
-    // Format Monday as YYYY-MM-DD 
-    const y = lastMonday.getFullYear();
-    const m = String(lastMonday.getMonth() + 1).padStart(2, '0');
-    const d = String(lastMonday.getDate()).padStart(2, '0');
-    const mondayStr = `${y}-${m}-${d}`;
+    // If today is past the user's custom end date, trigger the reset
+    if (now > endDate) {
+        // 1. Reset Balance and Expenses
+        this.state.balance = this.state.initialAllowance || 0;
+        this.state.recentExpenses = [];
+        this.state.lastResetTimestamp = now.getTime();
 
-    // Initialize if it's the user's first time tracking
-    if (!this.state.lastResetTimestamp) {
-        this.state.lastResetTimestamp = lastMonday.getTime();
-        this.state.allowanceStartDate = mondayStr; // Lock start date to Monday
-        
-        // Auto-set target to Sunday (Monday + 6 days)
-        const nextSun = new Date(lastMonday);
-        nextSun.setDate(nextSun.getDate() + 6);
-        this.state.targetAllowanceDate = `${nextSun.getFullYear()}-${String(nextSun.getMonth() + 1).padStart(2, '0')}-${String(nextSun.getDate()).padStart(2, '0')}`;
-        
+        // 2. Calculate the length of their custom cycle
+        const startDate = new Date(this.state.allowanceStartDate);
+        const cycleLengthDays = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
+
+        // 3. Shift dates forward for the next cycle
+        const newStartDate = new Date(endDate);
+        newStartDate.setDate(newStartDate.getDate() + 1); 
+        this.state.allowanceStartDate = newStartDate.toISOString().split('T')[0];
+
+        const newEndDate = new Date(newStartDate);
+        newEndDate.setDate(newEndDate.getDate() + cycleLengthDays);
+        this.state.targetAllowanceDate = newEndDate.toISOString().split('T')[0];
+
+        // 4. Save storage & refresh UI / Charts
         if (typeof this.saveState === 'function') this.saveState();
-        return;
-    }
-
-    // If the stored reset date is older than the most recent Monday, trigger a reset
-    if (this.state.lastResetTimestamp < lastMonday.getTime()) {
-        this.resetWeeklyData(mondayStr);
-        this.state.lastResetTimestamp = lastMonday.getTime();
+        if (typeof this.recalculateDailyLimit === 'function') this.recalculateDailyLimit();
+        if (typeof this.updateHomeUI === 'function') this.updateHomeUI();
+        if (typeof this.renderBurndownChart === 'function') this.renderBurndownChart();
+        
+        if (typeof this.showToast === 'function') {
+            this.showToast("New cycle! Your budget has been reset.");
+        }
     }
 },
 
-resetWeeklyData(mondayStr) {
-    // 1. Restore balance back to the initial weekly allowance
-    this.state.balance = this.state.initialAllowance || 0;
-    
-    // 2. Clear recent expenses for the new week
-    this.state.recentExpenses = [];
-    
-    // 3. Reset allowance start date strictly to Monday
-    if (mondayStr) {
-        this.state.allowanceStartDate = mondayStr;
-    } else {
-        const now = new Date();
-        const diff = now.getDay() === 0 ? 6 : now.getDay() - 1;
-        const mon = new Date(now.setDate(now.getDate() - diff));
-        this.state.allowanceStartDate = `${mon.getFullYear()}-${String(mon.getMonth() + 1).padStart(2, '0')}-${String(mon.getDate()).padStart(2, '0')}`;
-    }
+runSimulator() {
+                // 1. Get amounts and selected frequencies
+                const incomeVal = parseFloat(document.getElementById('sim-income-slider').value) || 0;
+                const incomeFreq = document.getElementById('sim-income-freq').value;
 
-    // Lock cycle end date to Sunday (7-day cycle)
-    const start = new Date(this.state.allowanceStartDate);
-    start.setDate(start.getDate() + 6);
-    this.state.targetAllowanceDate = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
+                const expenseVal = parseFloat(document.getElementById('sim-expense-slider').value) || 0;
+                const expenseFreq = document.getElementById('sim-expense-freq').value;
 
-    // 4. Save to storage & refresh UI / Charts
-    if (typeof this.saveState === 'function') this.saveState();
-    if (typeof this.recalculateDailyLimit === 'function') this.recalculateDailyLimit();
-    if (typeof this.updateHomeUI === 'function') this.updateHomeUI();
-    if (typeof this.renderBurndownChart === 'function') {
-        this.renderBurndownChart();
-    }
+                // 2. Frequency conversion mapping (divisor to get daily value)
+                const freqDivisors = {
+                    'daily': 1,
+                    'weekly': 7,
+                    'monthly': 30,
+                    'yearly': 365
+                };
 
-    this.showToast("New week! Your budget has been reset.");
-},
+                // Convert inputs to daily rates
+                const dailyIncome = incomeVal / freqDivisors[incomeFreq];
+                const dailyExpense = expenseVal / freqDivisors[expenseFreq];
+
+                // 3. Update slider UI value labels
+                document.getElementById('sim-income-val').textContent = incomeVal.toLocaleString();
+                document.getElementById('sim-expense-val').textContent = expenseVal.toLocaleString();
+
+                // 4. Calculate Net Daily Impact
+                const netDailyChange = dailyIncome - dailyExpense;
+                const currentLimit = this.state.dailyLimit || 0;
+
+                document.getElementById('sim-current-limit').textContent = this.formatPeso(currentLimit);
+
+                const newLimit = Math.max(0, currentLimit + netDailyChange);
+                document.getElementById('sim-new-limit').textContent = this.formatPeso(newLimit);
+
+                // 5. Update Goal Impact Text
+                const goalImpactText = document.getElementById('sim-goal-impact');
+                const approxMonthlyNet = Math.round(netDailyChange * 30);
+
+                if (netDailyChange > 0) {
+                    goalImpactText.textContent = `Awesome! This adds +${this.formatPeso(Math.round(netDailyChange))}/day (+${this.formatPeso(approxMonthlyNet)}/mo) to hit your goals faster.`;
+                    goalImpactText.style.color = "var(--primary-green-dark)";
+                } else if (netDailyChange < 0) {
+                    goalImpactText.textContent = `Caution: This reduces your safe limit by -${this.formatPeso(Math.abs(Math.round(netDailyChange)))}/day (-${this.formatPeso(Math.abs(approxMonthlyNet))}/mo).`;
+                    goalImpactText.style.color = "var(--danger-red)";
+                } else {
+                    goalImpactText.textContent = `Your savings timeline remains unchanged.`;
+                    goalImpactText.style.color = "var(--text-dark)";
+                }
+            },
 
 setBurnRateView(view) {
                 // Safely removed
@@ -2358,7 +2980,7 @@ setBurnRateView(view) {
         }
     });
 
-    for (let i = 0; i <= totalCycleDays; i++) {
+    for (let i = 0; i < totalCycleDays; i++) {
         const currDate = new Date(startDate);
         currDate.setDate(currDate.getDate() + i);
         currDate.setHours(0, 0, 0, 0);
@@ -2528,11 +3150,14 @@ init() {
             },
 
             formatPeso(num) {
-                if (isNaN(num) || num === null) return "₱0";
-                return "₱" + Number(num).toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-            },
+    if (isNaN(num) || num === null) return "₱0";
+    return "₱" + Number(num).toLocaleString('en-PH', { 
+        minimumFractionDigits: num % 1 === 0 ? 0 : 2, 
+        maximumFractionDigits: 2 
+    });
+},
 
-            showScreen(screenId) {
+           showScreen(screenId) {
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                 const target = document.getElementById(screenId);
                 if (target) target.classList.add('active');
@@ -2551,6 +3176,7 @@ init() {
                 else if (screenId === 'goals-screen') document.querySelectorAll('.bottom-nav .nav-item')[3]?.classList.add('active');
                 else if (screenId === 'profile-screen') document.querySelectorAll('.bottom-nav .nav-item')[4]?.classList.add('active');
 
+                // Render screen specific data
                 if (screenId === 'home-screen') {
                     this.updateHomeUI();
                 } else if (screenId === 'upcoming-screen') {
@@ -2563,6 +3189,8 @@ init() {
                     this.renderInsightsCharts();
                 } else if (screenId === 'afford-screen') {
                     this.calculateAffordability();
+                } else if (screenId === 'subscriptions-screen') {
+                    this.renderSubscriptionsUI();
                 } else if (screenId === 'profile-screen') {
                     const nameDisp = document.getElementById('profile-name-display');
                     const emailDisp = document.getElementById('profile-email-display');
@@ -2846,6 +3474,109 @@ init() {
                 this.showToast("Logged out securely.");
             },
 
+toggleExpenseRecurringUI() {
+                this.state.isRecurring = !this.state.isRecurring;
+                const toggle = document.getElementById('expense-recurring-toggle');
+                const options = document.getElementById('expense-recurring-options');
+                const dateInput = document.getElementById('expense-first-date');
+
+                if (toggle) toggle.classList.toggle('active', this.state.isRecurring);
+                if (options) options.classList.toggle('active', this.state.isRecurring);
+                if (dateInput && !dateInput.value) {
+                    dateInput.value = new Date().toISOString().split('T')[0];
+                }
+            },
+
+            calculateMonthlyEquivalent(amount, frequency) {
+                switch (frequency) {
+                    case 'daily': return amount * 30.4375;
+                    case 'weekly': return amount * 4.333;
+                    case 'monthly': return amount;
+                    case 'yearly': return amount / 12;
+                    default: return amount;
+                }
+            },
+
+            calculateTotalDrain() {
+                const subs = this.state.subscriptions || [];
+                return subs.reduce((sum, sub) => sum + this.calculateMonthlyEquivalent(sub.amount, sub.frequency), 0);
+            },
+
+            renderSubscriptionsUI() {
+                const drainEl = document.getElementById('sub-total-drain');
+                const drainAnnualEl = document.getElementById('sub-total-drain-annual');
+                const listEl = document.getElementById('subscriptions-list');
+                const countEl = document.getElementById('sub-count-label');
+
+                const totalMonthly = this.calculateTotalDrain();
+                const totalAnnual = totalMonthly * 12;
+
+                if (drainEl) drainEl.textContent = `${this.formatPeso(totalMonthly)}/month`;
+                if (drainAnnualEl) drainAnnualEl.textContent = `Annual impact: ${this.formatPeso(totalAnnual)}/year quiet burn`;
+
+                const subs = this.state.subscriptions || [];
+                if (countEl) countEl.textContent = `${subs.length} active`;
+
+                if (!listEl) return;
+                listEl.innerHTML = '';
+
+                if (subs.length === 0) {
+                    listEl.innerHTML = `<div class="text-center p-4 text-gray text-xs">No active subscriptions logged. Check "Make Recurring" when adding an expense!</div>`;
+                    return;
+                }
+
+                subs.sort((a, b) => new Date(a.nextDate) - new Date(b.nextDate));
+
+                subs.forEach(sub => {
+                    const monthlyCost = this.calculateMonthlyEquivalent(sub.amount, sub.frequency);
+                    const viewPeriod = sub.impactView || '1yr';
+                    const impactSavings = viewPeriod === '1yr' ? monthlyCost * 12 : monthlyCost * 60;
+
+                    const html = `
+                        <div class="sub-card">
+                            <div class="sub-card-header">
+                                <div>
+                                    <div class="sub-card-title">${sub.name}</div>
+                                    <div class="text-xs text-gray mt-1">
+                                        ${this.formatPeso(sub.amount)} / ${sub.frequency} • Next: <b>${sub.nextDate}</b>
+                                    </div>
+                                </div>
+                                <button class="delete-btn" onclick="app.cancelSubscription(${sub.id})" title="Cancel Subscription">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+
+                            <div class="sub-impact-box">
+                                <div class="sub-impact-text">
+                                    💡 Cutting this saves <b>${this.formatPeso(impactSavings)}</b> over ${viewPeriod === '1yr' ? '1 year' : '5 years'}
+                                </div>
+                                <button class="sub-impact-toggle-btn" onclick="app.toggleSubImpactView(${sub.id})">
+                                    Toggle ${viewPeriod === '1yr' ? '5-Yr' : '1-Yr'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    listEl.insertAdjacentHTML('beforeend', html);
+                });
+            },
+
+            toggleSubImpactView(id) {
+                const sub = this.state.subscriptions.find(s => s.id === id);
+                if (sub) {
+                    sub.impactView = sub.impactView === '5yr' ? '1yr' : '5yr';
+                    this.saveState();
+                    this.renderSubscriptionsUI();
+                }
+            },
+
+            cancelSubscription(id) {
+                if (confirm("Are you sure you want to cancel tracking this subscription?")) {
+                    this.state.subscriptions = this.state.subscriptions.filter(s => s.id !== id);
+                    this.saveState();
+                    this.renderSubscriptionsUI();
+                    this.showToast("Subscription removed.");
+                }
+            },
             saveState() {
                 try {
                     localStorage.setItem('budget_app_state', JSON.stringify(this.state));
@@ -3521,7 +4252,7 @@ const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
     if (safeRemEl) {
         safeRemEl.textContent = `${this.formatPeso(remainingSafeToday)} left today (Spent: ${this.formatPeso(spentToday)})`;
     }
-
+this.updateHealthScoreUI();
     // Refresh recent spending list
     this.filterRecentSpending(document.getElementById('recent-filter-select')?.value || 'Today');
 
@@ -3560,54 +4291,75 @@ const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
             },
 
             saveExpense() {
-    const amtInput = document.getElementById('expense-amount');
-    const noteInput = document.getElementById('expense-note');
-    const amount = parseFloat(amtInput.value);
+                const amtInput = document.getElementById('expense-amount');
+                const noteInput = document.getElementById('expense-note');
+                const amount = parseFloat(amtInput.value);
 
-    if (isNaN(amount) || amount <= 0) {
-        this.showToast("Please enter a valid amount.");
-        return;
-    }
+                if (isNaN(amount) || amount <= 0) {
+                    this.showToast("Please enter a valid amount.");
+                    return;
+                }
 
-    const catIcons = {
-        'Food': 'fa-burger',
-        'Transport': 'fa-car-side',
-        'Coffee': 'fa-mug-hot',
-        'School': 'fa-graduation-cap',
-        'Shopping': 'fa-bag-shopping',
-        'Entertainment': 'fa-gamepad',
-        'Other': 'fa-ellipsis'
-    };
+                const catIcons = {
+                    'Food': 'fa-burger',
+                    'Transport': 'fa-car-side',
+                    'Coffee': 'fa-mug-hot',
+                    'School': 'fa-graduation-cap',
+                    'Shopping': 'fa-bag-shopping',
+                    'Entertainment': 'fa-gamepad',
+                    'Other': 'fa-ellipsis'
+                };
 
-    // Calculate local YYYY-MM-DD date key
-    const now = new Date();
-    const localIsoDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; 
+                // Calculate local YYYY-MM-DD date key
+                const now = new Date();
+                const localIsoDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; 
+                const expenseName = noteInput.value.trim() || this.state.selectedCategory;
 
-    const newTx = {
-        id: Date.now(),
-        name: noteInput.value.trim() || this.state.selectedCategory,
-        category: this.state.selectedCategory,
-        amount: amount,
-        icon: catIcons[this.state.selectedCategory] || 'fa-receipt',
-        color: "var(--primary-green)",
-        period: 'Today',
-        rawDate: localIsoDate,
-        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    };
+                const newTx = {
+                    id: Date.now(),
+                    name: expenseName,
+                    category: this.state.selectedCategory,
+                    amount: amount,
+                    icon: catIcons[this.state.selectedCategory] || 'fa-receipt',
+                    color: "var(--primary-green)",
+                    period: 'Today',
+                    rawDate: localIsoDate,
+                    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                };
 
-    this.state.recentExpenses.unshift(newTx);
-    this.state.balance = Math.max(0, this.state.balance - amount);
+                this.state.recentExpenses.unshift(newTx);
+                this.state.balance = Math.max(0, this.state.balance - amount);
 
-    this.saveState();
-    this.recalculateDailyLimit();
-    this.updateHomeUI();
+                // Save recurring subscription if toggled on
+                if (this.state.isRecurring) {
+                    const freq = document.getElementById('expense-frequency').value;
+                    const nextDate = document.getElementById('expense-first-date').value || localIsoDate;
 
-    amtInput.value = '';
-    noteInput.value = '';
+                    if (!this.state.subscriptions) this.state.subscriptions = [];
+                    
+                    this.state.subscriptions.push({
+                        id: Date.now() + 1,
+                        name: expenseName,
+                        amount: amount,
+                        frequency: freq,
+                        nextDate: nextDate,
+                        impactView: '1yr'
+                    });
 
-    this.showScreen('home-screen');
-    this.showToast("Expense added!");
-},
+                    this.state.isRecurring = false;
+                    this.toggleExpenseRecurringUI();
+                }
+
+                this.saveState();
+                this.recalculateDailyLimit();
+                this.updateHomeUI();
+
+                amtInput.value = '';
+                noteInput.value = '';
+
+                this.showScreen('home-screen');
+                this.showToast("Expense saved!");
+            },
 
             filterRecentSpending(filterVal) {
                 const container = document.getElementById('recent-spending-list');
