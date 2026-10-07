@@ -2889,11 +2889,19 @@ checkCycleReset() {
         this.state.recentExpenses = [];
         this.state.lastResetTimestamp = now.getTime();
 
-        // 2. Calculate the length of their custom cycle
+        // 2. Reset Badges & Cycle Counters 👈 ADD THIS BLOCK
+        if (this.state.badges) {
+            this.state.badges.forEach(b => b.unlocked = false);
+        }
+        this.state.affordChecksCount = 0;
+        this.state.nightlyWrapCount = 0;
+        this.state.wasOverspentYesterday = false;
+
+        // 3. Calculate the length of their custom cycle
         const startDate = new Date(this.state.allowanceStartDate);
         const cycleLengthDays = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
 
-        // 3. Shift dates forward for the next cycle
+        // 4. Shift dates forward for the next cycle
         const newStartDate = new Date(endDate);
         newStartDate.setDate(newStartDate.getDate() + 1); 
         this.state.allowanceStartDate = newStartDate.toISOString().split('T')[0];
@@ -2902,14 +2910,15 @@ checkCycleReset() {
         newEndDate.setDate(newEndDate.getDate() + cycleLengthDays);
         this.state.targetAllowanceDate = newEndDate.toISOString().split('T')[0];
 
-        // 4. Save storage & refresh UI / Charts
+        // 5. Save storage & refresh UI / Charts / Badges
         if (typeof this.saveState === 'function') this.saveState();
         if (typeof this.recalculateDailyLimit === 'function') this.recalculateDailyLimit();
         if (typeof this.updateHomeUI === 'function') this.updateHomeUI();
+        if (typeof this.updateGoalsUI === 'function') this.updateGoalsUI(); // 👈 Refreshes badge UI
         if (typeof this.renderBurndownChart === 'function') this.renderBurndownChart();
         
         if (typeof this.showToast === 'function') {
-            this.showToast("New cycle! Your budget has been reset.");
+            this.showToast("New cycle! Budget & achievements have reset.");
         }
     }
 },
