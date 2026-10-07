@@ -4397,39 +4397,40 @@ this.updateHealthScoreUI();
                 this.showToast("Expense saved!");
             },
 
-            filterRecentSpending(filterVal) {
-                const container = document.getElementById('recent-spending-list');
-                if (!container) return;
-                container.innerHTML = '';
+filterRecentSpending(filterVal) {
+    const container = document.getElementById('recent-spending-list');
+    if (!container) return;
+    container.innerHTML = '';
 
-                const filtered = this.state.recentExpenses.filter(exp => {
-                    if (filterVal === 'Today') {
-                        return exp.period === 'Today' || exp.date === 'Today' || exp.date === new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    }
-                    return true;
-                });
+    const filtered = this.state.recentExpenses.filter(exp => {
+        if (filterVal === 'Today') {
+            return exp.period === 'Today' || exp.date === 'Today' || exp.date === new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+        return true;
+    });
 
-                if (filtered.length === 0) {
-                    container.innerHTML = `<div class="text-center p-3 text-gray text-xs">No expenses for ${filterVal}</div>`;
-                    return;
-                }
+    if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center p-3 text-gray text-xs">No expenses for ${filterVal}</div>`;
+        return;
+    }
 
-                filtered.slice(0, 5).forEach(exp => {
-                    const html = `
-                        <div class="transaction-item">
-                            <div class="tx-left">
-                                <div class="tx-icon"><i class="fa-solid ${exp.icon || 'fa-receipt'}"></i></div>
-                                <div class="tx-details">
-                                    <h4>${exp.name}</h4>
-                                    <p>${exp.category} • ${exp.date}</p>
-                                </div>
-                            </div>
-                            <span class="tx-amount deduct">−${this.formatPeso(exp.amount)}</span>
-                        </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', html);
-                });
-            },
+    // Reduced slice from 5 to 2 items
+    filtered.slice(0, 2).forEach(exp => {
+        const html = `
+            <div class="transaction-item">
+                <div class="tx-left">
+                    <div class="tx-icon"><i class="fa-solid ${exp.icon || 'fa-receipt'}"></i></div>
+                    <div class="tx-details">
+                        <h4>${exp.name}</h4>
+                        <p>${exp.category} • ${exp.date}</p>
+                    </div>
+                </div>
+                <span class="tx-amount deduct">−${this.formatPeso(exp.amount)}</span>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+    });
+},
 
             renderHistoryUI() {
                 const container = document.getElementById('full-history-list');
