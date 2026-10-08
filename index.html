@@ -1711,11 +1711,38 @@ body {
     margin-top: 12px !important;
 }
 
-/* Card Gradients by Account Type */
+/* Color Palette Grid in Modal */
+.color-palette-grid {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+.color-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+}
+.color-swatch:hover, .color-swatch.selected {
+    transform: scale(1.15);
+    border-color: var(--text-dark);
+}
+
+/* Card Gradients */
 .card-gradient-bank { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
 .card-gradient-gcash { background: linear-gradient(135deg, #0052cc, #0066ff); }
 .card-gradient-card { background: linear-gradient(135deg, #f59e0b, #d97706); }
 .card-gradient-cash { background: linear-gradient(135deg, #10b981, #047857); }
+.card-gradient-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.card-gradient-dark { background: linear-gradient(135deg, #1e293b, #0f172a); }
+.card-gradient-pink { background: linear-gradient(135deg, #ec4899, #be185d); }
+.card-gradient-cyan { background: linear-gradient(135deg, #06b6d4, #0e7490); }
+.card-gradient-red { background: linear-gradient(135deg, #ef4444, #b91c1c); }
 
 .card-top-row {
     display: flex;
@@ -2612,18 +2639,25 @@ body {
                     </div>
                     <div id="dark-mode-toggle" class="toggle-switch"><div class="toggle-circle"></div></div>
                 </div>
-                
-                <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.logout()">
-                    <div class="flex items-center gap-3">
-                        <div class="qa-icon-wrapper" style="width: 40px; height: 40px; background: var(--danger-red-light); color: var(--danger-red);">
-                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                        </div>
-                        <span style="font-weight: 600; color: var(--danger-red);">Log Out</span>
-                    </div>
+                <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.nukeAndResetSystem()">
+    <div class="flex items-center gap-3">
+        <div class="qa-icon-wrapper" style="width: 40px; height: 40px; background: var(--danger-red-light); color: var(--danger-red);">
+            <i class="fa-solid fa-rotate-left"></i>
+        </div>
+        <span style="font-weight: 600; color: var(--danger-red);">Reset to Default</span>
+    </div>
+</div>
+
+<div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.logout()">
+            <div class="flex items-center gap-3">
+                <div class="qa-icon-wrapper" style="width: 40px; height: 40px; background: var(--danger-red-light); color: var(--danger-red);">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
                 </div>
+                <span style="font-weight: 600; color: var(--danger-red);">Log Out</span>
             </div>
         </div>
-
+    </div>
+</div>
 <!-- ==============================
              SCREEN 8: WHAT-IF SIMULATOR
              ============================== -->
@@ -2911,6 +2945,19 @@ body {
             <button type="button" class="preset-chip" onclick="app.selectAccountPreset('', 'digital', '')">
                 <i class="fa-solid fa-pen-to-square"></i> Custom
             </button>
+        </div> <!-- Closing tag added here -->
+
+        <label class="text-xs text-gray" style="font-weight:700; display:block; margin-top: 12px; margin-bottom: 6px;">Card Color Theme</label>
+        <div class="color-palette-grid" id="acc-color-palette">
+            <div class="color-swatch card-gradient-gcash selected" onclick="app.selectCardColor('card-gradient-gcash', this)"></div>
+            <div class="color-swatch card-gradient-bank" onclick="app.selectCardColor('card-gradient-bank', this)"></div>
+            <div class="color-swatch card-gradient-cash" onclick="app.selectCardColor('card-gradient-cash', this)"></div>
+            <div class="color-swatch card-gradient-card" onclick="app.selectCardColor('card-gradient-card', this)"></div>
+            <div class="color-swatch card-gradient-purple" onclick="app.selectCardColor('card-gradient-purple', this)"></div>
+            <div class="color-swatch card-gradient-dark" onclick="app.selectCardColor('card-gradient-dark', this)"></div>
+            <div class="color-swatch card-gradient-pink" onclick="app.selectCardColor('card-gradient-pink', this)"></div>
+            <div class="color-swatch card-gradient-cyan" onclick="app.selectCardColor('card-gradient-cyan', this)"></div>
+            <div class="color-swatch card-gradient-red" onclick="app.selectCardColor('card-gradient-red', this)"></div>
         </div>
 
         <label class="text-xs text-gray" style="font-weight:700;">Account Name</label>
@@ -3270,57 +3317,64 @@ selectAccountPreset(name, type, last4) {
     if (balInput) balInput.focus();
 },
 
-openAddAccountModal() {
-    document.getElementById('acc-name-input').value = '';
-    document.getElementById('acc-balance-input').value = '';
-    document.getElementById('acc-digits-input').value = '';
-    document.querySelectorAll('.preset-chip').forEach(chip => chip.classList.remove('selected'));
-    this.openModal('modal-add-account');
-},
+selectCardColor(gradientClass, el) {
+        this.state.selectedCardGradient = gradientClass;
+        document.querySelectorAll('#acc-color-palette .color-swatch').forEach(s => s.classList.remove('selected'));
+        if (el) el.classList.add('selected');
+    },
 
-saveAccount() {
-    const name = document.getElementById('acc-name-input').value.trim();
-    const type = document.getElementById('acc-type-select').value;
-    const balance = parseFloat(document.getElementById('acc-balance-input').value) || 0;
-    const last4 = document.getElementById('acc-digits-input').value.trim();
+    openAddAccountModal() {
+        document.getElementById('acc-name-input').value = '';
+        document.getElementById('acc-balance-input').value = '';
+        document.getElementById('acc-digits-input').value = '';
+        document.querySelectorAll('.preset-chip').forEach(chip => chip.classList.remove('selected'));
+        this.selectCardColor('card-gradient-gcash', document.querySelector('#acc-color-palette .color-swatch'));
+        this.openModal('modal-add-account');
+    },
 
-    if (!name) {
-        alert("Please enter an account name.");
-        return;
-    }
+    saveAccount() {
+        const name = document.getElementById('acc-name-input').value.trim();
+        const type = document.getElementById('acc-type-select').value;
+        const balance = parseFloat(document.getElementById('acc-balance-input').value) || 0;
+        const last4 = document.getElementById('acc-digits-input').value.trim();
 
-    const typeGradients = {
-        digital: 'card-gradient-gcash',
-        bank: 'card-gradient-bank',
-        cash: 'card-gradient-cash',
-        card: 'card-gradient-card'
-    };
+        if (!name) {
+            alert("Please enter an account name.");
+            return;
+        }
 
-    const typeIcons = {
-        digital: 'fa-mobile-screen',
-        bank: 'fa-building-columns',
-        cash: 'fa-wallet',
-        card: 'fa-credit-card'
-    };
+        const typeGradients = {
+            digital: 'card-gradient-gcash',
+            bank: 'card-gradient-bank',
+            cash: 'card-gradient-cash',
+            card: 'card-gradient-card'
+        };
 
-    const newAcc = {
-        id: 'acc_' + Date.now(),
-        name,
-        type,
-        balance,
-        last4,
-        gradient: typeGradients[type],
-        icon: typeIcons[type]
-    };
+        const typeIcons = {
+            digital: 'fa-mobile-screen',
+            bank: 'fa-building-columns',
+            cash: 'fa-wallet',
+            card: 'fa-credit-card'
+        };
 
-    this.state.accounts.push(newAcc);
-    this.state.balance = this.getCalculatedTotalBalance();
-    this.saveState();
-    this.closeModal('modal-add-account');
-    this.renderAccountsUI();
-    this.updateHomeUI();
-    this.showToast("Account added successfully!");
-},
+        const newAcc = {
+            id: 'acc_' + Date.now(),
+            name,
+            type,
+            balance,
+            last4,
+            gradient: this.state.selectedCardGradient || typeGradients[type],
+            icon: typeIcons[type]
+        };
+
+        this.state.accounts.push(newAcc);
+        this.state.balance = this.getCalculatedTotalBalance();
+        this.saveState();
+        this.closeModal('modal-add-account');
+        this.renderAccountsUI();
+        this.updateHomeUI();
+        this.showToast("Account added successfully!");
+    },
 
 deleteAccount(id) {
     if (confirm("Delete this account?")) {
@@ -3933,15 +3987,23 @@ generateTip() {
     const balance = this.state.balance || 0;
     const dailyLimit = this.state.dailyLimit || 0;
 
-    // 1. Case: No expenses logged yet
-    if (expenses.length === 0) {
+    // 1. Case: No balance set and no expenses logged yet
+    if (balance === 0 && expenses.length === 0) {
         titleEl.textContent = "Welcome to BudgetBuddy!";
         shortEl.textContent = "Set your allowance to begin.";
         expEl.textContent = "Click on the 'AVAILABLE MONEY' card above to set your starting balance and schedule your next allowance date.";
         return;
     }
 
-    // 2. Case: Calculate Top Category
+    // 2. Case: Allowance added, but no expenses logged yet
+    if (balance > 0 && expenses.length === 0) {
+        titleEl.textContent = "Allowance Set! 🎯";
+        shortEl.textContent = `Safe daily limit: ${this.formatPeso(dailyLimit)}/day.`;
+        expEl.textContent = `Your balance of ${this.formatPeso(balance)} is active. Log expenses using the Quick Add (+) button to start tracking!`;
+        return;
+    }
+
+    // 3. Case: Calculate Top Category
     const catTotals = {};
     let totalSpent = 0;
     expenses.forEach(e => {
@@ -3960,7 +4022,7 @@ generateTip() {
 
     const todaySpent = this.getTodayTotal();
 
-    // 3. Dynamic Insights Logic
+    // 4. Dynamic Insights Logic
     if (todaySpent > dailyLimit && dailyLimit > 0) {
         titleEl.textContent = "⚠️ Over Daily Limit";
         shortEl.textContent = `You spent ${this.formatPeso(todaySpent - dailyLimit)} over your daily limit today.`;
