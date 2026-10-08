@@ -1724,6 +1724,42 @@
     color: white;
     border-color: var(--primary-green);
 }
+
+/* Preset Chip Grid for Add Account Modal */
+.preset-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.preset-chip {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 8px 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.preset-chip:hover, .preset-chip.selected {
+    border-color: var(--primary-green);
+    background: var(--primary-green-light);
+    color: var(--primary-green-dark);
+}
+
+.preset-chip i {
+    font-size: 0.95rem;
+}
+
     </style>
 </head>
 <body>
@@ -2708,31 +2744,66 @@
             </div>
         </div>
 
-        <div id="modal-edit-allowance" class="modal-overlay">
-            <div class="modal-card">
-                <h3 class="modal-title">Set Allowance & Cycle</h3>
-                <label class="text-xs text-gray" style="font-weight:700;">Current Balance / Allowance (₱)</label>
-                <input type="number" id="edit-allowance-amount" class="generic-input" placeholder="e.g. 1500" inputmode="decimal">
-                
-                <label class="text-xs text-gray" style="font-weight:700; margin-top: 5px; display: block;">Next Allowance Date</label>
-                <input type="date" id="edit-allowance-date" class="generic-input">
-                
-                <div class="modal-actions">
-                    <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-edit-allowance')">Cancel</button>
-                    <button class="modal-btn btn-confirm" onclick="app.confirmEditAllowance()">Save</button>
-                </div>
-            </div>
+<div id="modal-edit-allowance" class="modal-overlay">
+    <div class="modal-card">
+        <h3 class="modal-title">Set Allowance & Cycle</h3>
+        
+        <label class="text-xs text-gray" style="font-weight:700;">Deposit / Add Allowance To Account</label>
+        <select id="edit-allowance-account-select" class="generic-input">
+            <!-- Dynamically populated with GCash, BPI, Wallet Cash, etc. -->
+        </select>
+
+        <label class="text-xs text-gray" style="font-weight:700;">Allowance / Cash-In Amount (₱)</label>
+        <input type="number" id="edit-allowance-amount" class="generic-input" placeholder="e.g. 1500" inputmode="decimal">
+        
+        <label class="text-xs text-gray" style="font-weight:700; margin-top: 5px; display: block;">Next Allowance Date</label>
+        <input type="date" id="edit-allowance-date" class="generic-input">
+        
+        <div class="modal-actions">
+            <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-edit-allowance')">Cancel</button>
+            <button class="modal-btn btn-confirm" onclick="app.confirmEditAllowance()">Save Allowance</button>
         </div>
     </div>
+</div>
 <div id="modal-add-account" class="modal-overlay">
     <div class="modal-card">
         <h3 class="modal-title">Add Account / Card</h3>
-        <input type="text" id="acc-name-input" class="generic-input" placeholder="Account Name (e.g., GCash, BPI Savings)">
+        
+        <label class="text-xs text-gray" style="font-weight:700; display:block; margin-bottom: 6px;">Quick Presets</label>
+        <div class="preset-grid">
+            <button type="button" class="preset-chip" onclick="app.selectAccountPreset('GCash', 'digital', '')">
+                <i class="fa-solid fa-mobile-screen"></i> GCash
+            </button>
+            <button type="button" class="preset-chip" onclick="app.selectAccountPreset('Maya', 'digital', '')">
+                <i class="fa-solid fa-mobile-screen"></i> Maya
+            </button>
+            <button type="button" class="preset-chip" onclick="app.selectAccountPreset('BPI Savings', 'bank', '')">
+                <i class="fa-solid fa-building-columns"></i> BPI
+            </button>
+            <button type="button" class="preset-chip" onclick="app.selectAccountPreset('BDO Account', 'bank', '')">
+                <i class="fa-solid fa-building-columns"></i> BDO
+            </button>
+            <button type="button" class="preset-chip" onclick="app.selectAccountPreset('GoTyme', 'bank', '')">
+                <i class="fa-solid fa-building-columns"></i> GoTyme
+            </button>
+            <button type="button" class="preset-chip" onclick="app.selectAccountPreset('Wallet Cash', 'cash', '')">
+                <i class="fa-solid fa-wallet"></i> Cash
+            </button>
+            <button type="button" class="preset-chip" onclick="app.selectAccountPreset('Credit Card', 'card', '')">
+                <i class="fa-solid fa-credit-card"></i> Card
+            </button>
+            <button type="button" class="preset-chip" onclick="app.selectAccountPreset('', 'digital', '')">
+                <i class="fa-solid fa-pen-to-square"></i> Custom
+            </button>
+        </div>
+
+        <label class="text-xs text-gray" style="font-weight:700;">Account Name</label>
+        <input type="text" id="acc-name-input" class="generic-input" placeholder="e.g., GCash, BPI Savings">
         
         <label class="text-xs text-gray" style="font-weight:700;">Account Type</label>
         <select id="acc-type-select" class="generic-input">
             <option value="digital">Digital Wallet (GCash/Maya)</option>
-            <option value="bank">Bank Account (BPI/BDO/RCBC)</option>
+            <option value="bank">Bank Account (BPI/BDO/GoTyme)</option>
             <option value="cash">Cash Wallet</option>
             <option value="card">Credit Card / BNPL (Atome)</option>
         </select>
@@ -3064,10 +3135,33 @@ populateAccountDropdown() {
     });
 },
 
+selectAccountPreset(name, type, last4) {
+    document.getElementById('acc-name-input').value = name;
+    document.getElementById('acc-type-select').value = type;
+    document.getElementById('acc-digits-input').value = last4 || '';
+    
+    // Highlight selected preset chip
+    document.querySelectorAll('.preset-chip').forEach(chip => {
+        const text = chip.textContent.trim();
+        if (name && text.toLowerCase().includes(name.split(' ')[0].toLowerCase())) {
+            chip.classList.add('selected');
+        } else if (!name && text.includes('Custom')) {
+            chip.classList.add('selected');
+        } else {
+            chip.classList.remove('selected');
+        }
+    });
+
+    // Auto-focus starting balance input for fast typing
+    const balInput = document.getElementById('acc-balance-input');
+    if (balInput) balInput.focus();
+},
+
 openAddAccountModal() {
     document.getElementById('acc-name-input').value = '';
     document.getElementById('acc-balance-input').value = '';
     document.getElementById('acc-digits-input').value = '';
+    document.querySelectorAll('.preset-chip').forEach(chip => chip.classList.remove('selected'));
     this.openModal('modal-add-account');
 },
 
@@ -5162,38 +5256,58 @@ updateGoalsUI() {
                 }
             },
 
-            openEditAllowanceModal() {
-                document.getElementById('edit-allowance-amount').value = this.state.balance || '';
-                document.getElementById('edit-allowance-date').value = this.state.targetAllowanceDate || '';
-                this.openModal('modal-edit-allowance');
-            },
+openEditAllowanceModal() {
+    // Populate account selector dropdown with live account balances
+    const selectEl = document.getElementById('edit-allowance-account-select');
+    if (selectEl) {
+        selectEl.innerHTML = '';
+        (this.state.accounts || []).forEach(acc => {
+            selectEl.insertAdjacentHTML('beforeend', `
+                <option value="${acc.id}">${acc.name} (Current: ${this.formatPeso(acc.balance)})</option>
+            `);
+        });
+    }
 
-            confirmEditAllowance() {
+    document.getElementById('edit-allowance-amount').value = '';
+    document.getElementById('edit-allowance-date').value = this.state.targetAllowanceDate || '';
+    this.openModal('modal-edit-allowance');
+},
+
+confirmEditAllowance() {
     const amt = parseFloat(document.getElementById('edit-allowance-amount').value);
     const dateVal = document.getElementById('edit-allowance-date').value;
+    const selectedAccId = document.getElementById('edit-allowance-account-select')?.value;
 
-    // 1. Validate inputs first
+    // Validate inputs
     if (isNaN(amt) || amt < 0) {
         alert("Please enter a valid allowance amount.");
         return;
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    // 1. Set the selected account's balance
+    const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
+    if (targetAccount) {
+        targetAccount.balance = amt;
+    }
 
-    // 2. Update cycle state with matching variable names
-    this.state.balance = amt;
-    this.state.initialAllowance = amt;
+    // 2. Recalculate total net balance across all accounts
+    this.state.balance = this.getCalculatedTotalBalance();
+    this.state.initialAllowance = this.state.balance;
+
+    // 3. Set cycle start and target date
+    const todayStr = new Date().toISOString().split('T')[0];
     this.state.allowanceStartDate = todayStr;
     if (dateVal) {
         this.state.targetAllowanceDate = dateVal;
     }
 
-    // 3. Recalculate and refresh UI
+    // 4. Save state & sync all UI views
     this.recalculateDailyLimit();
     this.saveState();
     this.updateHomeUI();
+    this.renderAccountsUI();
     this.closeModal('modal-edit-allowance');
-    this.showToast("Allowance & cycle updated!");
+    this.showToast("Allowance & account updated!");
 },
 
             toggleNotifications() {
