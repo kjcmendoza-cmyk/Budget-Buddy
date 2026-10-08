@@ -4919,85 +4919,94 @@ this.generateTip();
                 }
             },
 
-            saveExpense() {
-                const amtInput = document.getElementById('expense-amount');
-                const noteInput = document.getElementById('expense-note');
-                const amount = parseFloat(amtInput.value);
+saveExpense() {
+        const amtInput = document.getElementById('expense-amount');
+        const noteInput = document.getElementById('expense-note');
+        const amount = parseFloat(amtInput.value);
 
-                if (isNaN(amount) || amount <= 0) {
-                    this.showToast("Please enter a valid amount.");
-                    return;
-                }
+        if (isNaN(amount) || amount <= 0) {
+            this.showToast("Please enter a valid amount.");
+            return;
+        }
 
-                const catIcons = {
-                    'Food': 'fa-burger',
-                    'Transport': 'fa-car-side',
-                    'Coffee': 'fa-mug-hot',
-                    'School': 'fa-graduation-cap',
-                    'Shopping': 'fa-bag-shopping',
-                    'Entertainment': 'fa-gamepad',
-                    'Other': 'fa-ellipsis'
-                };
+        const catIcons = {
+            'Food': 'fa-burger',
+            'Transport': 'fa-car-side',
+            'Coffee': 'fa-mug-hot',
+            'School': 'fa-graduation-cap',
+            'Shopping': 'fa-bag-shopping',
+            'Entertainment': 'fa-gamepad',
+            'Other': 'fa-ellipsis'
+        };
 
-                // Calculate local YYYY-MM-DD date key
-                const now = new Date();
-                const localIsoDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; 
-                const expenseName = noteInput.value.trim() || this.state.selectedCategory;
+        // Calculate local YYYY-MM-DD date key
+        const now = new Date();
+        const localIsoDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const expenseName = noteInput.value.trim() || this.state.selectedCategory;
 
-                const newTx = {
-                    id: Date.now(),
-                    name: expenseName,
-                    category: this.state.selectedCategory,
-                    amount: amount,
-                    icon: catIcons[this.state.selectedCategory] || 'fa-receipt',
-                    color: "var(--primary-green)",
-                    period: 'Today',
-                    rawDate: localIsoDate,
-                    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                };
+        // Get the selected account ID from the form dropdown
+        const selectedAccId = document.getElementById('expense-account-select')?.value;
 
-                this.state.recentExpenses.unshift(newTx);
-                // Deduct directly from the selected account
-const selectedAccId = document.getElementById('expense-account-select')?.value;
-const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
+        const newTx = {
+            id: Date.now(),
+            name: expenseName,
+            category: this.state.selectedCategory,
+            amount: amount,
+            accountId: selectedAccId, // Saves account link for refunds on deletion
+            icon: catIcons[this.state.selectedCategory] || 'fa-receipt',
+            color: "var(--primary-green)",
+            period: 'Today',
+            rawDate: localIsoDate,
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        };
 
-if (targetAccount) {
-    targetAccount.balance = Math.max(0, targetAccount.balance - amount);
-}
+        if (!this.state.recentExpenses) this.state.recentExpenses = [];
+        this.state.recentExpenses.unshift(newTx);
 
-// Recalculate global net balance
-this.state.balance = this.getCalculatedTotalBalance();
+        // 1. Deduct directly from selected account's balance
+        const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
+        if (targetAccount) {
+            targetAccount.balance = Math.max(0, targetAccount.balance - amount);
+        }
 
-                // Save recurring subscription if toggled on
-                if (this.state.isRecurring) {
-                    const freq = document.getElementById('expense-frequency').value;
-                    const nextDate = document.getElementById('expense-first-date').value || localIsoDate;
+        // 2. Sync net balance
+        if (typeof this.getCalculatedTotalBalance === 'function') {
+            this.state.balance = this.getCalculatedTotalBalance();
+        }
 
-                    if (!this.state.subscriptions) this.state.subscriptions = [];
-                    
-                    this.state.subscriptions.push({
-                        id: Date.now() + 1,
-                        name: expenseName,
-                        amount: amount,
-                        frequency: freq,
-                        nextDate: nextDate,
-                        impactView: '1yr'
-                    });
+        // 3. Handle recurring subscription if checked
+        if (this.state.isRecurring) {
+            const freq = document.getElementById('expense-frequency')?.value || 'Monthly';
+            const nextDate = document.getElementById('expense-first-date')?.value || localIsoDate;
 
-                    this.state.isRecurring = false;
-                    this.toggleExpenseRecurringUI();
-                }
+            if (!this.state.subscriptions) this.state.subscriptions = [];
 
-                this.saveState();
-                this.recalculateDailyLimit();
-                this.updateHomeUI();
+            this.state.subscriptions.push({
+                id: Date.now() + 1,
+                name: expenseName,
+                amount: amount,
+                frequency: freq,
+                nextDate: nextDate,
+                impactView: '1yr'
+            });
 
-                amtInput.value = '';
-                noteInput.value = '';
+            this.state.isRecurring = false;
+            if (typeof this.toggleExpenseRecurringUI === 'function') {
+                this.toggleExpenseRecurringUI();
+            }
+        }
 
-                this.showScreen('home-screen');
-                this.showToast("Expense saved!");
-            },
+        // 4. Save and re-render UI
+        this.saveState();
+        this.recalculateDailyLimit();
+        this.updateHomeUI();
+
+        amtInput.value = '';
+        noteInput.value = '';
+
+        this.showScreen('home-screen');
+        this.showToast("Expense saved!");
+    },
 
 filterRecentSpending(filterVal) {
     const container = document.getElementById('recent-spending-list');
@@ -5073,18 +5082,33 @@ filterRecentSpending(filterVal) {
                 });
             },
 
-            deleteExpense(id) {
-                const exp = this.state.recentExpenses.find(e => e.id === id);
-                if (exp) {
-                    this.state.balance += exp.amount;
-                    this.state.recentExpenses = this.state.recentExpenses.filter(e => e.id !== id);
-                    this.saveState();
-                    this.recalculateDailyLimit();
-                    this.renderHistoryUI();
-                    this.updateHomeUI();
-                    this.showToast("Transaction deleted.");
-                }
-            },
+deleteExpense(id) {
+    const exp = this.state.recentExpenses.find(e => e.id === id);
+    if (exp) {
+        // 1. Refund the deleted amount back to the account used (or default to the first account)
+        let targetAccount = (this.state.accounts || []).find(a => a.id === exp.accountId);
+        if (!targetAccount && this.state.accounts && this.state.accounts.length > 0) {
+            targetAccount = this.state.accounts[0];
+        }
+        if (targetAccount) {
+            targetAccount.balance += exp.amount;
+        }
+
+        // 2. Remove transaction from list
+        this.state.recentExpenses = this.state.recentExpenses.filter(e => e.id !== id);
+
+        // 3. Recalculate total net balance from updated accounts
+        this.state.balance = this.getCalculatedTotalBalance();
+
+        // 4. Save state & re-render all UI views immediately
+        this.saveState();
+        this.recalculateDailyLimit();
+        this.renderHistoryUI();
+        this.renderAccountsUI(); // Updates Accounts screen cards immediately
+        this.updateHomeUI();     // Updates Home dashboard balance & daily limit immediately
+        this.showToast("Transaction deleted.");
+    }
+},
 
             calculateAffordability() {
                 const priceInput = document.getElementById('afford-price');
