@@ -1776,6 +1776,53 @@ body {
     font-size: 0.95rem;
 }
 
+/* Floating Financial Health Badge */
+.floating-health-widget {
+    position: absolute;
+    bottom: 82px; /* Floats right above the bottom navigation bar */
+    right: 16px;
+    z-index: 25;
+    background: var(--card-bg);
+    border: 2px solid var(--primary-green);
+    border-radius: 30px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.3s ease;
+}
+
+.floating-health-widget:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.floating-health-widget:active {
+    transform: scale(0.92);
+}
+
+.floating-health-heart {
+    font-size: 1.1rem;
+    color: var(--primary-green);
+    animation: heartBeat 1.8s infinite ease-in-out;
+}
+
+.floating-health-val {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--text-dark);
+}
+
+@keyframes heartBeat {
+    0%, 100% { transform: scale(1); }
+    15% { transform: scale(1.25); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.15); }
+}
+
     </style>
 </head>
 <body>
@@ -1870,7 +1917,7 @@ body {
             </div>
         </div>
 
-        <!-- ==============================
+<!-- ==============================
              SCREEN 1: HOME DASHBOARD
              ============================== -->
         <div id="home-screen" class="screen p-4">
@@ -1885,7 +1932,7 @@ body {
                 </div>
             </header>
 
-            <!-- Available Money Card -->
+            <!-- 1. Available Money Card -->
             <div class="available-money-card" onclick="app.showScreen('accounts-screen')" title="Click to edit Allowance & Cycle">
                 <div class="card-add-badge" onclick="event.stopPropagation(); app.openEditAllowanceModal();" title="Edit Allowance & Cycle">
                     <i class="fa-solid fa-plus"></i>
@@ -1903,50 +1950,11 @@ body {
                     <div class="days-left" id="home-days-left">0 days left</div>
                 </div>
                 <svg class="mini-graph" width="80" height="40" viewBox="0 0 80 40">
-                <path d="M0,40 L15,30 L30,35 L45,20 L60,25 L80,5" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </div>
-
-        <!-- Financial Health Score Card -->
-        <div class="health-score-card" onclick="app.openHealthScoreModal()" title="Click for health score breakdown">
-            <div class="health-score-left">
-                <div class="health-score-title">
-                    <i class="fa-solid fa-heart-pulse text-green" style="color: var(--primary-green);"></i> Financial Health
-                </div>
-                <div class="health-score-val-text">
-                    <span id="home-health-score">0</span><span style="font-size: 0.9rem; color: var(--text-gray);"> / 100</span>
-                </div>
-                <div>
-                    <span class="health-score-status-badge" id="home-health-status" style="background: var(--primary-green-light); color: var(--primary-green-dark);">Calculating...</span>
-                </div>
-            </div>
-            <div class="gauge-ring-wrapper">
-                <svg class="gauge-ring-svg" viewBox="0 0 70 70">
-                    <circle class="gauge-bg-circle" cx="35" cy="35" r="30"></circle>
-                    <circle class="gauge-progress-circle" id="home-health-gauge-circle" cx="35" cy="35" r="30"></circle>
+                    <path d="M0,40 L15,30 L30,35 L45,20 L60,25 L80,5" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <div class="gauge-score-center" id="home-health-gauge-text">0</div>
-            </div>
-        </div>
-            <div class="streak-card">
-                <div class="streak-badge">
-                    <div class="streak-icon">🔥</div>
-                    <div>
-                        <div style="font-size: 0.95rem; font-weight: 800;" id="home-streak-text">0-Day Smart Spender Streak!</div>
-                        <div style="font-size: 0.72rem; opacity: 0.9;" id="home-streak-sub">Start tracking to build your streak</div>
-                    </div>
-                </div>
-                <i class="fa-solid fa-chevron-right text-xs" style="opacity: 0.8;"></i>
             </div>
 
-            <div class="peer-nudge-card" style="background: var(--primary-green-light); border-color: var(--primary-green);">
-    <i class="fa-solid fa-shield-halved peer-nudge-icon" style="color: var(--primary-green-dark);"></i>
-    <div style="font-size: 0.78rem; font-weight: 700; color: var(--primary-green-dark); line-height: 1.25;">
-        <b>100% Offline & Private:</b> Your financial data never leaves this device.
-    </div>
-</div>
-
-            <!-- Safe to Spend Card -->
+            <!-- 2. Safe to Spend Card -->
             <div class="card safe-spend-card">
                 <div class="safe-left">
                     <div class="text-xs text-gray" style="font-weight: 700; text-transform: uppercase;">Safe to spend per day</div>
@@ -1962,7 +1970,7 @@ body {
                 </div>
             </div>
 
-            <!-- Quick Actions -->
+            <!-- 3. Quick Actions -->
             <div class="section-header">
                 <h2>Quick actions</h2>
             </div>
@@ -1983,22 +1991,20 @@ body {
                     <div class="qa-icon-wrapper blue"><i class="fa-solid fa-chart-pie"></i></div>
                     <div class="qa-label">Insights</div>
                 </div>
-            <div class="qa-item" onclick="app.showScreen('simulator-screen'); app.runSimulator();">
+                <div class="qa-item" onclick="app.showScreen('simulator-screen'); app.runSimulator();">
                     <div class="qa-icon-wrapper" style="background: var(--accent-orange-light); color: var(--accent-orange);"><i class="fa-solid fa-sliders"></i></div>
                     <div class="qa-label">Simulator</div>
                 </div>
                 <div class="qa-item" onclick="app.showScreen('subscriptions-screen')">
-    <div class="qa-icon-wrapper" style="background: var(--danger-red-light); color: var(--danger-red);">
-        <i class="fa-solid fa-arrows-rotate"></i>
-    </div>
-    <div class="qa-label">Subscriptions<br>& Recurring</div>
-</div>
-            </div> 
+                    <div class="qa-icon-wrapper" style="background: var(--danger-red-light); color: var(--danger-red);">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </div>
+                    <div class="qa-label">Subscriptions<br>& Recurring</div>
+                </div>
+            </div>
 
-            <!-- Action Banners (Manual / Hybrid Confirmations & Overdue Bills) -->
+            <!-- Action Banners & Recently Auto-Logged Queue -->
             <div id="home-action-banners"></div>
-
-            <!-- Recently Auto-Logged Queue -->
             <div id="home-auto-logged" style="display:none;" class="mt-4 mb-4">
                 <div class="section-header">
                     <h2>Recently Auto-Logged</h2>
@@ -2006,17 +2012,19 @@ body {
                 <div class="card transaction-list" id="auto-logged-list"></div>
             </div>
 
-            <!-- Upcoming Expenses -->
-            <div class="section-header">
-                <h2>Upcoming Expenses</h2>
-                <span class="text-xs text-gray" id="home-total-reserved" style="font-weight: 700;">Total reserved ₱0</span>
-            </div>
-            <div class="card transaction-list" id="home-upcoming-list"></div>
-            <div class="text-center mt-2">
-                <a href="#" onclick="app.showScreen('upcoming-screen'); return false;" class="text-xs text-gray" style="text-decoration: underline;">View all</a>
+            <!-- 4. Streak -->
+            <div class="streak-card">
+                <div class="streak-badge">
+                    <div class="streak-icon">🔥</div>
+                    <div>
+                        <div style="font-size: 0.95rem; font-weight: 800;" id="home-streak-text">0-Day Smart Spender Streak!</div>
+                        <div style="font-size: 0.72rem; opacity: 0.9;" id="home-streak-sub">Start tracking to build your streak</div>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs" style="opacity: 0.8;"></i>
             </div>
 
-            <!-- Recent Spending -->
+            <!-- 5. Recent Spending -->
             <div class="section-header">
                 <h2>Recent Spending</h2>
                 <select id="recent-filter-select" onchange="app.filterRecentSpending(this.value)" style="border:none; background:transparent; font-family: 'Nunito'; color: var(--text-gray); font-size: 0.875rem; font-weight: 600; outline:none; cursor:pointer;">
@@ -2029,7 +2037,17 @@ body {
                 <a href="#" onclick="app.showScreen('history-screen'); return false;" class="text-xs text-gray" style="text-decoration: underline; font-weight: 700;">View all transactions</a>
             </div>
 
-            <!-- Personalized Tip (Dynamic & Expandable) -->
+            <!-- 6. Upcoming Spending -->
+            <div class="section-header">
+                <h2>Upcoming Expenses</h2>
+                <span class="text-xs text-gray" id="home-total-reserved" style="font-weight: 700;">Total reserved ₱0</span>
+            </div>
+            <div class="card transaction-list" id="home-upcoming-list"></div>
+            <div class="text-center mt-2">
+                <a href="#" onclick="app.showScreen('upcoming-screen'); return false;" class="text-xs text-gray" style="text-decoration: underline;">View all</a>
+            </div>
+
+            <!-- 7. Welcome to BudgetBuddy / Dynamic Tip -->
             <div class="tip-card" id="dynamic-tip-card" onclick="app.toggleTip()">
                 <div class="tip-icon"><i class="fa-solid fa-lightbulb"></i></div>
                 <div class="tip-content" style="flex:1;">
@@ -2038,6 +2056,14 @@ body {
                     <div id="tip-expanded" class="tip-expanded-content"></div>
                 </div>
                 <div><i class="fa-solid fa-chevron-down text-gray text-sm" id="tip-chevron"></i></div>
+            </div>
+
+            <!-- 8. 100% Offline & Private -->
+            <div class="peer-nudge-card" style="background: var(--primary-green-light); border-color: var(--primary-green);">
+                <i class="fa-solid fa-shield-halved peer-nudge-icon" style="color: var(--primary-green-dark);"></i>
+                <div style="font-size: 0.78rem; font-weight: 700; color: var(--primary-green-dark); line-height: 1.25;">
+                    <b>100% Offline & Private:</b> Your financial data never leaves this device.
+                </div>
             </div>
         </div>
 
@@ -2625,9 +2651,15 @@ body {
             <div id="subscriptions-list" class="flex flex-col gap-2 mt-2"></div>
         </div>
 
-        <!-- ==============================
+<!-- ==============================
              BOTTOM NAVIGATION
              ============================== -->
+        <!-- Floating Financial Health Badge -->
+        <div class="floating-health-widget" id="floating-health-widget" onclick="app.openHealthScoreModal()" title="View Financial Health Breakdown">
+            <i class="fa-solid fa-heart-pulse floating-health-heart" id="floating-health-icon"></i>
+            <span class="floating-health-val" id="floating-health-score">0</span>
+        </div>
+
         <nav class="bottom-nav">
             <div class="nav-item active" onclick="app.showScreen('home-screen')">
                 <i class="fa-solid fa-house"></i>
@@ -3237,7 +3269,7 @@ deleteAccount(id) {
         this.showToast("Account removed.");
     }
 },
-            updateHealthScoreUI() {
+updateHealthScoreUI() {
                 const data = this.calculateFinancialHealthScore();
 
                 const scoreEl = document.getElementById('home-health-score');
@@ -3245,9 +3277,19 @@ deleteAccount(id) {
                 const gaugeTextEl = document.getElementById('home-health-gauge-text');
                 const gaugeCircle = document.getElementById('home-health-gauge-circle');
 
+                // Floating Widget Elements
+                const floatWidget = document.getElementById('floating-health-widget');
+                const floatScoreEl = document.getElementById('floating-health-score');
+                const floatIconEl = document.getElementById('floating-health-icon');
+
                 if (scoreEl) scoreEl.textContent = data.score;
                 if (gaugeTextEl) gaugeTextEl.textContent = data.score;
                 
+                // Update Floating Heart Widget
+                if (floatScoreEl) floatScoreEl.textContent = data.score;
+                if (floatIconEl) floatIconEl.style.color = data.color;
+                if (floatWidget) floatWidget.style.borderColor = data.color;
+
                 if (statusEl) {
                     statusEl.textContent = data.status;
                     statusEl.style.color = data.color;
