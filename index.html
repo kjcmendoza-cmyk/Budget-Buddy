@@ -520,58 +520,107 @@ body {
             flex-shrink: 0;
         }
 
-        /* --- SAFE TO SPEND LAYOUT FIX --- */
+/* --- SAFE TO SPEND UI FIXES (FUTURE-PROOFED FOR LARGE NUMBERS) --- */
 .safe-spend-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 0.85rem;
+    padding: 1.15rem;
+}
+
+.safe-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 0.85rem;
-    gap: 12px;
+    width: 100%;
+    gap: 8px;
 }
 
-/* Allow the left side to grow fluidly so numbers don't truncate */
-.safe-left {
-    flex: 1 1 auto;
-    min-width: 0;
+.safe-card-title {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-gray);
+    white-space: nowrap;
 }
 
-.safe-left .amount { 
-    font-size: clamp(1.35rem, 5.2vw, 1.85rem); 
-    font-weight: 800; 
-    color: var(--primary-green);
-    line-height: 1.1;
+.mascot-status-box {
+    background: var(--primary-green-light);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 20px;
+    padding: 4px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.mascot-text {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--primary-green-dark);
+    white-space: nowrap;
+}
+
+.mascot-icon-wrapper {
+    font-size: 1.1rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.safe-spend-main {
     margin: 2px 0 4px 0;
 }
 
-/* Compact the mascot badge to prevent crushing the left column */
-.safe-right {
-    flex: 0 0 auto;
-    max-width: 48%;
-    display: flex;
-    justify-content: flex-end;
+.safe-spend-card .amount {
+    font-size: clamp(1.5rem, 5.8vw, 2.1rem) !important;
+    font-weight: 800;
+    color: var(--primary-green);
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    overflow: visible;
 }
 
-.mascot-area {
-    display: flex;
-    align-items: center;
+/* Dedicated Sub-metrics 2-Column Grid */
+.safe-metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
-    background: var(--primary-green-light);
-    padding: 8px 10px;
-    border-radius: 14px;
-    width: auto;
+    background: var(--bg-color);
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
 }
 
-.mascot-bubble { 
-    font-size: 0.72rem; 
-    color: var(--primary-green-dark); 
-    font-weight: 700; 
-    line-height: 1.2;
-    word-wrap: break-word; 
+.metric-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
 }
 
-.mascot-icon { 
-    font-size: 1.35rem; 
-    flex-shrink: 0; 
+.metric-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-gray);
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.metric-val {
+    font-size: clamp(0.85rem, 3.2vw, 1.05rem);
+    font-weight: 800;
+    color: var(--text-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.metric-val.green {
+    color: var(--primary-green-dark);
 }
 
         .section-header {
@@ -1954,21 +2003,31 @@ body {
                 </svg>
             </div>
 
-            <!-- 2. Safe to Spend Card -->
-            <div class="card safe-spend-card">
-                <div class="safe-left">
-                    <div class="text-xs text-gray" style="font-weight: 700; text-transform: uppercase;">Safe to spend per day</div>
-                    <div class="amount" id="home-daily-limit">₱0</div>
-                    <div class="text-xs text-gray">Daily limit</div>
-                    <div class="text-xs mt-2" id="home-safe-remaining" style="font-weight: 800; color: var(--primary-green); white-space: nowrap;">₱0 left today</div>
-                </div>
-                <div class="safe-right">
-                    <div class="mascot-area">
-                        <div class="mascot-bubble" id="mascot-bubble">Set up your budget<br>to get started!</div>
-                        <div class="mascot-icon" id="mascot-icon">🤖</div>
-                    </div>
-                </div>
-            </div>
+<!-- 2. Safe to Spend Card -->
+<div class="card safe-spend-card">
+    <div class="safe-card-header">
+        <div class="safe-card-title">Safe to spend per day</div>
+        <div class="mascot-status-box">
+            <div class="mascot-text" id="mascot-bubble">You're on track!</div>
+            <div class="mascot-icon-wrapper" id="mascot-icon">🤖</div>
+        </div>
+    </div>
+
+    <div class="safe-spend-main">
+        <div class="amount" id="home-daily-limit">₱0</div>
+    </div>
+
+    <div class="safe-metrics-grid">
+        <div class="metric-item">
+            <span class="metric-label">Remaining Today</span>
+            <span class="metric-val green" id="val-remaining">₱0</span>
+        </div>
+        <div class="metric-item">
+            <span class="metric-label">Spent Today</span>
+            <span class="metric-val" id="val-spent">₱0</span>
+        </div>
+    </div>
+</div>
 
             <!-- 3. Quick Actions -->
             <div class="section-header">
@@ -3823,39 +3882,42 @@ showScreen(screenId) {
                 }
             },
 
-            updateMascot() {
-                const todayTotal = this.getTodayTotal();
-                const limit = this.state.dailyLimit;
-                const remainingSafe = limit - todayTotal;
-                
-                const mascotBubble = document.getElementById('mascot-bubble');
-                const mascotIcon = document.getElementById('mascot-icon');
-                const remainingEl = document.getElementById('home-safe-remaining');
-                
-                // Update the remaining "Safe to spend" balance
-                if (remainingEl) {
-                    if (remainingSafe >= 0) {
-                        remainingEl.textContent = this.formatPeso(remainingSafe) + " left today";
-                        remainingEl.style.color = "var(--primary-green)";
-                    } else {
-                        remainingEl.textContent = this.formatPeso(Math.abs(remainingSafe)) + " overspent";
-                        remainingEl.style.color = "var(--danger-red)";
-                    }
-                }
+updateMascot() {
+    const todayTotal = this.getTodayTotal();
+    const limit = this.state.dailyLimit;
+    const remainingSafe = limit - todayTotal;
+    
+    const mascotBubble = document.getElementById('mascot-bubble');
+    const mascotIcon = document.getElementById('mascot-icon');
+    const remValEl = document.getElementById('val-remaining');
+    const spentValEl = document.getElementById('val-spent');
+    
+    if (remValEl) {
+        remValEl.textContent = this.formatPeso(remainingSafe);
+        if (remainingSafe < 0) {
+            remValEl.style.color = "var(--danger-red)";
+        } else {
+            remValEl.style.color = "var(--primary-green-dark)";
+        }
+    }
 
-                if (!mascotBubble) return;
+    if (spentValEl) {
+        spentValEl.textContent = this.formatPeso(todayTotal);
+    }
 
-                if (limit === 0 && todayTotal === 0) {
-                    mascotBubble.innerHTML = "Set up your budget<br>to get started!";
-                    if (mascotIcon) mascotIcon.textContent = "🤖";
-                } else if (todayTotal <= limit) {
-                    mascotBubble.innerHTML = "You're on track!<br>Keep it up!";
-                    if (mascotIcon) mascotIcon.textContent = "🤖";
-                } else {
-                    mascotBubble.innerHTML = "Oops, we went a bit over today. Let's adjust tomorrow!";
+    if (!mascotBubble) return;
+
+    if (limit === 0 && todayTotal === 0) {
+        mascotBubble.textContent = "Set up budget";
+        if (mascotIcon) mascotIcon.textContent = "🤖";
+    } else if (todayTotal <= limit) {
+        mascotBubble.textContent = "You're on track!";
+        if (mascotIcon) mascotIcon.textContent = "🤖";
+    } else {
+        mascotBubble.textContent = "Over limit!";
         if (mascotIcon) mascotIcon.textContent = "🚨";
-                }
-            },
+    }
+},
 
 generateTip() {
     const titleEl = document.getElementById('tip-title');
@@ -4916,13 +4978,14 @@ const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
     const limitEl = document.getElementById('home-daily-limit');
     if (limitEl) limitEl.textContent = this.formatPeso(dailyLimitVal);
 
-    const safeRemEl = document.getElementById('home-safe-remaining');
-    if (safeRemEl) {
-        safeRemEl.textContent = `${this.formatPeso(remainingSafeToday)} left today (Spent: ${this.formatPeso(spentToday)})`;
-    }
-    // Update Next Allowance Date & Days Left on Dashboard
-    const targetDateEl = document.getElementById('home-target-date');
-    if (targetDateEl) targetDateEl.textContent = this.getAllowanceTargetDate();
+const safeRemEl = document.getElementById('home-safe-remaining');
+if (safeRemEl) {
+    safeRemEl.innerHTML = `<span>${this.formatPeso(remainingSafeToday)} left today</span> <span class="spent-subtext">(Spent: ${this.formatPeso(spentToday)})</span>`;
+}
+
+// Update Next Allowance Date & Days Left on Dashboard
+const targetDateEl = document.getElementById('home-target-date');
+if (targetDateEl) targetDateEl.textContent = this.getAllowanceTargetDate();
 
     const daysLeftEl = document.getElementById('home-days-left');
     if (daysLeftEl) {
