@@ -123,14 +123,18 @@
                     // Overwrite with base default state to avoid registration bugs
 await db.collection('users').doc(uid).set({
     isLoggedIn: true,
-    balance: 1450,
-    remainingDays: 29,
-    dailyLimit: 50,
+    balance: 0,
+    initialAllowance: 0,
+    remainingDays: 0,
+    dailyLimit: 0,
     streakDays: 0,
+    targetAllowanceDate: "",
+    allowanceStartDate: "",
     recentExpenses: [],
     goals: [],
     upcomingExpenses: [],
     subscriptions: [],
+    accounts: [],
     badges: [],
     affordChecksCount: 0,
     nightlyWrapCount: 0
