@@ -1285,25 +1285,39 @@ body {
             line-height: 1.3;
         }
 
-        .chart-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
-        .chart-card-title {
-            font-size: 0.95rem;
-            font-weight: 800;
-            color: var(--text-dark);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            margin-top: 0.5rem;
-        }
+.chart-card-header {
+    margin-bottom: 0.85rem;
+}
+
+.chart-title-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.chart-card-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chart-subtitle,
+#burndown-cycle-label {
+    font-size: 0.75rem !important;
+    font-weight: 700;
+    color: var(--text-gray);
+    margin-left: 24px; /* Indents the subtitle neatly directly beneath the title text */
+}
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 220px !important; /* Added slightly more height for breathing room */
+    margin-top: 0.5rem;
+}
 
         /* Category Breakdown Pills */
         .category-breakdown-list {
@@ -2376,13 +2390,15 @@ body {
 <!-- Allowance Burndown Chart Card -->
 <div class="card mb-4">
     <div class="chart-card-header">
-        <div class="chart-card-title" style="white-space: nowrap; font-size: 0.92rem;">
-            <i class="fa-solid fa-chart-line text-green" style="color: var(--primary-green);"></i>
-            <span>Allowance Burndown</span>
+        <div class="chart-title-group">
+            <div class="chart-card-title">
+                <i class="fa-solid fa-chart-line text-green" style="color: var(--primary-green);"></i>
+                <span>Allowance Burndown</span>
+            </div>
+            <span class="chart-subtitle" id="burndown-cycle-label">30-Day Cycle (Oct 8 - Nov 6)</span>
         </div>
-        <span class="text-gray" id="burndown-cycle-label" style="font-weight: 700; font-size: 0.60rem;">12-Day Cycle (Oct 6 - Oct 18)</span>
     </div>
-    <div class="chart-container" style="height: 200px;">
+    <div class="chart-container">
         <canvas id="burndownChart"></canvas>
     </div>
 </div>
@@ -2390,13 +2406,15 @@ body {
 <!-- Daily Limit vs Spent Chart Card -->
 <div class="card mb-4">
     <div class="chart-card-header">
-        <div class="chart-card-title">
-            <i class="fa-solid fa-chart-bar text-green" style="color: var(--primary-green);"></i>
-            <span>Daily Limit vs. Spent</span>
+        <div class="chart-title-group">
+            <div class="chart-card-title">
+                <i class="fa-solid fa-chart-bar text-green" style="color: var(--primary-green);"></i>
+                <span>Daily Limit vs. Spent</span>
+            </div>
+            <span class="chart-subtitle">Mon - Sun</span>
         </div>
-        <span class="text-xs text-gray" style="font-weight: 700;">Mon - Sun</span>
     </div>
-    <div class="chart-container" style="height: 200px;">
+    <div class="chart-container">
         <canvas id="dailyVsSpentChart"></canvas>
     </div>
 </div>
@@ -3416,7 +3434,7 @@ setBurnRateView(view) {
                 // Safely removed
             },
 
-            renderBurndownChart() {
+renderBurndownChart() {
     const canvas = document.getElementById('burndownChart');
     if (!canvas) return;
 
@@ -3425,7 +3443,6 @@ setBurnRateView(view) {
         this.charts.burndown.destroy();
     }
 
-    // Local date formatter (YYYY-MM-DD) to prevent timezone shifts from toISOString
     const formatLocalDateKey = (d) => {
         const dateObj = new Date(d);
         const y = dateObj.getFullYear();
@@ -3434,7 +3451,6 @@ setBurnRateView(view) {
         return `${y}-${m}-${day}`;
     };
 
-    // 1. Determine Cycle Date Bounds
     const startDateStr = this.state.allowanceStartDate || formatLocalDateKey(new Date());
     const endDateStr = this.state.targetAllowanceDate;
 
@@ -3454,7 +3470,6 @@ setBurnRateView(view) {
     today.setHours(0, 0, 0, 0);
     const todayKey = formatLocalDateKey(today);
 
-    // 2. Build Labels & Data Points
     const labels = [];
     const idealData = [];
     const actualData = [];
@@ -3462,7 +3477,6 @@ setBurnRateView(view) {
     const initialAllowance = this.state.initialAllowance || this.state.balance || 0;
     let currentActualBal = initialAllowance;
 
-    // Group expenses by local date key
     const expensesByDate = {};
     (this.state.recentExpenses || []).forEach(exp => {
         if (exp.rawDate || exp.date) {
@@ -3479,13 +3493,11 @@ setBurnRateView(view) {
         const dateStr = currDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         labels.push(dateStr);
 
-        // Ideal burndown pace
         const idealVal = Math.max(0, initialAllowance - (i * (initialAllowance / totalCycleDays)));
         idealData.push(Math.round(idealVal));
 
         const dateKey = formatLocalDateKey(currDate);
 
-        // Deduct expenses for this specific date
         if (i === 0) {
             currentActualBal = initialAllowance - (expensesByDate[dateKey] || 0);
         } else {
@@ -3495,7 +3507,6 @@ setBurnRateView(view) {
         if (currDate < today) {
             actualData.push(Math.max(0, Math.round(currentActualBal)));
         } else if (dateKey === todayKey) {
-            // Explicitly sync today's plot point to live account balance
             actualData.push(Math.max(0, Math.round(this.state.balance)));
         } else {
             actualData.push(null);
@@ -3507,82 +3518,104 @@ setBurnRateView(view) {
         labelEl.textContent = `${totalCycleDays}-Day Cycle (${labels[0]} - ${labels[labels.length - 1]})`;
     }
 
-    // 3. Render Chart.js Burndown Line Graph
     const textColor = this.state.darkMode ? '#f8fafc' : '#1e293b';
     const gridColor = this.state.darkMode ? '#334155' : '#e2e8f0';
 
     this.charts.burndown = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: labels,
-        datasets: [
-            {
-                label: 'Ideal Pace',
-                data: idealData,
-                borderColor: '#94a3b8',
-                borderDash: [5, 5],
-                borderWidth: 2,
-                fill: false,
-                pointRadius: 2,           // Optional: makes hover targets easier to hit
-                pointHoverRadius: 5
-            },
-            {
-                label: 'Actual Balance',
-                data: actualData,
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                pointRadius: 3,
-                pointHoverRadius: 6
-            }
-        ]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-            mode: 'index',       
-            intersect: false     
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Ideal Pace',
+                    data: idealData,
+                    borderColor: '#94a3b8',
+                    borderDash: [4, 4],
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0,
+                    pointHoverRadius: 4
+                },
+                {
+                    label: 'Actual Balance',
+                    data: actualData,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.2,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#10b981',
+                    pointHoverRadius: 6
+                }
+            ]
         },
-        plugins: {
-            // Add the legend configuration here to right-align
-            legend: {
-                align: 'end'
-            },
-            tooltip: {
-                enabled: true,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
                 mode: 'index',
-                intersect: false,
-                callbacks: {
-                    label: function(context) {
-                        let label = context.dataset.label || '';
-                        if (label) {
-                            label += ': ';
+                intersect: false
+            },
+            plugins: {
+                legend: {
+                    align: 'end',
+                    labels: {
+                        boxWidth: 8,
+                        boxHeight: 8,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 12,
+                        color: textColor,
+                        font: { family: 'Nunito', size: 11, weight: '700' }
+                    }
+                },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                    titleFont: { family: 'Nunito', size: 12, weight: '800' },
+                    bodyFont: { family: 'Nunito', size: 11, weight: '600' },
+                    padding: 10,
+                    cornerRadius: 10,
+                    displayColors: true,
+                    boxWidth: 8,
+                    boxHeight: 8,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.parsed.y !== null) {
+                                label += '₱' + context.parsed.y.toLocaleString();
+                            }
+                            return label;
                         }
-                        if (context.parsed.y !== null) {
-                            label += '₱' + context.parsed.y.toLocaleString();
-                        }
-                        return label;
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        color: textColor,
+                        font: { family: 'Nunito', size: 10, weight: '700' },
+                        maxRotation: 0, // Prevents angled date rotation
+                        minRotation: 0,
+                        maxTicksLimit: 6, // Keeps dates clean & un-crowded
+                        autoSkip: true
+                    }
+                },
+                y: {
+                    grid: { color: gridColor },
+                    ticks: {
+                        color: textColor,
+                        font: { family: 'Nunito', size: 10, weight: '700' },
+                        maxTicksLimit: 5,
+                        callback: value => (value >= 1000 ? '₱' + (value / 1000) + 'k' : '₱' + value)
                     }
                 }
             }
-        },
-        scales: {
-            x: {
-                grid: { display: false },
-                ticks: { color: textColor }
-            },
-            y: {
-                grid: { color: gridColor },
-                ticks: {
-                    color: textColor,
-                    callback: value => '₱' + value
-                }
-            }
         }
-    }
-});
+    });
 }, // <-- Add this brace to close the enclosing function/method
 
 init() {
@@ -4193,7 +4226,7 @@ getDailyExpensesData(labels) {
         });
     },
 
-    renderDailyVsSpentChart() {
+renderDailyVsSpentChart() {
     const canvas = document.getElementById('dailyVsSpentChart');
     if (!canvas) return;
 
@@ -4250,7 +4283,7 @@ getDailyExpensesData(labels) {
     const gridColor = this.state.darkMode ? '#334155' : '#e2e8f0';
 
     this.charts.dailyVsSpent = new Chart(ctx, {
-        type: 'bar', // Set root type to bar
+        type: 'bar',
         data: {
             labels: daysOfWeek,
             datasets: [
@@ -4271,7 +4304,7 @@ getDailyExpensesData(labels) {
                     backgroundColor: '#10b981',
                     borderRadius: 6,
                     borderWidth: 0,
-                    barThickness: 18
+                    barThickness: 16
                 }
             ]
         },
@@ -4285,9 +4318,22 @@ getDailyExpensesData(labels) {
             plugins: {
                 legend: {
                     align: 'end',
-                    labels: { color: textColor }
+                    labels: {
+                        boxWidth: 8,
+                        boxHeight: 8,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 12,
+                        color: textColor,
+                        font: { family: 'Nunito', size: 11, weight: '700' }
+                    }
                 },
                 tooltip: {
+                    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                    titleFont: { family: 'Nunito', size: 12, weight: '800' },
+                    bodyFont: { family: 'Nunito', size: 11, weight: '600' },
+                    padding: 10,
+                    cornerRadius: 10,
                     callbacks: {
                         label: function(context) {
                             let label = context.dataset.label || '';
@@ -4303,14 +4349,16 @@ getDailyExpensesData(labels) {
             scales: {
                 x: {
                     grid: { display: false },
-                    ticks: { color: textColor }
+                    ticks: { color: textColor, font: { family: 'Nunito', size: 10, weight: '700' } }
                 },
                 y: {
                     beginAtZero: true,
                     grid: { color: gridColor },
                     ticks: {
                         color: textColor,
-                        callback: value => '₱' + value
+                        font: { family: 'Nunito', size: 10, weight: '700' },
+                        maxTicksLimit: 5,
+                        callback: value => (value >= 1000 ? '₱' + (value / 1000) + 'k' : '₱' + value)
                     }
                 }
             }
