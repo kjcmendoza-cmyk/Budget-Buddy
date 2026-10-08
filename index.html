@@ -4215,21 +4215,19 @@ loadState() {
     }
 },
 
-            recalculateDailyLimit() {
-    // Prevent division by zero if target date is missing or today
+recalculateDailyLimit() {
     const daysLeft = getDaysLeft(this.state.targetAllowanceDate) || 1; 
     this.state.remainingDays = daysLeft;
     
-    // Calculate and assign the safe daily limit
-    this.state.dailyLimit = Math.max(0, this.state.balance / daysLeft);
+    // Add today's total spent back to compute the start-of-day balance
+    const spentToday = this.getTodayTotal();
+    const startOfDayBalance = this.state.balance + spentToday;
+    
+    // Calculate the fixed daily limit baseline for today
+    this.state.dailyLimit = Math.max(0, startOfDayBalance / daysLeft);
 
-    // Update the dashboard UI
     const limitEl = document.getElementById('home-daily-limit');
     if (limitEl) limitEl.textContent = this.formatPeso(this.state.dailyLimit);
-    
-    // Update the chart header label
-    const chartLabel = document.getElementById('daily-limit-chart-label');
-    if (chartLabel) chartLabel.textContent = `Limit: ${this.formatPeso(this.state.dailyLimit)}/day`;
     
     if (typeof this.updateMascot === 'function') this.updateMascot();
 },
