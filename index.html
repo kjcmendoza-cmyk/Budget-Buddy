@@ -1939,18 +1939,17 @@ body {
                 <i class="fa-solid fa-chevron-right text-xs" style="opacity: 0.8;"></i>
             </div>
 
-            <!-- Social Proof Peer Nudge -->
-            <div class="peer-nudge-card">
-                <i class="fa-solid fa-users peer-nudge-icon"></i>
-                <div style="font-size: 0.78rem; font-weight: 700; color: var(--accent-blue); line-height: 1.25;" id="peer-insight-text">
-                    <b>Peer Insight:</b> Analyzing your cohort data...
-                </div>
-            </div>
+            <div class="peer-nudge-card" style="background: var(--primary-green-light); border-color: var(--primary-green);">
+    <i class="fa-solid fa-shield-halved peer-nudge-icon" style="color: var(--primary-green-dark);"></i>
+    <div style="font-size: 0.78rem; font-weight: 700; color: var(--primary-green-dark); line-height: 1.25;">
+        <b>100% Offline & Private:</b> Your financial data never leaves this device.
+    </div>
+</div>
 
             <!-- Safe to Spend Card -->
             <div class="card safe-spend-card">
                 <div class="safe-left">
-                    <div class="text-xs text-gray" style="font-weight: 700; text-transform: uppercase;">Safe to spend today</div>
+                    <div class="text-xs text-gray" style="font-weight: 700; text-transform: uppercase;">Safe to spend per day</div>
                     <div class="amount" id="home-daily-limit">₱0</div>
                     <div class="text-xs text-gray">Daily limit</div>
                     <div class="text-xs mt-2" id="home-safe-remaining" style="font-weight: 800; color: var(--primary-green); white-space: nowrap;">₱0 left today</div>
@@ -1966,7 +1965,6 @@ body {
             <!-- Quick Actions -->
             <div class="section-header">
                 <h2>Quick actions</h2>
-                <a href="#" onclick="app.showScreen('quick-add-screen'); return false;">See all</a>
             </div>
             <div class="quick-actions-grid">
                 <div class="qa-item" onclick="app.showScreen('quick-add-screen')">
@@ -3810,22 +3808,63 @@ if (screenId === 'quick-add-screen') {
                 }
             },
 
-            generateTip() {
-                const titleEl = document.getElementById('tip-title');
-                const shortEl = document.getElementById('tip-short');
-                const expEl = document.getElementById('tip-expanded');
-                if (!titleEl || !shortEl || !expEl) return;
+generateTip() {
+    const titleEl = document.getElementById('tip-title');
+    const shortEl = document.getElementById('tip-short');
+    const expEl = document.getElementById('tip-expanded');
+    if (!titleEl || !shortEl || !expEl) return;
 
-                if (this.state.recentExpenses.length === 0) {
-                    titleEl.textContent = "Welcome to BudgetBuddy!";
-                    shortEl.textContent = "Set your allowance to begin.";
-                    expEl.textContent = "Click on the 'AVAILABLE MONEY' card above to set your starting balance and schedule your next allowance date.";
-                } else {
-                    titleEl.textContent = "Smart Saving Tip";
-                    shortEl.textContent = "Keep tracking your daily expenses!";
-                    expEl.textContent = "Logging your expenses every day helps you stay aware of your financial habits and reach your goals faster.";
-                }
-            },
+    const expenses = this.state.recentExpenses || [];
+    const balance = this.state.balance || 0;
+    const dailyLimit = this.state.dailyLimit || 0;
+
+    // 1. Case: No expenses logged yet
+    if (expenses.length === 0) {
+        titleEl.textContent = "Welcome to BudgetBuddy!";
+        shortEl.textContent = "Set your allowance to begin.";
+        expEl.textContent = "Click on the 'AVAILABLE MONEY' card above to set your starting balance and schedule your next allowance date.";
+        return;
+    }
+
+    // 2. Case: Calculate Top Category
+    const catTotals = {};
+    let totalSpent = 0;
+    expenses.forEach(e => {
+        catTotals[e.category] = (catTotals[e.category] || 0) + e.amount;
+        totalSpent += e.amount;
+    });
+
+    let topCategory = "";
+    let maxCatSpent = 0;
+    for (const [cat, amt] of Object.entries(catTotals)) {
+        if (amt > maxCatSpent) {
+            maxCatSpent = amt;
+            topCategory = cat;
+        }
+    }
+
+    const todaySpent = this.getTodayTotal();
+
+    // 3. Dynamic Insights Logic
+    if (todaySpent > dailyLimit && dailyLimit > 0) {
+        titleEl.textContent = "⚠️ Over Daily Limit";
+        shortEl.textContent = `You spent ${this.formatPeso(todaySpent - dailyLimit)} over your daily limit today.`;
+        expEl.textContent = `Try cutting back on non-essential spending tomorrow to keep your daily budget balanced before your next allowance.`;
+    } else if (topCategory && maxCatSpent / (totalSpent || 1) > 0.4) {
+        const pct = Math.round((maxCatSpent / totalSpent) * 100);
+        titleEl.textContent = `High Spending in ${topCategory}`;
+        shortEl.textContent = `${topCategory} takes up ${pct}% of your total spending (${this.formatPeso(maxCatSpent)}).`;
+        expEl.textContent = `Consider setting a weekly cap for ${topCategory.toLowerCase()} to free up money for your active savings goals!`;
+    } else if (this.state.streakDays >= 3) {
+        titleEl.textContent = "🔥 Great Momentum!";
+        shortEl.textContent = `You're on a ${this.state.streakDays}-day budget streak!`;
+        expEl.textContent = `Consistently staying under your daily limit ensures you can put excess funds directly into your active goals.`;
+    } else {
+        titleEl.textContent = "Smart Spender Tip";
+        shortEl.textContent = "Keep your daily limit in check!";
+        expEl.textContent = `Your current safe daily spending limit is ${this.formatPeso(dailyLimit)}/day. Log transactions immediately to stay on track.`;
+    }
+},
 
             toggleTip() {
                 const exp = document.getElementById('tip-expanded');
@@ -4844,6 +4883,7 @@ const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
         daysLeftEl.textContent = `${days} day${days === 1 ? '' : 's'} left`;
     }
 this.updateHealthScoreUI();
+this.generateTip();
     // Refresh recent spending list
     this.filterRecentSpending(document.getElementById('recent-filter-select')?.value || 'Today');
 
