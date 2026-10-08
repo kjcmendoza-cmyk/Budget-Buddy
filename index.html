@@ -3722,14 +3722,15 @@ init() {
     });
 },
 
-           showScreen(screenId) {
-           // Add inside showScreen(screenId)
-if (screenId === 'accounts-screen') {
-    this.renderAccountsUI();
-}
-if (screenId === 'quick-add-screen') {
-    this.populateAccountDropdown();
-}
+showScreen(screenId) {
+                // Add inside showScreen(screenId)
+                if (screenId === 'accounts-screen') {
+                    this.renderAccountsUI();
+                }
+                if (screenId === 'quick-add-screen') {
+                    this.populateAccountDropdown();
+                }
+
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                 const target = document.getElementById(screenId);
                 if (target) target.classList.add('active');
@@ -3739,6 +3740,12 @@ if (screenId === 'quick-add-screen') {
                     if (nav) nav.style.display = 'none';
                 } else {
                     if (nav) nav.style.display = 'flex';
+                }
+
+                // --- SHOW FLOATING HEART ONLY ON HOME DASHBOARD ---
+                const floatWidget = document.getElementById('floating-health-widget');
+                if (floatWidget) {
+                    floatWidget.style.display = (screenId === 'home-screen') ? 'flex' : 'none';
                 }
 
                 // Update bottom nav active state
