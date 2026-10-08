@@ -2768,9 +2768,12 @@ body {
     <div class="modal-card">
         <h3 class="modal-title">Set Allowance & Cycle</h3>
         
-        <label class="text-xs text-gray" style="font-weight:700;">Deposit / Add Allowance To Account</label>
-        <select id="edit-allowance-account-select" class="generic-input">
-            <!-- Dynamically populated with GCash, BPI, Wallet Cash, etc. -->
+        <div class="flex justify-between items-center mb-1">
+            <label class="text-xs text-gray" style="font-weight:700;">Deposit / Add Allowance To Account</label>
+            <button type="button" onclick="app.closeModal('modal-edit-allowance'); app.openAddAccountModal();" style="background:none; border:none; color:var(--primary-green); font-size:0.75rem; font-weight:700; cursor:pointer;">+ Add Card</button>
+        </div>
+        <select id="edit-allowance-account-select" class="generic-input" onchange="if(this.value==='+new'){ app.closeModal('modal-edit-allowance'); app.openAddAccountModal(); }">
+            <!-- Dynamically populated from JavaScript -->
         </select>
 
         <label class="text-xs text-gray" style="font-weight:700;">Allowance / Cash-In Amount (₱)</label>
@@ -5308,11 +5311,21 @@ openEditAllowanceModal() {
     const selectEl = document.getElementById('edit-allowance-account-select');
     if (selectEl) {
         selectEl.innerHTML = '';
-        (this.state.accounts || []).forEach(acc => {
+        
+        if (!this.state.accounts || this.state.accounts.length === 0) {
             selectEl.insertAdjacentHTML('beforeend', `
-                <option value="${acc.id}">${acc.name} (Current: ${this.formatPeso(acc.balance)})</option>
+                <option value="+new">+ Create New Account / Card</option>
             `);
-        });
+        } else {
+            (this.state.accounts || []).forEach(acc => {
+                selectEl.insertAdjacentHTML('beforeend', `
+                    <option value="${acc.id}">${acc.name} (Current: ${this.formatPeso(acc.balance)})</option>
+                `);
+            });
+            selectEl.insertAdjacentHTML('beforeend', `
+                <option value="+new">+ Add New Account / Card</option>
+            `);
+        }
     }
 
     document.getElementById('edit-allowance-amount').value = '';
@@ -5321,9 +5334,18 @@ openEditAllowanceModal() {
 },
 
 confirmEditAllowance() {
+    const selectedAccId = document.getElementById('edit-allowance-account-select')?.value;
+
+    // If user selected "+ Add New Account / Card" or if no accounts exist
+    if (!selectedAccId || selectedAccId === '+new') {
+        this.closeModal('modal-edit-allowance');
+        this.openAddAccountModal();
+        this.showToast("Please create an account first!");
+        return;
+    }
+
     const amt = parseFloat(document.getElementById('edit-allowance-amount').value);
     const dateVal = document.getElementById('edit-allowance-date').value;
-    const selectedAccId = document.getElementById('edit-allowance-account-select')?.value;
 
     // Validate inputs
     if (isNaN(amt) || amt < 0) {
