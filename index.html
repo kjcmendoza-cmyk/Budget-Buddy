@@ -2542,24 +2542,25 @@ body {
 
             <!-- 2. Category Spending Breakdown (Donut Chart) -->
             <div class="card mb-4">
-                <div class="chart-card-header">
-                    <div class="chart-card-title">
-                        <i class="fa-solid fa-chart-pie text-purple"></i> Category Breakdown
-                    </div>
-                    <span class="text-xs text-gray" style="font-weight: 700;">Current Cycle</span>
-                </div>
-                
-                <div class="chart-container" style="height: 180px;">
-                    <canvas id="categoryDonutChart"></canvas>
-                </div>
+    <div class="chart-card-header flex justify-between items-center">
+        <div class="chart-card-title">
+            <i class="fa-solid fa-chart-pie text-purple"></i> Category Breakdown
+        </div>
+        <button onclick="app.openCategoryCapsModal()" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-dark); border-radius: 8px; padding: 4px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: 'Nunito';">
+            ⚙️ Set Caps
+        </button>
+    </div>
+    
+    <div class="chart-container" style="height: 180px;">
+        <canvas id="categoryDonutChart"></canvas>
+    </div>
 
-                <div class="category-breakdown-list" id="category-breakdown-list"></div>
-
-                <div class="category-detail-box" id="cat-insight-detail">
-                    <span>Awaiting data:</span>
-                    <span style="color: var(--danger-red);">No categories yet</span>
-                </div>
-            </div>
+    <div class="category-breakdown-list" id="category-breakdown-list"></div>
+    <div class="category-detail-box" id="cat-insight-detail">
+        <span>Awaiting data:</span>
+        <span style="color: var(--danger-red);">No categories yet</span>
+    </div>
+</div>
 
             <!-- 4. Top Spending Days & Peak Hours -->
             <div class="card mb-4">
@@ -2791,6 +2792,25 @@ body {
         <!-- ==============================
              MODALS
              ============================== -->
+             <!-- Category Budget Caps Modal -->
+        <div id="modal-category-caps" class="modal-overlay">
+            <div class="modal-card" style="max-width: 380px;">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="modal-title" style="margin-bottom:0;">Category Budget Caps</h3>
+                    <span class="text-xs text-gray" style="font-weight:700;">Monthly / Cycle</span>
+                </div>
+                <p class="text-xs text-gray mb-3">Set max spending limits to receive warning alerts as you approach them.</p>
+
+                <div id="category-caps-input-list" style="max-height: 280px; overflow-y: auto; padding-right: 4px;">
+                    <!-- Dynamically populated from JavaScript -->
+                </div>
+
+                <div class="modal-actions">
+                    <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-category-caps')">Cancel</button>
+                    <button class="modal-btn btn-confirm" onclick="app.saveCategoryCaps()">Save Caps</button>
+                </div>
+            </div>
+        </div>
              <!-- Financial Health Score Modal -->
         <div id="modal-health-score" class="modal-overlay">
             <div class="modal-card" style="max-width: 360px; width: 90%;">
@@ -3096,9 +3116,10 @@ function formatLocalDateKey(dateInput) {
 
         const app = {
             state: {
-            isMasked: false,
-selectedAccountFilter: 'All',
-accounts: [],
+                categoryCaps: {},
+                isMasked: false,
+                selectedAccountFilter: 'All',
+                accounts: [],
 
                 badgesCollapsed: true,
                  isRecurring: false,
@@ -5225,6 +5246,7 @@ saveExpense() {
         }
 
         // 4. Save and re-render UI
+        this.checkCategoryCapAlert(this.state.selectedCategory, amount);
         this.saveState();
         this.recalculateDailyLimit();
         this.updateHomeUI();
@@ -5706,6 +5728,69 @@ confirmEditAllowance() {
                 this.showToast(`Dark mode ${this.state.darkMode ? 'ON' : 'OFF'}`);
             },
 
+openCategoryCapsModal() {
+    const listEl = document.getElementById('category-caps-input-list');
+    if (!listEl) return;
+
+    const categories = ['Food', 'Transport', 'Coffee', 'School', 'Shopping', 'Entertainment', 'Bills', 'Other'];
+    const caps = this.state.categoryCaps || {};
+
+    listEl.innerHTML = '';
+    categories.forEach(cat => {
+        const currentCap = caps[cat] || '';
+        const html = `
+            <div class="flex justify-between items-center mb-2 gap-2" style="background: var(--bg-color); padding: 8px 12px; border-radius: 12px; border: 1px solid var(--border-color);">
+                <span style="font-weight: 700; font-size: 0.85rem; width: 110px;">${cat}</span>
+                <input type="number" id="cap-input-${cat}" class="generic-input" style="margin-bottom: 0; padding: 6px 10px; text-align: right; font-size: 0.85rem;" placeholder="No limit" value="${currentCap}" inputmode="decimal">
+            </div>
+        `;
+        listEl.insertAdjacentHTML('beforeend', html);
+    });
+
+    this.openModal('modal-category-caps');
+},
+
+saveCategoryCaps() {
+    const categories = ['Food', 'Transport', 'Coffee', 'School', 'Shopping', 'Entertainment', 'Bills', 'Other'];
+    if (!this.state.categoryCaps) this.state.categoryCaps = {};
+
+    categories.forEach(cat => {
+        const val = parseFloat(document.getElementById(`cap-input-${cat}`)?.value);
+        if (!isNaN(val) && val > 0) {
+            this.state.categoryCaps[cat] = val;
+        } else {
+            delete this.state.categoryCaps[cat];
+        }
+    });
+
+    this.saveState();
+    this.closeModal('modal-category-caps');
+    this.renderInsightsCharts();
+    this.showToast("Category caps updated!");
+},
+
+checkCategoryCapAlert(category, newAmount) {
+    const cap = this.state.categoryCaps ? this.state.categoryCaps[category] : null;
+    if (!cap || cap <= 0) return;
+
+    // Calculate current cycle spending for this category
+    const catSpent = (this.state.recentExpenses || [])
+        .filter(exp => exp.category === category)
+        .reduce((sum, exp) => safeAdd(sum, exp.amount || 0), 0);
+
+    const pct = Math.round((catSpent / cap) * 100);
+
+    if (pct >= 100) {
+        setTimeout(() => {
+            this.showToast(`🚨 Limit Exceeded: ${category} is at ${pct}% of cap (${this.formatPeso(catSpent)} / ${this.formatPeso(cap)})`);
+        }, 600);
+    } else if (pct >= 80) {
+        setTimeout(() => {
+            this.showToast(`⚠️ Cap Alert: ${category} has reached ${pct}% of its cap!`);
+        }, 600);
+    }
+},
+            
  renderInsightsCharts() {
     // Cleanly destroy all active chart instances before re-rendering
     this.destroyChart('burndown', 'burndownChart');
@@ -5748,29 +5833,66 @@ confirmEditAllowance() {
                     });
                 }
 
-                // Render breakdown list
-                const breakdownList = document.getElementById('category-breakdown-list');
-                const catDetail = document.getElementById('cat-insight-detail');
-                if (breakdownList) {
-                    breakdownList.innerHTML = '';
-                    if (catLabels.length === 0) {
-                        breakdownList.innerHTML = `<div class="text-xs text-gray text-center p-2">No category data yet</div>`;
-                    } else {
-                        catLabels.forEach((cat, i) => {
-                            const html = `
-                                <div class="cat-pill-item">
-                                    <div class="cat-pill-left">
-                                        <div class="cat-pill-dot" style="background:${colors[i % colors.length]}"></div>
-                                        <span>${cat}</span>
-                                    </div>
-                                    <span style="font-weight:800;">${this.formatPeso(catTotals[cat])}</span>
-                                </div>
-                            `;
-                            breakdownList.insertAdjacentHTML('beforeend', html);
-                        });
-                    }
+                // Render breakdown list inside renderInsightsCharts()
+const breakdownList = document.getElementById('category-breakdown-list');
+const catDetail = document.getElementById('cat-insight-detail');
+
+if (breakdownList) {
+    breakdownList.innerHTML = '';
+    if (catLabels.length === 0) {
+        breakdownList.innerHTML = `<div class="text-xs text-gray text-center p-2">No category data yet</div>`;
+    } else {
+        const caps = this.state.categoryCaps || {};
+
+        catLabels.forEach((cat, i) => {
+            const spent = catTotals[cat] || 0;
+            const cap = caps[cat];
+            let progressHtml = '';
+            let badgeHtml = '';
+
+            if (cap && cap > 0) {
+                const pct = Math.min(100, Math.round((spent / cap) * 100));
+                let barColor = 'var(--primary-green)';
+                let badgeClass = 'color: var(--primary-green-dark); background: var(--primary-green-light);';
+
+                if (pct >= 100) {
+                    barColor = 'var(--danger-red)';
+                    badgeClass = 'color: var(--danger-red); background: var(--danger-red-light);';
+                    badgeHtml = `<span style="font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:6px; ${badgeClass}">🚨 ${pct}% (Over Cap)</span>`;
+                } else if (pct >= 80) {
+                    barColor = 'var(--accent-orange)';
+                    badgeClass = 'color: var(--accent-orange); background: var(--accent-orange-light);';
+                    badgeHtml = `<span style="font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:6px; ${badgeClass}">⚠️ ${pct}%</span>`;
+                } else {
+                    badgeHtml = `<span style="font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:6px; ${badgeClass}">${pct}%</span>`;
                 }
 
+                progressHtml = `
+                    <div style="width: 100%; height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden; margin-top: 6px;">
+                        <div style="width: ${pct}%; height: 100%; background: ${barColor}; border-radius: 3px; transition: width 0.3s ease;"></div>
+                    </div>
+                `;
+            }
+
+            const capLabel = cap ? ` / ${this.formatPeso(cap)}` : '';
+
+            const html = `
+                <div class="cat-pill-item" style="flex-direction: column; align-items: stretch; padding: 10px 12px;">
+                    <div class="flex justify-between items-center">
+                        <div class="cat-pill-left">
+                            <div class="cat-pill-dot" style="background:${colors[i % colors.length]}"></div>
+                            <span>${cat}</span>
+                            ${badgeHtml}
+                        </div>
+                        <span style="font-weight:800; font-size:0.85rem;">${this.formatPeso(spent)}<span style="font-size:0.72rem; color:var(--text-gray); font-weight:600;">${capLabel}</span></span>
+                    </div>
+                    ${progressHtml}
+                </div>
+            `;
+            breakdownList.insertAdjacentHTML('beforeend', html);
+        });
+    }
+}
                 if (catDetail && catLabels.length > 0) {
                     const topCat = catLabels.reduce((a, b) => catTotals[a] > catTotals[b] ? a : b);
                     catDetail.innerHTML = `<span>Top Category: <b>${topCat}</b></span><span style="color:var(--primary-green)">${this.formatPeso(catTotals[topCat])}</span>`;
@@ -5830,9 +5952,9 @@ if (dailyCtx) {
                         }
                     });
                 }
-            } // <--- Closes renderInsightsCharts() method
+            } 
 
-        }; // Closes app object
+        }; 
 
         // Initialize App on DOM Loaded
         document.addEventListener('DOMContentLoaded', () => {
