@@ -3015,14 +3015,56 @@ body {
                 console.warn("Firebase config incomplete, operating in localStorage mode.", err);
             }
         }
+// Safely adds two currency amounts avoiding floating-point precision bugs
+function safeAdd(a, b) {
+    return Math.round((Number(a) + Number(b) + Number.EPSILON) * 100) / 100;
+}
+
+// Safely subtracts two currency amounts avoiding floating-point precision bugs
+function safeSub(a, b) {
+    return Math.round((Number(a) - Number(b) + Number.EPSILON) * 100) / 100;
+}
+// Safely converts 'YYYY-MM-DD' strings or Date objects into local midnight Date instances
+function parseLocalDate(dateInput) {
+    if (!dateInput) {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }
+    if (dateInput instanceof Date) {
+        const d = new Date(dateInput);
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }
+    if (typeof dateInput === 'string' && dateInput.includes('-')) {
+        const parts = dateInput.split('T')[0].split('-');
+        if (parts.length === 3) {
+            return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        }
+    }
+    const d = new Date(dateInput);
+    d.setHours(0, 0, 0, 0);
+    return d;
+}
+
+// Formats any Date object or string reliably as local 'YYYY-MM-DD'
+function formatLocalDateKey(dateInput) {
+    const d = parseLocalDate(dateInput);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
 
         function getDaysLeft(targetDateStr) {
-            if (!targetDateStr) return 0;
-            const today = new Date();
-            const targetDate = new Date(targetDateStr);
-            const diffTime = targetDate - today;
-            return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-        }
+    if (!targetDateStr) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const targetDate = parseLocalDate(targetDateStr);
+    const diffTime = targetDate - today;
+    return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+}
 
         function getNextCycleDate(dateStr, cycle) {
             if (!dateStr || !cycle || cycle === 'one-time') return null;
@@ -3225,7 +3267,8 @@ toggleMaskBalances() {
 
 getCalculatedTotalBalance() {
     if (!this.state.accounts) return 0;
-    return this.state.accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
+    const totalCents = this.state.accounts.reduce((sum, acc) => sum + Math.round((acc.balance || 0) * 100), 0);
+    return totalCents / 100;
 },
 
 filterAccounts(type, btnEl) {
@@ -3258,9 +3301,15 @@ renderAccountsUI() {
     const filtered = (this.state.accounts || []).filter(acc => filter === 'All' || acc.type === filter);
 
     if (filtered.length === 0) {
-        listEl.innerHTML = `<div class="text-center p-4 text-gray text-xs">No accounts found under this category.</div>`;
-        return;
-    }
+    listEl.innerHTML = `
+        <div style="text-align: center; padding: 2rem 1rem; color: var(--text-gray); background: var(--card-bg); border-radius: 16px; border: 1px dashed var(--border-color);">
+            <i class="fa-solid fa-wallet" style="font-size: 1.8rem; margin-bottom: 8px; opacity: 0.4;"></i>
+            <p style="font-size: 0.85rem; font-weight: 700;">No accounts found</p>
+            <p style="font-size: 0.75rem; margin-top: 4px;">No active cards or wallets under "${filter}".</p>
+        </div>
+    `;
+    return;
+}
 
     filtered.forEach(acc => {
         const balDisplay = this.state.isMasked ? '₱••••••' : this.formatPeso(acc.balance);
@@ -3598,41 +3647,43 @@ setBurnRateView(view) {
                 // Safely removed
             },
 
+destroyChart(key, canvasId) {
+    // 1. Destroy instance stored in this.charts
+    if (this.charts && this.charts[key]) {
+        this.charts[key].destroy();
+        delete this.charts[key];
+    }
+    // 2. Safeguard against Chart.js canvas memory leaks
+    if (canvasId && typeof Chart !== 'undefined') {
+        const existingChart = Chart.getChart(canvasId);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+    }
+},
+
 renderBurndownChart() {
     const canvas = document.getElementById('burndownChart');
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    if (this.charts.burndown) {
-        this.charts.burndown.destroy();
-    }
+        this.destroyChart('burndown', 'burndownChart');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayKey = formatLocalDateKey(today);
 
-    const formatLocalDateKey = (d) => {
-        const dateObj = new Date(d);
-        const y = dateObj.getFullYear();
-        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        return `${y}-${m}-${day}`;
-    };
-
-    const startDateStr = this.state.allowanceStartDate || formatLocalDateKey(new Date());
+    const startDateStr = this.state.allowanceStartDate || todayKey;
     const endDateStr = this.state.targetAllowanceDate;
 
-    const startDate = new Date(startDateStr);
-    startDate.setHours(0, 0, 0, 0);
-
-    let endDate = endDateStr ? new Date(endDateStr) : new Date(startDate);
-    endDate.setHours(0, 0, 0, 0);
+    const startDate = parseLocalDate(startDateStr);
+    let endDate = endDateStr ? parseLocalDate(endDateStr) : new Date(startDate);
     
     if (!endDateStr || endDate <= startDate) {
         endDate = new Date(startDate);
         endDate.setDate(endDate.getDate() + 14);
     }
 
-    const totalCycleDays = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayKey = formatLocalDateKey(today);
+    const totalCycleDays = Math.max(1, Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)));
 
     const labels = [];
     const idealData = [];
@@ -3641,10 +3692,11 @@ renderBurndownChart() {
     const initialAllowance = this.state.initialAllowance || this.state.balance || 0;
     let currentActualBal = initialAllowance;
 
+    // Aggregate expenses using local rawDate keys
     const expensesByDate = {};
     (this.state.recentExpenses || []).forEach(exp => {
-        if (exp.rawDate || exp.date) {
-            const dKey = formatLocalDateKey(exp.rawDate || exp.date);
+        const dKey = exp.rawDate ? formatLocalDateKey(exp.rawDate) : null;
+        if (dKey) {
             expensesByDate[dKey] = (expensesByDate[dKey] || 0) + exp.amount;
         }
     });
@@ -3652,7 +3704,6 @@ renderBurndownChart() {
     for (let i = 0; i < totalCycleDays; i++) {
         const currDate = new Date(startDate);
         currDate.setDate(currDate.getDate() + i);
-        currDate.setHours(0, 0, 0, 0);
 
         const dateStr = currDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         labels.push(dateStr);
@@ -3839,9 +3890,10 @@ init() {
             },
 
             formatPeso(num) {
-    if (isNaN(num) || num === null) return "₱0";
-    return "₱" + Number(num).toLocaleString('en-PH', { 
-        minimumFractionDigits: num % 1 === 0 ? 0 : 2, 
+    if (isNaN(num) || num === null || num === undefined) return "₱0";
+    const cleanVal = Math.round((Number(num) + Number.EPSILON) * 100) / 100;
+    return "₱" + cleanVal.toLocaleString('en-PH', { 
+        minimumFractionDigits: cleanVal % 1 === 0 ? 0 : 2, 
         maximumFractionDigits: 2 
     });
 },
@@ -4454,37 +4506,21 @@ renderDailyVsSpentChart() {
     const canvas = document.getElementById('dailyVsSpentChart');
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    if (this.charts && this.charts.dailyVsSpent) {
-        this.charts.dailyVsSpent.destroy();
-    }
-
-    const formatLocalDateKey = (d) => {
-        if (!d) return '';
-        const dateObj = new Date(d);
-        if (isNaN(dateObj.getTime())) return '';
-        const y = dateObj.getFullYear();
-        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        return `${y}-${m}-${day}`;
-    };
+    this.destroyChart('dailyVsSpent', 'dailyVsSpentChart');
+const ctx = canvas.getContext('2d');
 
     const now = new Date();
     now.setHours(0, 0, 0, 0);
+    
     const dayOfWeek = now.getDay(); 
     const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
     const monday = new Date(now);
     monday.setDate(now.getDate() - diffToMonday);
 
     const expensesByDate = {};
-    const currentYear = now.getFullYear();
-
     (this.state.recentExpenses || []).forEach(exp => {
-        let dKey = exp.rawDate;
-        if (!dKey && exp.date) {
-            dKey = formatLocalDateKey(`${exp.date}, ${currentYear}`);
-        }
-        if (dKey) {
+        if (exp.rawDate) {
+            const dKey = formatLocalDateKey(exp.rawDate);
             expensesByDate[dKey] = (expensesByDate[dKey] || 0) + exp.amount;
         }
     });
@@ -4497,7 +4533,7 @@ renderDailyVsSpentChart() {
     for (let i = 0; i < 7; i++) {
         const currDate = new Date(monday);
         currDate.setDate(monday.getDate() + i);
-        const dateKey = `${currDate.getFullYear()}-${String(currDate.getMonth() + 1).padStart(2, '0')}-${String(currDate.getDate()).padStart(2, '0')}`;
+        const dateKey = formatLocalDateKey(currDate);
 
         spentData.push(expensesByDate[dateKey] || 0);
         limitData.push(dailyLimitVal);
@@ -4679,7 +4715,7 @@ renderDailyVsSpentChart() {
                 const exp = this.state.upcomingExpenses.find(e => e.id === id);
                 if (exp) {
                     exp.status = 'confirmed';
-                    this.state.balance = Math.max(0, this.state.balance - amount);
+                    this.state.balance = Math.max(0, safeSub(this.state.balance, amount));
                     
                     const newExp = {
                         id: Date.now() + Math.random(),
@@ -4983,13 +5019,17 @@ const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
                 if (screenTotal) screenTotal.textContent = `Total reserved ${this.formatPeso(totalReserved)}`;
 
                 if (expensesToDisplay.length === 0) {
-                    upcomingList.innerHTML = `
-                        <div class="text-center p-4 text-gray text-xs">
-                            ${this.state.calSelectedDate ? 'No bills scheduled for this date.' : 'No upcoming bills scheduled.'}
-                        </div>
-                    `;
-                    return;
-                }
+    upcomingList.innerHTML = `
+        <div style="text-align: center; padding: 1.5rem 1rem; color: var(--text-gray);">
+            <i class="fa-regular fa-calendar-check" style="font-size: 1.8rem; margin-bottom: 8px; opacity: 0.5; color: var(--primary-green);"></i>
+            <p style="font-size: 0.85rem; font-weight: 700;">All caught up!</p>
+            <p style="font-size: 0.72rem; margin-top: 2px;">
+                ${this.state.calSelectedDate ? 'No upcoming bills on this date.' : 'No pending bills reserved.'}
+            </p>
+        </div>
+    `;
+    return;
+}
 
                 expensesToDisplay.forEach(exp => {
                     const isOverdue = exp.date < todayStr;
@@ -5154,7 +5194,7 @@ saveExpense() {
         // 1. Deduct directly from selected account's balance
         const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
         if (targetAccount) {
-            targetAccount.balance = Math.max(0, targetAccount.balance - amount);
+            targetAccount.balance = Math.max(0, safeSub(targetAccount.balance, amount));
         }
 
         // 2. Sync net balance
@@ -5213,9 +5253,14 @@ filterRecentSpending(filterVal) {
     });
 
     if (filtered.length === 0) {
-        container.innerHTML = `<div class="text-center p-3 text-gray text-xs">No expenses for ${filterVal}</div>`;
-        return;
-    }
+    container.innerHTML = `
+        <div style="text-align: center; padding: 1.25rem 1rem; color: var(--text-gray);">
+            <i class="fa-solid fa-receipt" style="font-size: 1.5rem; margin-bottom: 6px; opacity: 0.4;"></i>
+            <p style="font-size: 0.8rem; font-weight: 700;">No expenses logged for ${filterVal}</p>
+        </div>
+    `;
+    return;
+}
 
     filtered.slice(0, 2).forEach(exp => {
         const html = `
@@ -5249,9 +5294,15 @@ filterRecentSpending(filterVal) {
                 });
 
                 if (filtered.length === 0) {
-                    container.innerHTML = `<div class="text-center p-4 text-gray text-xs">No transactions found</div>`;
-                    return;
-                }
+    container.innerHTML = `
+        <div style="text-align: center; padding: 2rem 1rem; color: var(--text-gray);">
+            <i class="fa-solid fa-magnifying-glass" style="font-size: 2rem; margin-bottom: 8px; opacity: 0.5;"></i>
+            <p style="font-size: 0.85rem; font-weight: 700;">No transactions found</p>
+            <p style="font-size: 0.75rem; margin-top: 4px;">Try adjusting your search query or category filter.</p>
+        </div>
+    `;
+    return;
+}
 
                 filtered.forEach(exp => {
                     const html = `
@@ -5282,8 +5333,8 @@ deleteExpense(id) {
             targetAccount = this.state.accounts[0];
         }
         if (targetAccount) {
-            targetAccount.balance += exp.amount;
-        }
+    targetAccount.balance = safeAdd(targetAccount.balance, exp.amount);
+}
 
         // 2. Remove transaction from list
         this.state.recentExpenses = this.state.recentExpenses.filter(e => e.id !== id);
@@ -5523,8 +5574,8 @@ updateGoalsUI() {
 
                 const goal = this.state.goals.find(g => g.id === this.state.activeGoalId);
                 if (goal) {
-                    goal.current += amt;
-                    this.state.balance = Math.max(0, this.state.balance - amt);
+                    goal.current = safeAdd(goal.current, amt);
+this.state.balance = Math.max(0, safeSub(this.state.balance, amt));
                     this.saveState();
                     this.recalculateDailyLimit();
                     this.closeModal('modal-add-funds');
@@ -5656,13 +5707,15 @@ confirmEditAllowance() {
             },
 
  renderInsightsCharts() {
-        // Destroy old charts to prevent duplicate canvas overlay
-        if (this.charts.burndown) this.charts.burndown.destroy();
-        if (this.charts.donut) this.charts.donut.destroy();
-        if (this.charts.bar) this.charts.bar.destroy();
+    // Cleanly destroy all active chart instances before re-rendering
+    this.destroyChart('burndown', 'burndownChart');
+    this.destroyChart('dailyVsSpent', 'dailyVsSpentChart');
+    this.destroyChart('donut', 'categoryDonutChart');
+    this.destroyChart('bar', 'dailyBarChart');
 
-this.renderBurndownChart();
-this.renderDailyVsSpentChart(); 
+    this.renderBurndownChart();
+    this.renderDailyVsSpentChart();
+
         const isDark = this.state.darkMode;
         const textColor = isDark ? '#f8fafc' : '#1e293b';
 
