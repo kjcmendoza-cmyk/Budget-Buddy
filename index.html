@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>BudgetBuddy</title>
     <!-- App Favicon & Home Screen Icons -->
     <link rel="manifest" href="manifest.json">
@@ -53,14 +53,15 @@
 
 /* Simulator Styles */
         .sim-slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 8px;
-            border-radius: 4px;
-            background: var(--border-color);
-            outline: none;
-            margin-top: 10px;
-        }
+    -webkit-appearance: none;
+    appearance: none; /* Added standard property */
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border-color);
+    outline: none;
+    margin-top: 10px;
+}
         .sim-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -330,11 +331,21 @@ body {
         }
 
         /* Screen 1: Home Dashboard */
+        .header-logo-img {
+    height: 42px;
+    width: 42px;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    flex-shrink: 0;
+}
         .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: max(20px, env(safe-area-inset-top)); /* Bumped minimum to 20px */
+    padding-bottom: 8px;
+}
         .greeting h1 { font-size: 1.25rem; }
         .greeting p { color: var(--text-gray); font-size: 0.875rem; }
         
@@ -2012,17 +2023,17 @@ body {
         <div id="home-screen" class="screen p-4">
             <header class="header-top">
     <div class="flex items-center gap-3">
-        <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" style="height: 40px; width: 40px; border-radius: 10px; object-fit: cover;">
+        <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" class="header-logo-img">
         <div class="greeting">
             <h1 id="home-greeting">Good morning 👋</h1>
             <p>Let’s make today a smart spend!</p>
         </div>
     </div>
-                <div class="notification-bell" onclick="app.showToast('No new notifications')">
-                    <i class="fa-regular fa-bell"></i>
-                    <div class="notification-dot"></div>
-                </div>
-            </header>
+    <div class="notification-bell" onclick="app.showToast('No new notifications')">
+        <i class="fa-regular fa-bell"></i>
+        <div class="notification-dot"></div>
+    </div>
+</header>
 
             <!-- 1. Available Money Card -->
             <div class="available-money-card" onclick="app.showScreen('accounts-screen')" title="Click to edit Allowance & Cycle">
