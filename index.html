@@ -1916,7 +1916,9 @@ body {
              ============================== -->
         <div id="lock-screen" class="screen active p-4 flex-col justify-between items-center text-center">
             <div class="lock-header mt-4" style="width:100%;">
-                <div class="lock-logo"><i class="fa-solid fa-wallet"></i></div>
+                <div class="lock-logo" style="background: transparent;">
+    <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
+</div>
                 <h2>BudgetBuddy</h2>
                 <p class="text-sm text-gray mt-2">Welcome back, <span id="lock-user-name" style="font-weight:700;">User</span></p>
             </div>
@@ -1958,7 +1960,9 @@ body {
             <div class="flex-col justify-between" style="min-height: 90%; height: 100%;">
                 <div>
                     <div class="text-center mt-4 mb-4">
-                        <div class="lock-logo"><i class="fa-solid fa-wallet"></i></div>
+                        <div class="lock-logo" style="background: transparent;">
+    <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
+</div>
                         <h2>BudgetBuddy</h2>
                         <p class="text-xs text-gray">Smart Spender Account Portal</p>
                     </div>
@@ -2002,10 +2006,13 @@ body {
              ============================== -->
         <div id="home-screen" class="screen p-4">
             <header class="header-top">
-                <div class="greeting">
-                    <h1 id="home-greeting">Good morning 👋</h1>
-                    <p>Let’s make today a smart spend!</p>
-                </div>
+    <div class="flex items-center gap-3">
+        <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" style="height: 40px; width: 40px; border-radius: 10px; object-fit: cover;">
+        <div class="greeting">
+            <h1 id="home-greeting">Good morning 👋</h1>
+            <p>Let’s make today a smart spend!</p>
+        </div>
+    </div>
                 <div class="notification-bell" onclick="app.showToast('No new notifications')">
                     <i class="fa-regular fa-bell"></i>
                     <div class="notification-dot"></div>
@@ -3909,11 +3916,14 @@ showScreen(screenId) {
             closeModal(id) { document.getElementById(id)?.classList.remove('active'); },
 
             getTodayTotal() {
-                const todayStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                return this.state.recentExpenses
-                    .filter(e => e.period === 'Today' || e.date === 'Today' || e.date === todayStr)
-                    .reduce((sum, e) => sum + e.amount, 0);
-            },
+    const now = new Date();
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const todayFormatted = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    return (this.state.recentExpenses || [])
+        .filter(e => e.rawDate === todayKey || e.date === todayFormatted)
+        .reduce((sum, e) => sum + (e.amount || 0), 0);
+},
 
             evaluateStreak() {
                 const streakText = document.getElementById('home-streak-text');
@@ -5030,8 +5040,8 @@ const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
     const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     
     const spentToday = (this.state.recentExpenses || [])
-        .filter(exp => exp.rawDate === todayKey || exp.period === 'Today')
-        .reduce((sum, exp) => sum + exp.amount, 0);
+    .filter(exp => exp.rawDate === todayKey || exp.date === new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
+    .reduce((sum, exp) => sum + exp.amount, 0);
 
     // 2. Compute Remaining Safe Limit
     const dailyLimitVal = this.state.dailyLimit || 0;
@@ -5191,9 +5201,13 @@ filterRecentSpending(filterVal) {
     if (!container) return;
     container.innerHTML = '';
 
+    const now = new Date();
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const todayFormatted = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
     const filtered = this.state.recentExpenses.filter(exp => {
         if (filterVal === 'Today') {
-            return exp.period === 'Today' || exp.date === 'Today' || exp.date === new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return exp.rawDate === todayKey || exp.date === todayFormatted;
         }
         return true;
     });
@@ -5203,7 +5217,6 @@ filterRecentSpending(filterVal) {
         return;
     }
 
-    // Reduced slice from 5 to 2 items
     filtered.slice(0, 2).forEach(exp => {
         const html = `
             <div class="transaction-item">
