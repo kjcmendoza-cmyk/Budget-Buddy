@@ -2036,8 +2036,8 @@ body {
 </header>
 
             <!-- 1. Available Money Card -->
-            <div class="available-money-card" onclick="app.showScreen('accounts-screen')" title="Click to edit Allowance & Cycle">
-                <div class="card-add-badge" onclick="event.stopPropagation(); app.openEditAllowanceModal();" title="Edit Allowance & Cycle">
+            <div class="available-money-card" onclick="app.showScreen('accounts-screen')" title="View Cards & Accounts">
+                <div class="card-add-badge" onclick="event.stopPropagation(); app.openEditAllowanceModal();" title="Set Allowance Cycle">
                     <i class="fa-solid fa-plus"></i>
                 </div>
                 <div class="am-left">
@@ -2091,6 +2091,11 @@ body {
                 <div class="qa-item" onclick="app.showScreen('quick-add-screen')">
                     <div class="qa-icon-wrapper green"><i class="fa-solid fa-plus"></i></div>
                     <div class="qa-label">Add<br>Expense</div>
+                </div>
+                <!-- CASH-IN BUTTON -->
+                <div class="qa-item" onclick="app.openAddDepositModal()">
+                    <div class="qa-icon-wrapper green" style="background: var(--primary-green-light); color: var(--primary-green-dark);"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                    <div class="qa-label">Add<br>Cash-In</div>
                 </div>
                 <div class="qa-item" onclick="app.showScreen('afford-screen')">
                     <div class="qa-icon-wrapper purple"><i class="fa-solid fa-cart-shopping"></i></div>
@@ -2415,7 +2420,7 @@ body {
             </div>
 
             <!-- Gamification Badges Grid -->
-<<div class="card mb-4">
+<div class="card mb-4">
     <div class="flex justify-between items-center mb-2">
         <h4 style="font-size: 0.9rem;">🏆 Unlocked Achievements</h4>
         <button id="toggle-badges-btn" onclick="app.toggleBadgesCollapse()" style="background: none; border: none; color: var(--primary-green); font-family: 'Nunito'; font-weight: 700; font-size: 0.75rem; cursor: pointer;">
@@ -2934,33 +2939,59 @@ body {
             </div>
         </div>
 
+<!-- Modal: Set Allowance Cycle (Mandatory Date) -->
 <div id="modal-edit-allowance" class="modal-overlay">
     <div class="modal-card">
-        <h3 class="modal-title">Set Allowance & Cycle</h3>
+        <h3 class="modal-title">Set Allowance Cycle 📅</h3>
         
         <div class="flex justify-between items-center mb-1">
-            <label class="text-xs text-gray" style="font-weight:700;">Deposit / Add Allowance To Account</label>
+            <label class="text-xs text-gray" style="font-weight:700;">Account to Set Allowance</label>
             <button type="button" onclick="app.closeModal('modal-edit-allowance'); app.openAddAccountModal();" style="background:none; border:none; color:var(--primary-green); font-size:0.75rem; font-weight:700; cursor:pointer;">+ Add Card</button>
         </div>
         <select id="edit-allowance-account-select" class="generic-input" onchange="if(this.value==='+new'){ app.closeModal('modal-edit-allowance'); app.openAddAccountModal(); }">
             <!-- Dynamically populated from JavaScript -->
         </select>
 
-        <label class="text-xs text-gray" style="font-weight:700;">Allowance / Cash-In Amount (₱)</label>
-        <input type="number" id="edit-allowance-amount" class="generic-input" placeholder="e.g. 1500" inputmode="decimal">
+        <label class="text-xs text-gray" style="font-weight:700;">Starting Allowance Amount (₱)</label>
+        <input type="number" id="edit-allowance-amount" class="generic-input" placeholder="e.g. 5000" inputmode="decimal">
         
-        <label class="text-xs text-gray" style="font-weight:700; margin-top: 5px; display: block;">Next Allowance Date</label>
-        <input type="date" id="edit-allowance-date" class="generic-input">
+        <label class="text-xs text-gray" style="font-weight:700; margin-top: 5px; display: block;">Next Allowance Date <span style="color:var(--danger-red);">* Required</span></label>
+        <input type="date" id="edit-allowance-date" class="generic-input" required>
         
         <div class="modal-actions">
             <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-edit-allowance')">Cancel</button>
-            <button class="modal-btn btn-confirm" onclick="app.confirmEditAllowance()">Save Allowance</button>
+            <button class="modal-btn btn-confirm" onclick="app.confirmEditAllowance()">Save Cycle</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Cash-In / Top-Up (Mid-Cycle Extra Money) -->
+<div id="modal-add-deposit" class="modal-overlay">
+    <div class="modal-card">
+        <h3 class="modal-title">Add Cash-In / Top-Up 💵</h3>
+        <p class="text-xs text-gray mb-3">Add unexpected money, gifts, or weekly top-ups without changing your monthly cycle date.</p>
+        
+        <label class="text-xs text-gray" style="font-weight:700;">Deposit To Account</label>
+        <select id="deposit-account-select" class="generic-input">
+            <!-- Dynamically populated from JavaScript -->
+        </select>
+
+        <label class="text-xs text-gray" style="font-weight:700;">Amount Received (₱)</label>
+        <input type="number" id="deposit-amount" class="generic-input" placeholder="e.g. 500" inputmode="decimal">
+        
+        <label class="text-xs text-gray" style="font-weight:700;">Note / Source (Optional)</label>
+        <input type="text" id="deposit-note" class="generic-input" placeholder="e.g. Gift from Aunt, Weekly Top-Up">
+<label class="text-xs text-gray" style="font-weight:700; margin-top: 5px; display: block;">Deposit Date <span style="color:var(--danger-red);">* Required</span></label>
+        <input type="date" id="deposit-date" class="generic-input" required>
+        <div class="modal-actions">
+            <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-add-deposit')">Cancel</button>
+            <button class="modal-btn btn-confirm" onclick="app.confirmAddDeposit()">Add Deposit</button>
         </div>
     </div>
 </div>
 <div id="modal-add-account" class="modal-overlay">
     <div class="modal-card">
-        <h3 class="modal-title">Add Account / Card</h3>
+        <h3 class="modal-title">Add Account / Card 💳</h3>
         
         <label class="text-xs text-gray" style="font-weight:700; display:block; margin-bottom: 6px;">Quick Presets</label>
         <div class="preset-grid">
@@ -2988,7 +3019,7 @@ body {
             <button type="button" class="preset-chip" onclick="app.selectAccountPreset('', 'digital', '')">
                 <i class="fa-solid fa-pen-to-square"></i> Custom
             </button>
-        </div> <!-- Closing tag added here -->
+        </div>
 
         <label class="text-xs text-gray" style="font-weight:700; display:block; margin-top: 12px; margin-bottom: 6px;">Card Color Theme</label>
         <div class="color-palette-grid" id="acc-color-palette">
@@ -3016,6 +3047,9 @@ body {
 
         <label class="text-xs text-gray" style="font-weight:700;">Starting Balance / Available Credit (₱)</label>
         <input type="number" id="acc-balance-input" class="generic-input" placeholder="0.00" inputmode="decimal">
+
+        <label class="text-xs text-gray" style="font-weight:700; display: block;">Next Allowance Date <span style="color:var(--danger-red);">* Required</span></label>
+        <input type="date" id="acc-date-input" class="generic-input" required>
 
         <label class="text-xs text-gray" style="font-weight:700;">Last 4 Digits (Optional)</label>
         <input type="text" id="acc-digits-input" class="generic-input" placeholder="1234" maxlength="4">
@@ -3409,17 +3443,21 @@ selectAccountPreset(name, type, last4) {
     const balInput = document.getElementById('acc-balance-input');
     if (balInput) balInput.focus();
 },
-
 selectCardColor(gradientClass, el) {
         this.state.selectedCardGradient = gradientClass;
-        document.querySelectorAll('#acc-color-palette .color-swatch').forEach(s => s.classList.remove('selected'));
-        if (el) el.classList.add('selected');
+        document.querySelectorAll('#acc-color-palette .color-swatch').forEach(swatch => {
+            swatch.classList.remove('selected');
+        });
+        if (el) {
+            el.classList.add('selected');
+        }
     },
 
-    openAddAccountModal() {
+openAddAccountModal() {
         document.getElementById('acc-name-input').value = '';
         document.getElementById('acc-balance-input').value = '';
         document.getElementById('acc-digits-input').value = '';
+        document.getElementById('acc-date-input').value = this.state.targetAllowanceDate || '';
         document.querySelectorAll('.preset-chip').forEach(chip => chip.classList.remove('selected'));
         this.selectCardColor('card-gradient-gcash', document.querySelector('#acc-color-palette .color-swatch'));
         this.openModal('modal-add-account');
@@ -3429,10 +3467,17 @@ selectCardColor(gradientClass, el) {
         const name = document.getElementById('acc-name-input').value.trim();
         const type = document.getElementById('acc-type-select').value;
         const balance = parseFloat(document.getElementById('acc-balance-input').value) || 0;
+        const cycleDate = document.getElementById('acc-date-input').value;
         const last4 = document.getElementById('acc-digits-input').value.trim();
 
         if (!name) {
             alert("Please enter an account name.");
+            return;
+        }
+
+        // MANDATORY NEXT ALLOWANCE DATE CHECK
+        if (!cycleDate) {
+            alert("Next Allowance Date is required so BudgetBuddy can calculate your daily budget limit!");
             return;
         }
 
@@ -3462,11 +3507,22 @@ selectCardColor(gradientClass, el) {
 
         this.state.accounts.push(newAcc);
         this.state.balance = this.getCalculatedTotalBalance();
+        this.state.initialAllowance = this.state.balance;
+
+        // Establish allowance cycle dates
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (!this.state.allowanceStartDate) {
+            this.state.allowanceStartDate = todayStr;
+        }
+        this.state.targetAllowanceDate = cycleDate;
+
+        // Save & recalculate daily budget immediately
+        this.recalculateDailyLimit();
         this.saveState();
         this.closeModal('modal-add-account');
         this.renderAccountsUI();
         this.updateHomeUI();
-        this.showToast("Account added successfully!");
+        this.showToast("Account added & cycle set successfully!");
     },
 
 deleteAccount(id) {
@@ -5676,50 +5732,128 @@ openEditAllowanceModal() {
 },
 
 confirmEditAllowance() {
-    const selectedAccId = document.getElementById('edit-allowance-account-select')?.value;
+        const selectedAccId = document.getElementById('edit-allowance-account-select')?.value;
 
-    // If user selected "+ Add New Account / Card" or if no accounts exist
-    if (!selectedAccId || selectedAccId === '+new') {
-        this.closeModal('modal-edit-allowance');
-        this.openAddAccountModal();
-        this.showToast("Please create an account first!");
-        return;
-    }
+        if (!selectedAccId || selectedAccId === '+new') {
+            this.closeModal('modal-edit-allowance');
+            this.openAddAccountModal();
+            this.showToast("Please create an account first!");
+            return;
+        }
 
-    const amt = parseFloat(document.getElementById('edit-allowance-amount').value);
-    const dateVal = document.getElementById('edit-allowance-date').value;
+        const amt = parseFloat(document.getElementById('edit-allowance-amount').value);
+        const dateVal = document.getElementById('edit-allowance-date').value;
 
-    // Validate inputs
-    if (isNaN(amt) || amt < 0) {
-        alert("Please enter a valid allowance amount.");
-        return;
-    }
+        // MANDATORY DATE CHECK & VALIDATION
+        if (!dateVal) {
+            alert("Next Allowance Date is required so BudgetBuddy can calculate your daily budget limit!");
+            document.getElementById('edit-allowance-date').focus();
+            return;
+        }
 
-    // 1. Set the selected account's balance
-    const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
-    if (targetAccount) {
-        targetAccount.balance = amt;
-    }
+        const selectedDate = new Date(dateVal);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-    // 2. Recalculate total net balance across all accounts
-    this.state.balance = this.getCalculatedTotalBalance();
-    this.state.initialAllowance = this.state.balance;
+        if (selectedDate <= today) {
+            alert("The Next Allowance Date must be a future date!");
+            document.getElementById('edit-allowance-date').focus();
+            return;
+        }
 
-    // 3. Set cycle start and target date
-    const todayStr = new Date().toISOString().split('T')[0];
-    this.state.allowanceStartDate = todayStr;
-    if (dateVal) {
+        if (isNaN(amt) || amt < 0) {
+            alert("Please enter a valid allowance amount.");
+            return;
+        }
+
+        // Set target account balance to starting allowance
+        const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
+        if (targetAccount) {
+            targetAccount.balance = amt;
+        }
+
+        // Recalculate net balance
+        this.state.balance = this.getCalculatedTotalBalance();
+        this.state.initialAllowance = this.state.balance;
+
+        // Establish cycle start & target date
+        const todayStr = new Date().toISOString().split('T')[0];
+        this.state.allowanceStartDate = todayStr;
         this.state.targetAllowanceDate = dateVal;
-    }
 
-    // 4. Save state & sync all UI views
-    this.recalculateDailyLimit();
-    this.saveState();
-    this.updateHomeUI();
-    this.renderAccountsUI();
-    this.closeModal('modal-edit-allowance');
-    this.showToast("Allowance & account updated!");
-},
+        // Save & update UI
+        this.recalculateDailyLimit();
+        this.saveState();
+        this.updateHomeUI();
+        this.renderAccountsUI();
+        this.closeModal('modal-edit-allowance');
+        this.showToast("Allowance cycle set successfully!");
+    },
+
+    openAddDepositModal() {
+        const selectEl = document.getElementById('deposit-account-select');
+        if (selectEl) {
+            selectEl.innerHTML = '';
+            if (!this.state.accounts || this.state.accounts.length === 0) {
+                selectEl.insertAdjacentHTML('beforeend', `<option value="+new">+ Create New Account</option>`);
+            } else {
+                (this.state.accounts || []).forEach(acc => {
+                    selectEl.insertAdjacentHTML('beforeend', `
+                        <option value="${acc.id}">${acc.name} (${this.formatPeso(acc.balance)})</option>
+                    `);
+                });
+            }
+        }
+        document.getElementById('deposit-amount').value = '';
+        document.getElementById('deposit-note').value = '';
+        const todayStr = new Date().toISOString().split('T')[0];
+const dateInput = document.getElementById('deposit-date');
+if (dateInput) dateInput.value = todayStr;
+        this.openModal('modal-add-deposit');
+    },
+
+    confirmAddDeposit() {
+        const selectedAccId = document.getElementById('deposit-account-select')?.value;
+
+        if (!selectedAccId || selectedAccId === '+new') {
+            this.closeModal('modal-add-deposit');
+            this.openAddAccountModal();
+            this.showToast("Please create an account first!");
+            return;
+        }
+
+        const amt = parseFloat(document.getElementById('deposit-amount').value);
+        const depositDate = document.getElementById('deposit-date')?.value;
+
+        // MANDATORY DATE CHECK
+        if (!depositDate) {
+            alert("Please select a date for this cash-in deposit.");
+            document.getElementById('deposit-date')?.focus();
+            return;
+        }
+
+        if (isNaN(amt) || amt <= 0) {
+            alert("Please enter a valid deposit amount.");
+            return;
+        }
+
+        // Add amount directly to account balance
+        const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
+        if (targetAccount) {
+            targetAccount.balance = safeAdd(targetAccount.balance, amt);
+        }
+
+        // Update net balance
+        this.state.balance = this.getCalculatedTotalBalance();
+
+        // Recalculate daily limit upward for remaining days in current cycle
+        this.recalculateDailyLimit();
+        this.saveState();
+        this.updateHomeUI();
+        this.renderAccountsUI();
+        this.closeModal('modal-add-deposit');
+        this.showToast(`Deposited ${this.formatPeso(amt)} to ${targetAccount ? targetAccount.name : 'account'}!`);
+    },
 
             toggleNotifications() {
                 this.state.notificationsEnabled = !this.state.notificationsEnabled;
