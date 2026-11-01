@@ -21,6 +21,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     
     <style>
+        .amount, .balance, .metric-val {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
         :root {
         
             /* Color Palette */
@@ -643,7 +647,7 @@ body {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 1.25rem 0 0.75rem 0;
+            margin-top: 2rem;
         }
         .section-header h2 { font-size: 1.1rem; }
         .section-header a { font-size: 0.875rem; color: var(--text-gray); text-decoration: none; }
@@ -1018,7 +1022,9 @@ body {
     width: 100%;
     height: calc(70px + env(safe-area-inset-bottom, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0px);
-    background: var(--card-bg);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); 
     border-radius: 24px 24px 0 0;
     box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
     display: none; 
@@ -1028,6 +1034,9 @@ body {
     padding-left: 10px;
     padding-right: 10px;
     transition: background-color 0.3s ease;
+}
+.dark-theme .bottom-nav {
+  background: rgba(18, 18, 18, 0.85);
 }
         .nav-item {
             display: flex;
@@ -1918,7 +1927,11 @@ body {
     30% { transform: scale(1); }
     45% { transform: scale(1.15); }
 }
-
+.dark-theme .card, 
+.dark-theme .stacked-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
     </style>
 </head>
 <body>
