@@ -1941,48 +1941,6 @@ body {
         <div id="toast">Action successful</div>
 
         <!-- ==============================
-             SCREEN 0A: LOCK SCREEN (PIN)
-             ============================== -->
-        <div id="lock-screen" class="screen active p-4 flex-col justify-between items-center text-center">
-            <div class="lock-header mt-4" style="width:100%;">
-                <div class="lock-logo" style="background: transparent;">
-    <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
-</div>
-                <h2>BudgetBuddy</h2>
-                <p class="text-sm text-gray mt-2">Welcome back, <span id="lock-user-name" style="font-weight:700;">User</span></p>
-            </div>
-
-            <div class="pin-display-container">
-                <p class="text-xs text-gray mb-2">Enter 4-Digit PIN</p>
-                <div class="pin-dots">
-                    <div class="pin-dot"></div>
-                    <div class="pin-dot"></div>
-                    <div class="pin-dot"></div>
-                    <div class="pin-dot"></div>
-                </div>
-            </div>
-
-            <div class="numpad-grid mb-4">
-                <button class="numpad-btn" onclick="app.pressPin('1')">1</button>
-                <button class="numpad-btn" onclick="app.pressPin('2')">2</button>
-                <button class="numpad-btn" onclick="app.pressPin('3')">3</button>
-                <button class="numpad-btn" onclick="app.pressPin('4')">4</button>
-                <button class="numpad-btn" onclick="app.pressPin('5')">5</button>
-                <button class="numpad-btn" onclick="app.pressPin('6')">6</button>
-                <button class="numpad-btn" onclick="app.pressPin('7')">7</button>
-                <button class="numpad-btn" onclick="app.pressPin('8')">8</button>
-                <button class="numpad-btn" onclick="app.pressPin('9')">9</button>
-                <button class="numpad-btn action" onclick="app.logout()" title="Switch Account"><i class="fa-solid fa-right-from-bracket"></i></button>
-                <button class="numpad-btn" onclick="app.pressPin('0')">0</button>
-                <button class="numpad-btn action" onclick="app.clearPin()" title="Backspace"><i class="fa-solid fa-delete-left"></i></button>
-            </div>
-
-            <div class="lock-footer mb-4">
-                <a href="#" onclick="app.openForgotPinModal(); return false;" class="forgot-pin-link">Forgot PIN?</a>
-            </div>
-        </div>
-
-        <!-- ==============================
              SCREEN 0B: SIGN IN / SIGN UP
              ============================== -->
         <div id="auth-screen" class="screen p-4">
@@ -2016,14 +1974,11 @@ body {
                                 <i class="fa-solid fa-user"></i>
                                 <input type="text" id="auth-name" placeholder="Full Name" value="">
                             </div>
-                            <div class="input-group">
-                                <i class="fa-solid fa-key"></i>
-                                <input type="password" id="auth-pin" placeholder="Set 4-Digit PIN (e.g. 1234)" maxlength="4" inputmode="numeric">
-                            </div>
                         </div>
 
                         <button id="auth-submit-btn" class="btn-large btn-green mt-4" onclick="app.handleAuthSubmit()">
                             Sign In <i class="fa-solid fa-right-to-bracket"></i>
+                            localStorage.setItem('isLoggedIn', 'true');
                         </button>
                     </div>
                 </div>
