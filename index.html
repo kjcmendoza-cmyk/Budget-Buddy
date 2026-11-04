@@ -216,12 +216,6 @@
                     <div class="qa-icon-wrapper" style="background: var(--accent-orange-light); color: var(--accent-orange);"><i class="fa-solid fa-sliders"></i></div>
                     <div class="qa-label">Simulator</div>
                 </div>
-                <div class="qa-item" onclick="app.showScreen('subscriptions-screen')">
-                    <div class="qa-icon-wrapper" style="background: var(--danger-red-light); color: var(--danger-red);">
-                        <i class="fa-solid fa-arrows-rotate"></i>
-                    </div>
-                    <div class="qa-label">Subscriptions<br>& Recurring</div>
-                </div>
             </div>
 
             <!-- Action Banners & Recently Auto-Logged Queue -->
@@ -390,27 +384,6 @@
                 <input type="text" id="expense-note" class="note-input" placeholder="e.g., lunch, jeep fare, milk tea...">
             </div>
 
-            <!-- Recurring Expense Toggle -->
-            <div class="recurring-toggle-box">
-                <div class="flex justify-between items-center">
-                    <label class="text-sm" style="font-weight: 800;">🔄 Make Recurring (Subscription)</label>
-                    <div id="expense-recurring-toggle" class="toggle-switch" onclick="app.toggleExpenseRecurringUI()">
-                        <div class="toggle-circle"></div>
-                    </div>
-                </div>
-                <div id="expense-recurring-options" class="recurring-options">
-                    <div class="schedule-input-row">
-                        <select id="expense-frequency" class="schedule-input">
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly" selected>Monthly</option>
-                            <option value="yearly">Yearly</option>
-                        </select>
-                        <input type="date" id="expense-first-date" class="schedule-input">
-                    </div>
-                </div>
-            </div>
-
             <button class="btn-large btn-green" onclick="app.saveExpense()">
                 Save Expense <i class="fa-solid fa-check"></i>
             </button>
@@ -562,21 +535,29 @@
             </div>
             
             <!-- Visual Calendar Widget -->
-            <div class="calendar-card">
-                <div class="calendar-header">
-                    <button class="calendar-nav-btn" onclick="app.prevCalMonth()"><i class="fa-solid fa-chevron-left"></i></button>
-                    <h3 id="cal-month-year-title">October 2026</h3>
-                    <button class="calendar-nav-btn" onclick="app.nextCalMonth()"><i class="fa-solid fa-chevron-right"></i></button>
-                </div>
-               <div class="calendar-days-header">
-    <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+<div class="calendar-card">
+    <div class="calendar-header">
+        <button class="calendar-nav-btn" onclick="app.prevCalMonth()"><i class="fa-solid fa-chevron-left"></i></button>
+        <div class="flex items-center gap-2" style="cursor: pointer;" onclick="app.toggleCalendarCollapse()" title="Toggle Calendar">
+            <h3 id="cal-month-year-title">November 2026</h3>
+            <i class="fa-solid fa-chevron-down text-xs text-gray" id="cal-collapse-icon"></i>
+        </div>
+        <button class="calendar-nav-btn" onclick="app.nextCalMonth()"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+    
+    <!-- Collapsible Container Wrapper -->
+    <div id="calendar-body">
+        <div class="calendar-days-header">
+            <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+        </div>
+        <div class="calendar-grid" id="calendar-grid"></div>
+    </div>
+
+    <div id="cal-filter-status" class="text-xs text-gray mt-2 flex justify-between items-center" style="display:none; font-weight:700;">
+        <span id="cal-filter-text">Filtered by date</span>
+        <button onclick="app.clearCalendarFilter()" style="background:none; border:none; color:var(--primary-green); cursor:pointer; font-weight:700;">Clear filter</button>
+    </div>
 </div>
-                <div class="calendar-grid" id="calendar-grid"></div>
-                <div id="cal-filter-status" class="text-xs text-gray mt-2 flex justify-between items-center" style="display:none; font-weight:700;">
-                    <span id="cal-filter-text">Filtered by date</span>
-                    <button onclick="app.clearCalendarFilter()" style="background:none; border:none; color:var(--primary-green); cursor:pointer; font-weight:700;">Clear filter</button>
-                </div>
-            </div>
 
             <!-- Schedule Form Card -->
             <div class="schedule-form-card">
@@ -632,23 +613,33 @@
                 </div>
             </div>
 
-<!-- Allowance Burndown Chart Card -->
-<div class="card mb-4">
-    <div class="chart-card-header">
-        <div class="chart-title-group">
-            <div class="chart-card-title">
-                <i class="fa-solid fa-chart-line text-green" style="color: var(--primary-green);"></i>
-                <span>Allowance Burndown</span>
-            </div>
-            <span class="chart-subtitle" id="burndown-cycle-label">30-Day Cycle (Oct 8 - Nov 6)</span>
-        </div>
+            <!-- Executive Metric Overview -->
+<div class="insights-hero-summary mb-3">
+    <div class="hero-stat-card">
+        <div class="hero-stat-label">Daily Pace Status</div>
+        <div class="hero-stat-value" id="insights-pace-status">On Track 🟢</div>
     </div>
-    <div class="chart-container">
-        <canvas id="burndownChart"></canvas>
+    <div class="hero-stat-card">
+        <div class="hero-stat-label">Projected End Balance</div>
+        <div class="hero-stat-value" id="projected-end-bal">₱0</div>
     </div>
 </div>
 
-<!-- Daily Limit vs Spent Chart Card -->
+            <!-- Allowance Burndown Chart Card -->
+            <div class="card insight-card mb-4">
+                <div class="chart-card-header">
+                    <div class="chart-title-group">
+                        <i class="fa-solid fa-chart-line text-green" style="color: var(--primary-green);"></i>
+                        <span style="font-weight: 800; font-size: 0.95rem;">Allowance Burndown</span>
+                    </div>
+                    <span class="chart-badge" id="burndown-cycle-label">31-Day Cycle</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="burndownChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Daily Limit vs Spent Chart Card -->
 <div class="card mb-4">
     <div class="chart-card-header">
         <div class="chart-title-group">
@@ -661,21 +652,6 @@
     </div>
     <div class="chart-container">
         <canvas id="dailyVsSpentChart"></canvas>
-    </div>
-</div>
-<!-- Daily Limit Bar Chart Card -->
-<div class="card mb-4">
-    <div class="chart-card-header">
-        <div class="chart-title-group">
-            <div class="chart-card-title">
-                <i class="fa-solid fa-chart-column text-purple"></i>
-                <span>Weekly Limit vs. Spent</span>
-            </div>
-            <span class="chart-subtitle">Mon - Sun Breakdown</span>
-        </div>
-    </div>
-    <div class="chart-container">
-        <canvas id="dailyBarChart"></canvas>
     </div>
 </div>
 
@@ -867,34 +843,6 @@
                 <p id="sim-goal-impact" class="text-xs mt-3 text-center" style="font-weight: 700; color: var(--text-dark);">Your savings timeline remains unchanged.</p>
             </div>
         </div>
-
-<!-- ==============================
-             SCREEN 9: SUBSCRIPTION TRACKER
-             ============================== -->
-        <div id="subscriptions-screen" class="screen p-4">
-            <div class="screen-header">
-                <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div style="flex:1; text-align:center; padding-right: 40px;">
-                    <h2 style="color: var(--danger-red);">Subscription Tracker 🔄</h2>
-                </div>
-            </div>
-
-            <!-- Total Drain Metric Banner -->
-            <div class="total-drain-card">
-                <h3>Total Subscription Drain</h3>
-                <div class="drain-amount" id="sub-total-drain">₱0/month</div>
-                <div class="drain-subtext" id="sub-total-drain-annual">Annual impact: ₱0/year quiet burn</div>
-            </div>
-
-            <div class="section-header">
-                <h2>Active Subscriptions</h2>
-                <span class="text-xs text-gray" id="sub-count-label" style="font-weight: 700;">0 active</span>
-            </div>
-
-            <!-- Active Subscriptions Ordered List -->
-            <div id="subscriptions-list" class="flex flex-col gap-2 mt-2"></div>
-        </div>
-
 <!-- ==============================
              BOTTOM NAVIGATION
              ============================== -->
@@ -1057,7 +1005,7 @@
             </div>
         </div>
 
-<!-- Modal: Set Allowance Cycle (Mandatory Date) -->
+<!-- Modal: Set Allowance Cycle -->
 <div id="modal-edit-allowance" class="modal-overlay">
     <div class="modal-card">
         <h3 class="modal-title">Set Allowance Cycle 📅</h3>
@@ -1066,7 +1014,9 @@
             <label class="text-xs text-gray" style="font-weight:700;">Account to Set Allowance</label>
             <button type="button" onclick="app.closeModal('modal-edit-allowance'); app.openAddAccountModal();" style="background:none; border:none; color:var(--primary-green); font-size:0.75rem; font-weight:700; cursor:pointer;">+ Add Card</button>
         </div>
-        <select id="edit-allowance-account-select" class="generic-input" onchange="if(this.value==='+new'){ app.closeModal('modal-edit-allowance'); app.openAddAccountModal(); }">
+        
+        <!-- Updated onchange event below -->
+        <select id="edit-allowance-account-select" class="generic-input" onchange="app.onAllowanceAccountChange(this.value)">
             <!-- Dynamically populated from JavaScript -->
         </select>
 
@@ -1108,9 +1058,25 @@
     </div>
 </div>
 <div id="modal-add-account" class="modal-overlay">
-    <div class="modal-card">
-        <h3 class="modal-title">Add Account / Card 💳</h3>
+    <div class="modal-card" style="max-width: 420px; width: 92%;">
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="modal-title" style="margin-bottom:0;">Add Account / Card 💳</h3>
+            <button type="button" class="btn-cancel" style="border:none; background:none; font-size:1.2rem; cursor:pointer;" onclick="app.closeModal('modal-add-account')">✕</button>
+        </div>
         
+        <!-- Interactive Live Card Preview -->
+        <div id="card-preview" class="card-gradient-gcash mb-3" style="border-radius: 16px; padding: 1.2rem; color: white; transition: all 0.3s ease;">
+            <div style="display:flex; justify-content: space-between; align-items:flex-start;">
+                <span id="preview-type" class="text-xs uppercase tracking-wider" style="font-size:0.7rem; font-weight:800; opacity:0.85;">DIGITAL WALLET</span>
+                <i class="fa-solid fa-wifi" style="font-size:0.8rem; opacity:0.7;"></i>
+            </div>
+            <div id="preview-name" style="font-size:1.3rem; font-weight:800; margin-top:0.4rem;">GCash</div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:1rem;">
+                <span id="preview-balance" style="font-size:0.95rem; font-weight:800;">₱0.00</span>
+                <span id="preview-digits" style="font-size:0.75rem; font-family:monospace; opacity:0.85;">•••• 1234</span>
+            </div>
+        </div>
+
         <label class="text-xs text-gray" style="font-weight:700; display:block; margin-bottom: 6px;">Quick Presets</label>
         <div class="preset-grid">
             <button type="button" class="preset-chip" onclick="app.selectAccountPreset('GCash', 'digital', '')">
@@ -1139,7 +1105,7 @@
             </button>
         </div>
 
-        <label class="text-xs text-gray" style="font-weight:700; display:block; margin-top: 12px; margin-bottom: 6px;">Card Color Theme</label>
+        <label class="text-xs text-gray" style="font-weight:700; display:block; margin-top: 10px; margin-bottom: 6px;">Card Color Theme</label>
         <div class="color-palette-grid" id="acc-color-palette">
             <div class="color-swatch card-gradient-gcash selected" onclick="app.selectCardColor('card-gradient-gcash', this)"></div>
             <div class="color-swatch card-gradient-bank" onclick="app.selectCardColor('card-gradient-bank', this)"></div>
@@ -1152,27 +1118,37 @@
             <div class="color-swatch card-gradient-red" onclick="app.selectCardColor('card-gradient-red', this)"></div>
         </div>
 
-        <label class="text-xs text-gray" style="font-weight:700;">Account Name</label>
+        <label class="text-xs text-gray" style="font-weight:700; margin-top:8px; display:block;">Account Name</label>
         <input type="text" id="acc-name-input" class="generic-input" placeholder="e.g., GCash, BPI Savings">
         
-        <label class="text-xs text-gray" style="font-weight:700;">Account Type</label>
-        <select id="acc-type-select" class="generic-input">
-            <option value="digital">Digital Wallet (GCash/Maya)</option>
-            <option value="bank">Bank Account (BPI/BDO/GoTyme)</option>
-            <option value="cash">Cash Wallet</option>
-            <option value="card">Credit Card / BNPL (Atome)</option>
-        </select>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+            <div>
+                <label class="text-xs text-gray" style="font-weight:700;">Account Type</label>
+                <select id="acc-type-select" class="generic-input">
+                    <option value="digital">Digital Wallet</option>
+                    <option value="bank">Bank Account</option>
+                    <option value="cash">Cash Wallet</option>
+                    <option value="card">Credit Card</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-xs text-gray" style="font-weight:700;">Starting Balance (₱)</label>
+                <input type="number" id="acc-balance-input" class="generic-input" placeholder="0.00" inputmode="decimal">
+            </div>
+        </div>
 
-        <label class="text-xs text-gray" style="font-weight:700;">Starting Balance / Available Credit (₱)</label>
-        <input type="number" id="acc-balance-input" class="generic-input" placeholder="0.00" inputmode="decimal">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:4px;">
+            <div>
+                <label class="text-xs text-gray" style="font-weight:700;">Next Allowance Date</label>
+                <input type="date" id="acc-date-input" class="generic-input" required>
+            </div>
+            <div>
+                <label class="text-xs text-gray" style="font-weight:700;">Last 4 Digits</label>
+                <input type="text" id="acc-digits-input" class="generic-input" placeholder="1234" maxlength="4">
+            </div>
+        </div>
 
-        <label class="text-xs text-gray" style="font-weight:700; display: block;">Next Allowance Date <span style="color:var(--danger-red);">* Required</span></label>
-        <input type="date" id="acc-date-input" class="generic-input" required>
-
-        <label class="text-xs text-gray" style="font-weight:700;">Last 4 Digits (Optional)</label>
-        <input type="text" id="acc-digits-input" class="generic-input" placeholder="1234" maxlength="4">
-
-        <div class="modal-actions">
+        <div class="modal-actions mt-3">
             <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-add-account')">Cancel</button>
             <button class="modal-btn btn-confirm" onclick="app.saveAccount()">Save Account</button>
         </div>

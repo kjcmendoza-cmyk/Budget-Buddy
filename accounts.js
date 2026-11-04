@@ -1,4 +1,28 @@
 Object.assign(app, {
+    updateCardPreview() {
+    const nameInput = document.getElementById('acc-name-input');
+    const typeSelect = document.getElementById('acc-type-select');
+    const balanceInput = document.getElementById('acc-balance-input');
+    const digitsInput = document.getElementById('acc-digits-input');
+
+    const previewName = document.getElementById('preview-name');
+    const previewType = document.getElementById('preview-type');
+    const previewBalance = document.getElementById('preview-balance');
+    const previewDigits = document.getElementById('preview-digits');
+
+    if (previewName) previewName.textContent = nameInput.value.trim() || 'Card Name';
+    if (previewType && typeSelect) {
+        const selectedText = typeSelect.options[typeSelect.selectedIndex]?.text || 'Digital Wallet';
+        previewType.textContent = selectedText.toUpperCase();
+    }
+    if (previewBalance) {
+        const val = parseFloat(balanceInput.value) || 0;
+        previewBalance.textContent = this.formatPeso ? this.formatPeso(val) : `₱${val.toLocaleString()}`;
+    }
+    if (previewDigits) {
+        previewDigits.textContent = digitsInput.value ? `•••• ${digitsInput.value}` : '•••• 1234';
+    }
+},
 toggleMaskBalances() {
     this.state.isMasked = !this.state.isMasked;
     const icon = document.getElementById('mask-balance-icon');
@@ -115,24 +139,38 @@ selectAccountPreset(name, type, last4) {
     if (balInput) balInput.focus();
 },
 selectCardColor(gradientClass, el) {
-        this.state.selectedCardGradient = gradientClass;
-        document.querySelectorAll('#acc-color-palette .color-swatch').forEach(swatch => {
-            swatch.classList.remove('selected');
-        });
-        if (el) {
-            el.classList.add('selected');
-        }
-    },
+    this.state.selectedCardGradient = gradientClass;
+    document.querySelectorAll('#acc-color-palette .color-swatch').forEach(swatch => {
+        swatch.classList.remove('selected');
+    });
+    if (el) el.classList.add('selected');
+
+    // Update Live Card Preview Gradient
+    const preview = document.getElementById('card-preview');
+    if (preview) {
+        preview.className = `card-gradient-gcash mb-3 ${gradientClass}`;
+    }
+},
 
 openAddAccountModal() {
-        document.getElementById('acc-name-input').value = '';
-        document.getElementById('acc-balance-input').value = '';
-        document.getElementById('acc-digits-input').value = '';
-        document.getElementById('acc-date-input').value = this.state.targetAllowanceDate || '';
-        document.querySelectorAll('.preset-chip').forEach(chip => chip.classList.remove('selected'));
-        this.selectCardColor('card-gradient-gcash', document.querySelector('#acc-color-palette .color-swatch'));
-        this.openModal('modal-add-account');
-    },
+    document.getElementById('acc-name-input').value = '';
+    document.getElementById('acc-balance-input').value = '';
+    document.getElementById('acc-digits-input').value = '';
+    document.getElementById('acc-date-input').value = this.state.targetAllowanceDate || '';
+    document.querySelectorAll('.preset-chip').forEach(chip => chip.classList.remove('selected'));
+
+    // Real-time preview listeners
+    ['acc-name-input', 'acc-balance-input', 'acc-digits-input'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.oninput = () => this.updateCardPreview();
+    });
+
+    const typeSelect = document.getElementById('acc-type-select');
+    if (typeSelect) typeSelect.onchange = () => this.updateCardPreview();
+
+    this.updateCardPreview();
+    this.openModal('modal-add-account');
+},
 
     saveAccount() {
         const name = document.getElementById('acc-name-input').value.trim();

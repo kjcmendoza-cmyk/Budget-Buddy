@@ -200,8 +200,6 @@ showScreen(screenId) {
         this.renderInsightsCharts();
     } else if (screenId === 'afford-screen') {
         this.calculateAffordability();
-    } else if (screenId === 'subscriptions-screen') {
-        this.renderSubscriptionsUI();
     } else if (screenId === 'profile-screen') {
         const nameDisp = document.getElementById('profile-name-display');
         const emailDisp = document.getElementById('profile-email-display');
@@ -555,87 +553,6 @@ calculateMonthlyEquivalent(amount, frequency) {
     }
 },
 
-calculateTotalDrain() {
-    const subs = this.state.subscriptions || [];
-    return subs.reduce((sum, sub) => sum + this.calculateMonthlyEquivalent(sub.amount, sub.frequency), 0);
-},
-
-renderSubscriptionsUI() {
-    const drainEl = document.getElementById('sub-total-drain');
-    const drainAnnualEl = document.getElementById('sub-total-drain-annual');
-    const listEl = document.getElementById('subscriptions-list');
-    const countEl = document.getElementById('sub-count-label');
-
-    const totalMonthly = this.calculateTotalDrain();
-    const totalAnnual = totalMonthly * 12;
-
-    if (drainEl) drainEl.textContent = `${this.formatPeso(totalMonthly)}/month`;
-    if (drainAnnualEl) drainAnnualEl.textContent = `Annual impact: ${this.formatPeso(totalAnnual)}/year quiet burn`;
-
-    const subs = this.state.subscriptions || [];
-    if (countEl) countEl.textContent = `${subs.length} active`;
-
-    if (!listEl) return;
-    listEl.innerHTML = '';
-
-    if (subs.length === 0) {
-        listEl.innerHTML = `<div class="text-center p-4 text-gray text-xs">No active subscriptions logged. Check "Make Recurring" when adding an expense!</div>`;
-        return;
-    }
-
-    subs.sort((a, b) => new Date(a.nextDate) - new Date(b.nextDate));
-
-    subs.forEach(sub => {
-        const monthlyCost = this.calculateMonthlyEquivalent(sub.amount, sub.frequency);
-        const viewPeriod = sub.impactView || '1yr';
-        const impactSavings = viewPeriod === '1yr' ? monthlyCost * 12 : monthlyCost * 60;
-
-        const html = `
-            <div class="sub-card">
-                <div class="sub-card-header">
-                    <div>
-                        <div class="sub-card-title">${sub.name}</div>
-                        <div class="text-xs text-gray mt-1">
-                            ${this.formatPeso(sub.amount)} / ${sub.frequency} • Next: <b>${sub.nextDate}</b>
-                        </div>
-                    </div>
-                    <button class="delete-btn" onclick="app.cancelSubscription(${sub.id})" title="Cancel Subscription">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </div>
-
-                <div class="sub-impact-box">
-                    <div class="sub-impact-text">
-                        💡 Cutting this saves <b>${this.formatPeso(impactSavings)}</b> over ${viewPeriod === '1yr' ? '1 year' : '5 years'}
-                    </div>
-                    <button class="sub-impact-toggle-btn" onclick="app.toggleSubImpactView(${sub.id})">
-                        Toggle ${viewPeriod === '1yr' ? '5-Yr' : '1-Yr'}
-                    </button>
-                </div>
-            </div>
-        `;
-        listEl.insertAdjacentHTML('beforeend', html);
-    });
-},
-
-toggleSubImpactView(id) {
-    const sub = this.state.subscriptions.find(s => s.id === id);
-    if (sub) {
-        sub.impactView = sub.impactView === '5yr' ? '1yr' : '5yr';
-        this.saveState();
-        this.renderSubscriptionsUI();
-    }
-},
-
-cancelSubscription(id) {
-    if (confirm("Are you sure you want to cancel tracking this subscription?")) {
-        this.state.subscriptions = this.state.subscriptions.filter(s => s.id !== id);
-        this.saveState();
-        this.renderSubscriptionsUI();
-        this.showToast("Subscription removed.");
-    }
-},
-
 saveState() {
     try {
         localStorage.setItem('budget_app_state', JSON.stringify(this.state));
@@ -700,10 +617,17 @@ recalculateDailyLimit() {
     const daysLeft = getDaysLeft(this.state.targetAllowanceDate) || 1; 
     this.state.remainingDays = daysLeft;
     
+    // 1. Calculate total reserved money for pending upcoming bills
+    const totalReserved = (this.state.upcomingExpenses || [])
+        .filter(e => e.status === 'pending')
+        .reduce((sum, e) => safeAdd(sum, e.amount || 0), 0);
+
+    // 2. Protect reserved bill money from the available balance
     const spentToday = this.getTodayTotal();
-    const startOfDayBalance = safeAdd(this.state.balance, spentToday);
+    const availableBalance = safeSub(safeAdd(this.state.balance, spentToday), totalReserved);
     
-    this.state.dailyLimit = Math.max(0, startOfDayBalance / daysLeft);
+    // 3. Safe daily limit calculated from remaining unreserved money
+    this.state.dailyLimit = Math.max(0, availableBalance / daysLeft);
 
     const limitEl = document.getElementById('home-daily-limit');
     if (limitEl) limitEl.textContent = this.formatPeso(this.state.dailyLimit);
@@ -1034,6 +958,29 @@ clearCalendarFilter() {
     this.renderUpcomingList();
 },
 
+toggleCalendarCollapse() {
+    this.state.isCalendarCollapsed = !this.state.isCalendarCollapsed;
+    this.applyCalendarCollapseState();
+    this.saveState();
+},
+
+applyCalendarCollapseState() {
+    const body = document.getElementById('calendar-body');
+    const icon = document.getElementById('cal-collapse-icon');
+    
+    // Default to true (collapsed) if not explicitly set to false
+    const isCollapsed = this.state.isCalendarCollapsed !== false;
+
+    if (body) {
+        body.style.display = isCollapsed ? 'none' : 'block';
+    }
+    if (icon) {
+        icon.className = isCollapsed 
+            ? 'fa-solid fa-chevron-right text-xs text-gray' 
+            : 'fa-solid fa-chevron-down text-xs text-gray';
+    }
+},
+
 renderCalendar() {
     const monthTitle = document.getElementById('cal-month-year-title');
     const grid = document.getElementById('calendar-grid');
@@ -1041,6 +988,9 @@ renderCalendar() {
     const filterText = document.getElementById('cal-filter-text');
 
     if (!monthTitle || !grid) return;
+
+    // Apply current collapse state
+    this.applyCalendarCollapseState();
 
     const year = this.state.calYear;
     const month = this.state.calMonth;
@@ -1063,7 +1013,7 @@ renderCalendar() {
         const monthFormatted = String(month + 1).padStart(2, '0');
         const dateStr = `${year}-${monthFormatted}-${dayFormatted}`;
 
-        const billsForDay = this.state.upcomingExpenses.filter(e => e.status === 'pending' && e.date === dateStr);
+        const billsForDay = (this.state.upcomingExpenses || []).filter(e => e.status === 'pending' && e.date === dateStr);
         const hasOverdue = billsForDay.some(e => e.date < todayStr);
         const hasAuto = billsForDay.some(e => e.mode === 'auto');
         const hasHybrid = billsForDay.some(e => e.mode === 'manual');
@@ -1303,27 +1253,6 @@ saveExpense() {
         this.state.balance = this.getCalculatedTotalBalance();
     } else {
         this.state.balance = Math.max(0, safeSub(this.state.balance, amount));
-    }
-
-    if (this.state.isRecurring) {
-        const freq = document.getElementById('expense-frequency')?.value || 'Monthly';
-        const nextDate = document.getElementById('expense-first-date')?.value || localIsoDate;
-
-        if (!this.state.subscriptions) this.state.subscriptions = [];
-
-        this.state.subscriptions.push({
-            id: Date.now() + 1,
-            name: expenseName,
-            amount: amount,
-            frequency: freq,
-            nextDate: nextDate,
-            impactView: '1yr'
-        });
-
-        this.state.isRecurring = false;
-        if (typeof this.toggleExpenseRecurringUI === 'function') {
-            this.toggleExpenseRecurringUI();
-        }
     }
 
     this.checkCategoryCapAlert(this.state.selectedCategory, amount);
@@ -1683,29 +1612,49 @@ confirmEditName() {
 },
 
 openEditAllowanceModal() {
+    // 1. If 0 accounts exist, bypass this modal directly to Add Account / Card
+    if (!this.state.accounts || this.state.accounts.length === 0) {
+        this.showToast("Please add your first card to start your budget!");
+        this.openAddAccountModal();
+        return;
+    }
+
+    // 2. Populate account dropdown with existing cards
     const selectEl = document.getElementById('edit-allowance-account-select');
     if (selectEl) {
         selectEl.innerHTML = '';
-        
-        if (!this.state.accounts || this.state.accounts.length === 0) {
+        this.state.accounts.forEach(acc => {
             selectEl.insertAdjacentHTML('beforeend', `
-                <option value="+new">+ Create New Account / Card</option>
+                <option value="${acc.id}">${acc.name} (Current: ${this.formatPeso(acc.balance)})</option>
             `);
-        } else {
-            (this.state.accounts || []).forEach(acc => {
-                selectEl.insertAdjacentHTML('beforeend', `
-                    <option value="${acc.id}">${acc.name} (Current: ${this.formatPeso(acc.balance)})</option>
-                `);
-            });
-            selectEl.insertAdjacentHTML('beforeend', `
-                <option value="+new">+ Add New Account / Card</option>
-            `);
-        }
+        });
+        selectEl.insertAdjacentHTML('beforeend', `
+            <option value="+new">+ Add New Account / Card</option>
+        `);
     }
 
-    document.getElementById('edit-allowance-amount').value = '';
+    // 3. Pre-fill the allowance amount with the selected card's current balance
+    const firstAcc = this.state.accounts[0];
+    if (firstAcc) {
+        document.getElementById('edit-allowance-amount').value = firstAcc.balance;
+    }
     document.getElementById('edit-allowance-date').value = this.state.targetAllowanceDate || '';
+
     this.openModal('modal-edit-allowance');
+},
+
+// Helper: Auto-fill balance when switching cards in the dropdown
+onAllowanceAccountChange(accId) {
+    if (accId === '+new') {
+        this.closeModal('modal-edit-allowance');
+        this.openAddAccountModal();
+        return;
+    }
+    const targetAccount = (this.state.accounts || []).find(a => a.id === accId);
+    if (targetAccount) {
+        const amtInput = document.getElementById('edit-allowance-amount');
+        if (amtInput) amtInput.value = targetAccount.balance;
+    }
 },
 
 confirmEditAllowance() {

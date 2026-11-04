@@ -27,6 +27,7 @@ if (typeof firebase !== 'undefined' && firebaseConfig.apiKey !== "YOUR_API_KEY")
 
 const app = {
     state: {
+        isCalendarCollapsed: true,
         categoryCaps: {},
         isMasked: false,
         selectedAccountFilter: 'All',

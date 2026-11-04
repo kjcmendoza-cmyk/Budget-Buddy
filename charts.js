@@ -12,6 +12,53 @@ destroyChart(key, canvasId) {
     }
 },
 
+    updateInsightsHeroSummary() {
+        const statusEl = document.getElementById('insights-pace-status');
+        const endBalEl = document.getElementById('projected-end-bal');
+        if (!statusEl && !endBalEl) return;
+
+        const spentToday = this.getTodayTotal();
+        const dailyLimit = this.state.dailyLimit || 0;
+
+        // 1. Dynamic Daily Pace Status
+        if (dailyLimit === 0 && spentToday === 0) {
+            if (statusEl) {
+                statusEl.textContent = "No Budget ⚪";
+                statusEl.style.color = "var(--text-gray)";
+            }
+        } else if (spentToday <= dailyLimit) {
+            if (statusEl) {
+                statusEl.textContent = "On Track 🟢";
+                statusEl.style.color = "var(--primary-green-dark)";
+            }
+        } else {
+            if (statusEl) {
+                statusEl.textContent = "Over Pace 🚨";
+                statusEl.style.color = "var(--danger-red)";
+            }
+        }
+
+        // 2. Dynamic Projected End Balance
+        const daysLeft = Math.max(1, this.state.remainingDays || 1);
+        const curBal = this.state.balance || 0;
+        
+        const todayKey = formatLocalDateKey(new Date());
+        const startDateStr = this.state.allowanceStartDate || todayKey;
+        const startDate = parseLocalDate(startDateStr);
+        const today = parseLocalDate(todayKey);
+        const daysElapsed = Math.max(1, Math.round((today - startDate) / (1000 * 60 * 60 * 24)) + 1);
+
+        const totalCycleSpent = (this.state.recentExpenses || []).reduce((sum, exp) => sum + (exp.amount || 0), 0);
+        const avgDailyBurn = totalCycleSpent / daysElapsed;
+        
+        const projectedEnd = Math.max(0, Math.round(curBal - (avgDailyBurn * daysLeft)));
+
+        if (endBalEl) {
+            endBalEl.textContent = this.formatPeso(projectedEnd);
+            endBalEl.style.color = projectedEnd > 0 ? "var(--primary-green-dark)" : "var(--danger-red)";
+        }
+    },
+
 renderBurndownChart() {
     const canvas = document.getElementById('burndownChart');
     if (!canvas) return;
@@ -337,8 +384,7 @@ renderInsightsCharts() {
     this.destroyChart('burndown', 'burndownChart');
     this.destroyChart('dailyVsSpent', 'dailyVsSpentChart');
     this.destroyChart('donut', 'categoryDonutChart');
-    this.destroyChart('bar', 'dailyBarChart');
-
+    this.updateInsightsHeroSummary();
     this.renderBurndownChart();
     this.renderDailyVsSpentChart();
 
@@ -448,60 +494,6 @@ renderInsightsCharts() {
     if (catDetail && catLabels.length > 0) {
         const topCat = catLabels.reduce((a, b) => catTotals[a] > catTotals[b] ? a : b);
         catDetail.innerHTML = `<span>Top Category: <b>${topCat}</b></span><span style="color:var(--primary-green)">${this.formatPeso(catTotals[topCat])}</span>`;
-    }
-
-    const dailyCtx = document.getElementById('dailyBarChart')?.getContext('2d');
-    if (dailyCtx) {
-        const todayLimit = this.state.dailyLimit || 0;
-
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
-        const dayOfWeek = now.getDay(); 
-        const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        
-        const mondayDate = new Date(now);
-        mondayDate.setDate(now.getDate() - diffToMonday);
-        mondayDate.setHours(0, 0, 0, 0);
-
-        const weekSpent = [0, 0, 0, 0, 0, 0, 0];
-
-        (this.state.recentExpenses || []).forEach(exp => {
-            if (!exp.rawDate) return;
-            const expDate = parseLocalDate(exp.rawDate);
-            
-            const diffDays = Math.round((expDate - mondayDate) / (1000 * 60 * 60 * 24));
-            if (diffDays >= 0 && diffDays < 7) {
-                weekSpent[diffDays] += Number(exp.amount || 0);
-            }
-        });
-
-        this.charts.bar = new Chart(dailyCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [
-                    {
-                        label: 'Daily Limit',
-                        data: Array(7).fill(todayLimit),
-                        backgroundColor: 'rgba(16, 185, 129, 0.3)'
-                    },
-                    {
-                        label: 'Spent',
-                        data: weekSpent,
-                        backgroundColor: '#8b5cf6'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { ticks: { color: textColor } },
-                    y: { ticks: { color: textColor } }
-                }
-            }
-        });
     }
 
     // Heavy Spending Triggers Aggregation
