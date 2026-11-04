@@ -202,43 +202,52 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
 body {
     font-family: 'Nunito', sans-serif;
     background-color: #333;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100dvh;
+    height: 100%;
     width: 100vw;
     margin: 0;
     color: var(--text-dark);
-    overflow: hidden; /* Prevents whole-page scrolling on mobile */
-    position: fixed;  /* Locks mobile browser viewport shifting */
+    overflow: hidden;
+    position: fixed;
     inset: 0;
 }
 
 #app {
     width: 100%;
     max-width: 414px;
-    height: 100dvh;
-    max-height: 896px;
+    height: 100%;
+    max-height: 100%;
     background-color: var(--bg-color);
     position: relative;
-    overflow: hidden; /* Keeps internal scroll contained */
+    overflow: hidden;
     box-shadow: 0 0 30px rgba(0,0,0,0.5);
     border-radius: 0px; 
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-        @media (min-width: 415px) {
-            #app {
-                height: 90vh;
-                border-radius: 40px;
-                border: 8px solid #000;
-            }
-        }
+@media (min-width: 415px) {
+    #app {
+        height: 90vh;
+        max-height: 896px;
+        border-radius: 40px;
+        border: 8px solid #000;
+    }
+}
 
-        .screen {
+.screen {
     position: absolute;
     top: 0;
     left: 0;
@@ -250,7 +259,8 @@ body {
     transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.3s ease;
     transform: translateX(100%);
     z-index: 1;
-    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important; /* Space for fixed bar */
+    /* Increased clearance so Save/Action buttons scroll above the navbar */
+    padding-bottom: calc(120px + env(safe-area-inset-bottom, 16px)) !important;
 }
         
         .screen::-webkit-scrollbar { display: none; }
@@ -1102,20 +1112,34 @@ body {
     bottom: 0;
     left: 0;
     width: 100%;
-    height: calc(70px + env(safe-area-inset-bottom, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    background: rgba(255, 255, 255, 0.85);
+    height: calc(65px + env(safe-area-inset-bottom, 10px));
+    padding-bottom: env(safe-area-inset-bottom, 10px);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px); 
     border-radius: 24px 24px 0 0;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
     display: none; 
     justify-content: space-around;
     align-items: center;
-    z-index: 100; /* Higher z-index to stay above screen content */
+    z-index: 100;
     padding-left: 10px;
     padding-right: 10px;
+    box-sizing: border-box;
     transition: background-color 0.3s ease;
+}
+
+/* Standalone PWA / Installed App Specific Adjustment */
+@media all and (display-mode: standalone) {
+    #app {
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+        border: none;
+    }
+    .bottom-nav {
+        padding-bottom: max(14px, env(safe-area-inset-bottom, 14px));
+    }
 }
 .dark-theme .bottom-nav {
   background: rgba(18, 18, 18, 0.85);
