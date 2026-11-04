@@ -320,17 +320,22 @@
             <div class="account-card-stack" id="accounts-stack-list"></div>
         </div>
 
-        <!-- ==============================
-             SCREEN 2: QUICK ADD EXPENSE
-             ============================== -->
-        <div id="quick-add-screen" class="screen p-4">
-            <div class="screen-header">
-                <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div>
-                    <h2>Quick Add ⚡</h2>
-                    <p class="text-xs text-gray">Add expense in 3 seconds</p>
-                </div>
-            </div>
+        <!-- ===========================
+     SCREEN 2: QUICK ADD EXPENSE
+     =========================== -->
+<div id="quick-add-screen" class="screen p-4">
+
+    <div class="screen-header">
+        <button class="icon-btn" onclick="goBack()">←</button>
+        
+        <div class="header-title-group">
+            <h2>Quick Add ⚡</h2> 
+            <span class="header-subtitle">Add expense in 3 seconds</span> 
+        </div>
+        
+        <!-- Empty placeholder to keep the title perfectly centered -->
+        <div style="width: 40px;"></div>
+    </div>
 
             <div class="amount-input-area">
                 <div class="amount-wrapper">

@@ -1180,11 +1180,22 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: max(1.25rem, env(safe-area-inset-top, 1.25rem));
+    
+    /* Break out of parent padding horizontally */
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    
+    /* Pull header up to the physical top edge */
+    margin-top: calc(-1.5rem - env(safe-area-inset-top)); 
+    margin-bottom: 2.5rem;
+    
+    /* Internal padding with safe areas */
+    padding-top: calc(0.75rem + env(safe-area-inset-top));
     padding-bottom: 0.75rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    margin: 0 0 1rem 0; /* Clear negative side/top margins */
+    padding-left: calc(1.5rem + env(safe-area-inset-left, 0px));
+    padding-right: calc(1.5rem + env(safe-area-inset-right, 0px));
+    
+    /* Aesthetics and positioning */
     background: var(--card-bg);
     border-bottom: 1px solid var(--border-color);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
