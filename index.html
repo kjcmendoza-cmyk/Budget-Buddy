@@ -742,7 +742,13 @@
         <div id="profile-screen" class="screen p-4">
             <div class="screen-header">
                 <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div style="flex:1; text-align:center; padding-right: 40px;"><h2>Profile</h2></div>
+                <div class="header-title-group">
+                    <h2>Profile 👤</h2>
+                    <span class="header-subtitle">Account & Settings</span>
+                </div>
+                <button class="header-action-btn" onclick="app.openEditNameModal()" title="Edit Profile">
+                    <i class="fa-solid fa-pen"></i>
+                </button>
             </div>
 
             <div class="profile-header flex-col items-center justify-center mt-4">
@@ -805,12 +811,16 @@
              SCREEN 8: WHAT-IF SIMULATOR
              ============================== -->
         <div id="simulator-screen" class="screen p-4">
-            <div class="screen-header">
-                <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div style="flex:1; text-align:center; padding-right: 40px;">
-                    <h2 style="color: var(--accent-orange);">"What-If" Simulator</h2>
-                </div>
-            </div>
+           <div class="screen-header">
+    <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
+    <div class="header-title-group">
+        <h2 style="color: var(--accent-orange);">"What-If" Simulator ⚡</h2>
+        <span class="header-subtitle">Scenario Planning</span>
+    </div>
+    <button class="header-action-btn" onclick="app.showToast('Adjust sliders to test financial scenarios')" title="Info">
+        <i class="fa-solid fa-circle-info"></i>
+    </button>
+</div>
             
             <p class="text-center text-sm text-gray mb-4" style="font-weight:600;">Test financial changes before making them.</p>
 

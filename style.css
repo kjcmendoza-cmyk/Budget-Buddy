@@ -439,7 +439,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: max(20px, env(safe-area-inset-top)); /* Bumped minimum to 20px */
+    padding-top: 0.5rem;
     padding-bottom: 8px;
 }
         .greeting h1 { font-size: 1.25rem; }
@@ -1180,32 +1180,37 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: max(12px, env(safe-area-inset-top, 12px)) 1rem 1rem 1rem;
-    margin: -1.5rem -1.5rem 1.25rem -1.5rem; /* Extends edge-to-edge inside padding */
+    padding: 0.75rem 1rem;
+    margin: -1.5rem -1.5rem 1rem -1.5rem;
     background: var(--card-bg);
     border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     position: sticky;
     top: 0;
     z-index: 20;
+    min-height: 64px; /* Fixes layout collapse & preserves vertical centering */
+    box-sizing: border-box;
 }
 
 .header-title-group {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     text-align: center;
+    flex: 1;
 }
 
 .header-title-group h2 {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 800;
     color: var(--text-dark);
     line-height: 1.2;
+    margin: 0;
 }
 
 .header-subtitle {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: var(--text-gray);
     margin-top: 2px;
