@@ -208,19 +208,23 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100dvh; /* Changed from 100vh to 100dvh */
+    height: 100dvh;
+    width: 100vw;
     margin: 0;
     color: var(--text-dark);
+    overflow: hidden; /* Prevents whole-page scrolling on mobile */
+    position: fixed;  /* Locks mobile browser viewport shifting */
+    inset: 0;
 }
 
 #app {
     width: 100%;
     max-width: 414px;
-    height: 100dvh; /* Changed from 100vh to 100dvh */
+    height: 100dvh;
     max-height: 896px;
     background-color: var(--bg-color);
     position: relative;
-    overflow: hidden;
+    overflow: hidden; /* Keeps internal scroll contained */
     box-shadow: 0 0 30px rgba(0,0,0,0.5);
     border-radius: 0px; 
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -235,19 +239,19 @@ body {
         }
 
         .screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-color);
-            overflow-y: auto;
-            overflow-x: hidden;
-            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.3s ease;
-            transform: translateX(100%);
-            z-index: 1;
-            padding-bottom: 100px !important;
-        }
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.3s ease;
+    transform: translateX(100%);
+    z-index: 1;
+    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important; /* Space for fixed bar */
+}
         
         .screen::-webkit-scrollbar { display: none; }
 
@@ -1108,7 +1112,7 @@ body {
     display: none; 
     justify-content: space-around;
     align-items: center;
-    z-index: 10;
+    z-index: 100; /* Higher z-index to stay above screen content */
     padding-left: 10px;
     padding-right: 10px;
     transition: background-color 0.3s ease;
