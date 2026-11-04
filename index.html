@@ -395,9 +395,13 @@
         <div id="history-screen" class="screen p-4">
             <div class="screen-header">
                 <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div style="flex:1; text-align:center; padding-right: 40px;">
-                    <h2>Transaction History 📜</h2>
+                <div class="header-title-group">
+                    <h2>History 📜</h2>
+                    <span class="header-subtitle">All Transactions</span>
                 </div>
+                <button class="header-action-btn" onclick="app.showToast('Showing all history')" title="Filter">
+                    <i class="fa-solid fa-sliders"></i>
+                </button>
             </div>
 
             <div class="history-controls">
@@ -424,9 +428,13 @@
         <div id="afford-screen" class="screen p-4">
             <div class="screen-header">
                 <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div style="flex:1; text-align:center; padding-right: 40px;">
-                    <h2 class="text-purple">Can I Afford It?</h2>
+                <div class="header-title-group">
+                    <h2>Can I Afford It? 🛍️</h2>
+                    <span class="header-subtitle">Budget Impact Checker</span>
                 </div>
+                <button class="header-action-btn" onclick="app.showToast('Enter item price to simulate impact')" title="Info">
+                    <i class="fa-solid fa-circle-info"></i>
+                </button>
             </div>
 
             <div class="afford-header-illus">
@@ -490,21 +498,25 @@
         <div id="goals-screen" class="screen p-4">
             <div class="screen-header">
                 <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div style="flex:1; text-align:center; padding-right: 40px;">
-                    <h2 style="color: var(--primary-green);">My Goals & Badges</h2>
+                <div class="header-title-group">
+                    <h2>Goals & Badges 🎯</h2>
+                    <span class="header-subtitle">Savings Milestones</span>
                 </div>
+                <button class="header-action-btn" onclick="app.openAddGoalModal()" title="Add Goal">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
             </div>
 
             <!-- Gamification Badges Grid -->
-<div class="card mb-4">
-    <div class="flex justify-between items-center mb-2">
-        <h4 style="font-size: 0.9rem;">🏆 Unlocked Achievements</h4>
-        <button id="toggle-badges-btn" onclick="app.toggleBadgesCollapse()" style="background: none; border: none; color: var(--primary-green); font-family: 'Nunito'; font-weight: 700; font-size: 0.75rem; cursor: pointer;">
-            Show All
-        </button>
-    </div>
-    <div class="badges-grid" id="badges-container"></div>
-</div>
+            <div class="card mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h4 style="font-size: 0.9rem;">🏆 Unlocked Achievements</h4>
+                    <button id="toggle-badges-btn" onclick="app.toggleBadgesCollapse()" style="background: none; border: none; color: var(--primary-green); font-family: 'Nunito'; font-weight: 700; font-size: 0.75rem; cursor: pointer;">
+                        Show All
+                    </button>
+                </div>
+                <div class="badges-grid" id="badges-container"></div>
+            </div>
 
             <div class="card mb-4" style="background: var(--primary-green-light); border: 1px solid var(--primary-green);">
                 <div class="text-center">
@@ -529,35 +541,39 @@
         <div id="upcoming-screen" class="screen p-4">
             <div class="screen-header">
                 <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div style="flex:1; text-align:center; padding-right: 40px;">
-                    <h2>Upcoming Bills</h2>
+                <div class="header-title-group">
+                    <h2>Upcoming Bills 🗓️</h2>
+                    <span class="header-subtitle">Scheduled Expenses</span>
                 </div>
+                <button class="header-action-btn" onclick="app.toggleCalendarCollapse()" title="Toggle Calendar">
+                    <i class="fa-regular fa-calendar-days"></i>
+                </button>
             </div>
             
             <!-- Visual Calendar Widget -->
-<div class="calendar-card">
-    <div class="calendar-header">
-        <button class="calendar-nav-btn" onclick="app.prevCalMonth()"><i class="fa-solid fa-chevron-left"></i></button>
-        <div class="flex items-center gap-2" style="cursor: pointer;" onclick="app.toggleCalendarCollapse()" title="Toggle Calendar">
-            <h3 id="cal-month-year-title">November 2026</h3>
-            <i class="fa-solid fa-chevron-down text-xs text-gray" id="cal-collapse-icon"></i>
-        </div>
-        <button class="calendar-nav-btn" onclick="app.nextCalMonth()"><i class="fa-solid fa-chevron-right"></i></button>
-    </div>
-    
-    <!-- Collapsible Container Wrapper -->
-    <div id="calendar-body">
-        <div class="calendar-days-header">
-            <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
-        </div>
-        <div class="calendar-grid" id="calendar-grid"></div>
-    </div>
+            <div class="calendar-card">
+                <div class="calendar-header">
+                    <button class="calendar-nav-btn" onclick="app.prevCalMonth()"><i class="fa-solid fa-chevron-left"></i></button>
+                    <div class="flex items-center gap-2" style="cursor: pointer;" onclick="app.toggleCalendarCollapse()" title="Toggle Calendar">
+                        <h3 id="cal-month-year-title">November 2026</h3>
+                        <i class="fa-solid fa-chevron-down text-xs text-gray" id="cal-collapse-icon"></i>
+                    </div>
+                    <button class="calendar-nav-btn" onclick="app.nextCalMonth()"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                
+                <!-- Collapsible Container Wrapper -->
+                <div id="calendar-body">
+                    <div class="calendar-days-header">
+                        <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid"></div>
+                </div>
 
-    <div id="cal-filter-status" class="text-xs text-gray mt-2 flex justify-between items-center" style="display:none; font-weight:700;">
-        <span id="cal-filter-text">Filtered by date</span>
-        <button onclick="app.clearCalendarFilter()" style="background:none; border:none; color:var(--primary-green); cursor:pointer; font-weight:700;">Clear filter</button>
-    </div>
-</div>
+                <div id="cal-filter-status" class="text-xs text-gray mt-2 flex justify-between items-center" style="display:none; font-weight:700;">
+                    <span id="cal-filter-text">Filtered by date</span>
+                    <button onclick="app.clearCalendarFilter()" style="background:none; border:none; color:var(--primary-green); cursor:pointer; font-weight:700;">Clear filter</button>
+                </div>
+            </div>
 
             <!-- Schedule Form Card -->
             <div class="schedule-form-card">
@@ -608,9 +624,13 @@
         <div id="insights-screen" class="screen p-4">
             <div class="screen-header">
                 <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div style="flex:1; text-align:center; padding-right: 40px;">
+                <div class="header-title-group">
                     <h2>Insights 📊</h2>
+                    <span class="header-subtitle">Analytics & Pace</span>
                 </div>
+                <button class="header-action-btn" onclick="app.showToast('Updated latest spending trends!')" title="Refresh">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
             </div>
 
             <!-- Executive Metric Overview -->
