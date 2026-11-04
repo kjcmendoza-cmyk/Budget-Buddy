@@ -248,7 +248,6 @@ body {
 }
 
 .screen {
-    padding-top: calc(1.5rem + env(safe-area-inset-top)) !important;
     position: absolute;
     top: 0;
     left: 0;
@@ -260,7 +259,7 @@ body {
     transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.3s ease;
     transform: translateX(100%);
     z-index: 1;
-    /* Increased clearance so Save/Action buttons scroll above the navbar */
+    padding-top: 0 !important; /* Let sticky .screen-header handle top inset */
     padding-bottom: calc(120px + env(safe-area-inset-bottom, 16px)) !important;
 }
         
@@ -1181,15 +1180,18 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: calc(0.75rem + env(safe-area-inset-top)) 1rem 0.75rem 1rem;
-    margin: calc(-1.5rem - env(safe-area-inset-top)) -1.5rem 1rem -1.5rem;
+    padding-top: max(1.25rem, env(safe-area-inset-top, 1.25rem));
+    padding-bottom: 0.75rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin: 0 0 1rem 0; /* Clear negative side/top margins */
     background: var(--card-bg);
     border-bottom: 1px solid var(--border-color);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     position: sticky;
     top: 0;
     z-index: 20;
-    min-height: 64px; 
+    min-height: calc(64px + env(safe-area-inset-top, 0px));
     box-sizing: border-box;
 }
 
