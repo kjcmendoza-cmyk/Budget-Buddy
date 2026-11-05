@@ -286,15 +286,11 @@
              SCREEN 1B: ACCOUNTS & WALLETS
              ============================== -->
         <div id="accounts-screen" class="screen p-4">
-            <div class="screen-header">
-                <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div style="flex:1; text-align:center;">
-                    <h2>Accounts & Cards 💳</h2>
-                </div>
-                <button onclick="app.openAddAccountModal()" style="background: var(--primary-green); color: white; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1rem; cursor: pointer;">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
-            </div>
+    <div class="screen-header">
+        <div class="header-title-group">
+            <h2>Accounts & Cards 💳</h2>
+        </div>
+    </div>
 
             <!-- Total Net Balance Header -->
             <div class="card p-3 mb-3 flex justify-between items-center">
@@ -324,10 +320,7 @@
      SCREEN 2: QUICK ADD EXPENSE
      =========================== -->
 <div id="quick-add-screen" class="screen p-4">
-
     <div class="screen-header">
-        <button class="icon-btn" onclick="goBack()">←</button>
-        
         <div class="header-title-group">
             <h2>Quick Add ⚡</h2> 
             <span class="header-subtitle">Add expense in 3 seconds</span> 
@@ -398,16 +391,12 @@
              DEDICATED TRANSACTION HISTORY
              ============================== -->
         <div id="history-screen" class="screen p-4">
-            <div class="screen-header">
-                <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div class="header-title-group">
-                    <h2>History 📜</h2>
-                    <span class="header-subtitle">All Transactions</span>
-                </div>
-                <button class="header-action-btn" onclick="app.showToast('Showing all history')" title="Filter">
-                    <i class="fa-solid fa-sliders"></i>
-                </button>
-            </div>
+    <div class="screen-header">
+        <div class="header-title-group">
+            <h2>History 📜</h2>
+            <span class="header-subtitle">All Transactions</span>
+        </div>
+    </div>
 
             <div class="history-controls">
                 <input type="text" id="history-search-input" class="history-search" placeholder="Search expenses..." oninput="app.renderHistoryUI()">
@@ -430,17 +419,13 @@
         <!-- ==============================
              SCREEN 3: CAN I AFFORD IT?
              ============================== -->
-        <div id="afford-screen" class="screen p-4">
-            <div class="screen-header">
-                <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div class="header-title-group">
-                    <h2>Can I Afford It? 🛍️</h2>
-                    <span class="header-subtitle">Budget Impact Checker</span>
-                </div>
-                <button class="header-action-btn" onclick="app.showToast('Enter item price to simulate impact')" title="Info">
-                    <i class="fa-solid fa-circle-info"></i>
-                </button>
-            </div>
+       <div id="afford-screen" class="screen p-4">
+    <div class="screen-header">
+        <div class="header-title-group">
+            <h2>Can I Afford It? 🛍️</h2>
+            <span class="header-subtitle">Budget Impact Checker</span>
+        </div>
+    </div>
 
             <div class="afford-header-illus">
                 <i class="fa-solid fa-bag-shopping"></i>
@@ -492,25 +477,26 @@
                 Enter an item and price to check your budget impact.
             </div>
 
-            <button class="btn-large btn-purple" onclick="app.showScreen('home-screen')">
-                Got it!
-            </button>
+            <div class="flex gap-2 mt-4">
+                <button class="btn-large btn-cancel" style="margin-top:0; flex:1;" onclick="app.showScreen('home-screen')">
+                    Close
+                </button>
+                <button id="afford-buy-now-btn" class="btn-large btn-purple" style="margin-top:0; flex:1.5; display:none;" onclick="app.logAffordedExpense()">
+                    Buy & Log Now <i class="fa-solid fa-cart-shopping"></i>
+                </button>
+            </div>
         </div>
 
         <!-- ==============================
              SCREEN 4: GOALS SCREEN
              ============================== -->
         <div id="goals-screen" class="screen p-4">
-            <div class="screen-header">
-                <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div class="header-title-group">
-                    <h2>Goals & Badges 🎯</h2>
-                    <span class="header-subtitle">Savings Milestones</span>
-                </div>
-                <button class="header-action-btn" onclick="app.openAddGoalModal()" title="Add Goal">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
-            </div>
+    <div class="screen-header">
+        <div class="header-title-group">
+            <h2>Goals & Badges 🎯</h2>
+            <span class="header-subtitle">Savings Milestones</span>
+        </div>
+    </div>
 
             <!-- Gamification Badges Grid -->
             <div class="card mb-4">
@@ -544,16 +530,12 @@
              SCREEN 5: UPCOMING BILLS
              ============================== -->
         <div id="upcoming-screen" class="screen p-4">
-            <div class="screen-header">
-                <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div class="header-title-group">
-                    <h2>Upcoming Bills 🗓️</h2>
-                    <span class="header-subtitle">Scheduled Expenses</span>
-                </div>
-                <button class="header-action-btn" onclick="app.toggleCalendarCollapse()" title="Toggle Calendar">
-                    <i class="fa-regular fa-calendar-days"></i>
-                </button>
-            </div>
+    <div class="screen-header">
+        <div class="header-title-group">
+            <h2>Upcoming Bills 🗓️</h2>
+            <span class="header-subtitle">Scheduled Expenses</span>
+        </div>
+    </div>
             
             <!-- Visual Calendar Widget -->
             <div class="calendar-card">
@@ -627,16 +609,12 @@
              SCREEN 6: INSIGHTS
              ============================== -->
         <div id="insights-screen" class="screen p-4">
-            <div class="screen-header">
-                <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div class="header-title-group">
-                    <h2>Insights 📊</h2>
-                    <span class="header-subtitle">Analytics & Pace</span>
-                </div>
-                <button class="header-action-btn" onclick="app.showToast('Updated latest spending trends!')" title="Refresh">
-                    <i class="fa-solid fa-arrows-rotate"></i>
-                </button>
-            </div>
+    <div class="screen-header">
+        <div class="header-title-group">
+            <h2>Insights 📊</h2>
+            <span class="header-subtitle">Analytics & Pace</span>
+        </div>
+    </div>
 
             <!-- Executive Metric Overview -->
 <div class="insights-hero-summary mb-3">
@@ -745,16 +723,12 @@
              SCREEN 7: PROFILE SCREEN
              ============================== -->
         <div id="profile-screen" class="screen p-4">
-            <div class="screen-header">
-                <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div class="header-title-group">
-                    <h2>Profile 👤</h2>
-                    <span class="header-subtitle">Account & Settings</span>
-                </div>
-                <button class="header-action-btn" onclick="app.openEditNameModal()" title="Edit Profile">
-                    <i class="fa-solid fa-pen"></i>
-                </button>
-            </div>
+    <div class="screen-header">
+        <div class="header-title-group">
+            <h2>Profile 👤</h2>
+            <span class="header-subtitle">Account & Settings</span>
+        </div>
+    </div>
 
             <div class="profile-header flex-col items-center justify-center mt-4">
                 <div class="profile-avatar">
@@ -815,17 +789,13 @@
 <!-- ==============================
              SCREEN 8: WHAT-IF SIMULATOR
              ============================== -->
-        <div id="simulator-screen" class="screen p-4">
-           <div class="screen-header">
-    <div class="back-btn" onclick="app.showScreen('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-    <div class="header-title-group">
-        <h2 style="color: var(--accent-orange);">"What-If" Simulator ⚡</h2>
-        <span class="header-subtitle">Scenario Planning</span>
+       <div id="simulator-screen" class="screen p-4">
+    <div class="screen-header">
+        <div class="header-title-group">
+            <h2 style="color: var(--accent-orange);">"What-If" Simulator ⚡</h2>
+            <span class="header-subtitle">Scenario Planning</span>
+        </div>
     </div>
-    <button class="header-action-btn" onclick="app.showToast('Adjust sliders to test financial scenarios')" title="Info">
-        <i class="fa-solid fa-circle-info"></i>
-    </button>
-</div>
             
             <p class="text-center text-sm text-gray mb-4" style="font-weight:600;">Test financial changes before making them.</p>
 
@@ -1189,11 +1159,39 @@
         </div>
     </div>
 </div>
+<!-- Modal: Instant Post-Action Impact Feedback -->
+        <div id="modal-impact-feedback" class="modal-overlay">
+            <div class="modal-card" style="max-width: 360px; text-align: center;">
+                <div id="impact-icon-wrapper" style="font-size: 2.5rem; margin-bottom: 0.5rem;">🟢</div>
+                <h3 id="impact-title" class="modal-title" style="margin-bottom: 0.25rem;">Expense Logged!</h3>
+                <p id="impact-subtitle" class="text-xs text-gray mb-3">Here is how your budget adjusted:</p>
+                
+                <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 14px; padding: 12px; margin-bottom: 1rem;">
+    <div class="flex justify-between items-center text-xs mb-2">
+        <span class="text-gray" style="font-weight:700;">Spent Amount:</span>
+        <span id="impact-spent-val" style="font-weight:800; color:var(--danger-red);">-₱0</span>
+    </div>
+    <div class="flex justify-between items-center text-xs mb-2">
+        <span class="text-gray" style="font-weight:700;">Remaining Safe Today:</span>
+        <span id="impact-safe-today" style="font-weight:800;">₱0</span>
+    </div>
+    <div class="flex justify-between items-center text-xs border-top pt-2" style="border-top: 1px dashed var(--border-color);">
+        <span class="text-gray" style="font-weight:700;">New Daily Limit:</span>
+        <span id="impact-new-daily" style="font-weight:800; color:var(--primary-green-dark);">₱0/day</span>
+    </div>
+</div>
+
+                <button class="btn-large btn-green" style="margin-top: 0; padding: 10px;" onclick="app.closeModal('modal-impact-feedback'); app.showScreen('home-screen');">
+                    Got it <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
     <script src="state.js"></script>
 <script src="calculations.js"></script>
 <script src="accounts.js"></script>
 <script src="healthscore.js"></script>
 <script src="charts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

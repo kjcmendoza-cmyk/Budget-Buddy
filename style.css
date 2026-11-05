@@ -1179,30 +1179,28 @@ body {
 .screen-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     
-    /* Break out of parent padding horizontally */
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
+    /* Break out of parent .p-4 (1.5rem) padding within #app bounds */
+    width: calc(100% + 3rem);
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    margin-top: 0;
+    margin-bottom: 1.25rem;
     
-    /* Pull header up to the physical top edge */
-    margin-top: calc(-1.5rem - env(safe-area-inset-top)); 
-    margin-bottom: 2.5rem;
+    /* Internal padding with safe area support */
+    padding-top: calc(0.85rem + env(safe-area-inset-top, 0px));
+    padding-bottom: 0.85rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
     
-    /* Internal padding with safe areas */
-    padding-top: calc(0.75rem + env(safe-area-inset-top));
-    padding-bottom: 0.75rem;
-    padding-left: calc(1.5rem + env(safe-area-inset-left, 0px));
-    padding-right: calc(1.5rem + env(safe-area-inset-right, 0px));
-    
-    /* Aesthetics and positioning */
+    /* Aesthetics and sticky positioning */
     background: var(--card-bg);
     border-bottom: 1px solid var(--border-color);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     position: sticky;
     top: 0;
     z-index: 20;
-    min-height: calc(64px + env(safe-area-inset-top, 0px));
     box-sizing: border-box;
 }
 
@@ -2104,4 +2102,29 @@ body {
 /* Ensure Dark Mode forces light text on setting labels */
 #app.dark-theme .setting-item span:not([style*="color"]) {
     color: var(--text-dark);
+}
+
+/* Inline Cap Warning Badges on Category Buttons */
+.cat-btn {
+    position: relative;
+}
+
+.cat-cap-badge {
+    position: absolute;
+    top: -4px;
+    right: 2px;
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 2px 5px;
+    border-radius: 8px;
+    background: var(--accent-orange-light);
+    color: var(--accent-orange);
+    border: 1px solid var(--accent-orange);
+    pointer-events: none;
+}
+
+.cat-cap-badge.over-cap {
+    background: var(--danger-red-light);
+    color: var(--danger-red);
+    border-color: var(--danger-red);
 }

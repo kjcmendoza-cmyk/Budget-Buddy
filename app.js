@@ -162,7 +162,10 @@ formatPeso(num) {
 
 showScreen(screenId) {
     if (screenId === 'accounts-screen') this.renderAccountsUI();
-    if (screenId === 'quick-add-screen') this.populateAccountDropdown();
+    if (screenId === 'quick-add-screen') {
+        this.populateAccountDropdown();
+        this.renderCategoryCapBadgesOnGrid(); // <-- Add this line
+    }
 
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(screenId);
@@ -257,13 +260,15 @@ generatePeerInsights() {
 
 updateMascot() {
     const todayTotal = this.getTodayTotal();
-    const limit = this.state.dailyLimit || 0;
-    const remainingSafe = limit - todayTotal;
+    const startOfDayLimit = this.state.startOfDayLimit || this.state.dailyLimit || 0;
+    const remainingSafe = startOfDayLimit - todayTotal;
     
+    const mascotBox = document.querySelector('.mascot-status-box');
     const mascotBubble = document.getElementById('mascot-bubble');
     const mascotIcon = document.getElementById('mascot-icon');
     const remValEl = document.getElementById('val-remaining');
     const spentValEl = document.getElementById('val-spent');
+    const dailyLimitEl = document.getElementById('home-daily-limit');
     
     if (remValEl) {
         remValEl.textContent = this.formatPeso(remainingSafe);
@@ -276,15 +281,21 @@ updateMascot() {
 
     if (!mascotBubble) return;
 
-    if (limit === 0 && todayTotal === 0) {
+    if (startOfDayLimit === 0 && todayTotal === 0) {
         mascotBubble.textContent = "Set up budget";
         if (mascotIcon) mascotIcon.textContent = "🤖";
-    } else if (todayTotal <= limit) {
+        mascotBox?.classList.remove('over-limit');
+        dailyLimitEl?.classList.remove('over-limit');
+    } else if (todayTotal <= startOfDayLimit) {
         mascotBubble.textContent = "You're on track!";
         if (mascotIcon) mascotIcon.textContent = "🤖";
+        mascotBox?.classList.remove('over-limit');
+        dailyLimitEl?.classList.remove('over-limit');
     } else {
         mascotBubble.textContent = "Over limit!";
         if (mascotIcon) mascotIcon.textContent = "🚨";
+        mascotBox?.classList.add('over-limit');
+        dailyLimitEl?.classList.add('over-limit');
     }
 },
 
@@ -622,12 +633,28 @@ recalculateDailyLimit() {
         .filter(e => e.status === 'pending')
         .reduce((sum, e) => safeAdd(sum, e.amount || 0), 0);
 
-    // 2. Protect reserved bill money from the available balance
+    // 2. Spent Today
     const spentToday = this.getTodayTotal();
-    const availableBalance = safeSub(safeAdd(this.state.balance, spentToday), totalReserved);
-    
-    // 3. Safe daily limit calculated from remaining unreserved money
-    this.state.dailyLimit = Math.max(0, availableBalance / daysLeft);
+
+    // 3. Start of Day Baseline Target (rounded whole pesos)
+    const startOfDayBalance = safeAdd(this.state.balance, spentToday);
+    const startOfDayAvailable = Math.max(0, safeSub(startOfDayBalance, totalReserved));
+    const startOfDayLimit = Math.round(startOfDayAvailable / daysLeft);
+
+    // 4. Current Dynamic Pace across remaining days
+    const currentAvailable = Math.max(0, safeSub(this.state.balance, totalReserved));
+    const dynamicPace = Math.round(currentAvailable / daysLeft);
+
+    // Store startOfDayLimit for today's "Remaining Today" baseline
+    this.state.startOfDayLimit = startOfDayLimit;
+
+    // 5. Logic Rule: If overspent today, immediately drop "Safe to Spend" to dynamic pace.
+    // Otherwise, hold at startOfDayLimit until midnight reset.
+    if (spentToday > startOfDayLimit) {
+        this.state.dailyLimit = dynamicPace;
+    } else {
+        this.state.dailyLimit = startOfDayLimit;
+    }
 
     const limitEl = document.getElementById('home-daily-limit');
     if (limitEl) limitEl.textContent = this.formatPeso(this.state.dailyLimit);
@@ -1134,25 +1161,35 @@ updateHomeUI() {
     }
     this.renderActionableNotifications();
 
-    const todayKey = formatLocalDateKey(new Date());
-    
-    const spentToday = (this.state.recentExpenses || [])
-        .filter(exp => exp.rawDate === todayKey || exp.date === new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
-        .reduce((sum, exp) => sum + exp.amount, 0);
+    // Inside updateHomeUI() in app.js
+const todayKey = formatLocalDateKey(new Date());
 
-    const dailyLimitVal = this.state.dailyLimit || 0;
-    const remainingSafeToday = Math.max(0, dailyLimitVal - spentToday);
+const spentToday = (this.state.recentExpenses || [])
+    .filter(exp => exp.rawDate === todayKey || exp.date === new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
+    .reduce((sum, exp) => sum + exp.amount, 0);
 
-    const balEl = document.getElementById('home-balance');
-    if (balEl) balEl.textContent = this.formatPeso(this.state.balance);
+const startOfDayLimit = this.state.startOfDayLimit || this.state.dailyLimit || 0;
+const dailyLimitVal = this.state.dailyLimit || 0;
+const remainingSafeToday = startOfDayLimit - spentToday; // Start-of-day target - Actual spent
 
-    const limitEl = document.getElementById('home-daily-limit');
-    if (limitEl) limitEl.textContent = this.formatPeso(dailyLimitVal);
+const balEl = document.getElementById('home-balance');
+if (balEl) balEl.textContent = this.formatPeso(this.state.balance);
 
-    const safeRemEl = document.getElementById('home-safe-remaining');
-    if (safeRemEl) {
-        safeRemEl.innerHTML = `<span>${this.formatPeso(remainingSafeToday)} left today</span> <span class="spent-subtext">(Spent: ${this.formatPeso(spentToday)})</span>`;
+// Main Display: Displays updated dynamic safe limit
+const limitEl = document.getElementById('home-daily-limit');
+if (limitEl) {
+    limitEl.textContent = this.formatPeso(dailyLimitVal);
+}
+
+// Subtitle Text: Displays variance against start-of-day target
+const safeRemEl = document.getElementById('home-safe-remaining');
+if (safeRemEl) {
+    if (remainingSafeToday < 0) {
+        safeRemEl.innerHTML = `<span style="color: var(--danger-red); font-weight: 700;">Over by ${this.formatPeso(Math.abs(remainingSafeToday))}</span> <span class="spent-subtext">(Target: ${this.formatPeso(startOfDayLimit)}/day)</span>`;
+    } else {
+        safeRemEl.innerHTML = `<span style="color: var(--primary-green-dark); font-weight: 700;">${this.formatPeso(remainingSafeToday)} left today</span> <span class="spent-subtext">(Target: ${this.formatPeso(startOfDayLimit)}/day)</span>`;
     }
+}
 
     const targetDateEl = document.getElementById('home-target-date');
     if (targetDateEl) targetDateEl.textContent = this.getAllowanceTargetDate();
@@ -1228,6 +1265,8 @@ saveExpense() {
     const expenseName = noteInput.value.trim() || this.state.selectedCategory;
     const selectedAccId = document.getElementById('expense-account-select')?.value;
 
+    const oldDailyLimit = this.state.dailyLimit || 0;
+
     const newTx = {
         id: Date.now(),
         name: expenseName,
@@ -1244,6 +1283,7 @@ saveExpense() {
     if (!this.state.recentExpenses) this.state.recentExpenses = [];
     this.state.recentExpenses.unshift(newTx);
 
+    // Update account balances
     const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
     if (targetAccount) {
         targetAccount.balance = Math.max(0, safeSub(targetAccount.balance, amount));
@@ -1260,11 +1300,39 @@ saveExpense() {
     this.recalculateDailyLimit();
     this.updateHomeUI();
 
+    // Clear input fields
     amtInput.value = '';
     noteInput.value = '';
 
-    this.showScreen('home-screen');
-    this.showToast("Expense saved!");
+    // Show Post-Action Impact Feedback Modal instead of generic redirection
+    this.showPostActionImpactSheet(expenseName, amount, oldDailyLimit);
+},
+
+showPostActionImpactSheet(name, amount, oldLimit) {
+    const spentToday = this.getTodayTotal();
+    const newDailyLimit = this.state.dailyLimit || 0;
+    const remainingSafeToday = Math.max(0, newDailyLimit - spentToday);
+    const isOverLimit = spentToday > oldLimit;
+
+    const iconEl = document.getElementById('impact-icon-wrapper');
+    const titleEl = document.getElementById('impact-title');
+    const spentValEl = document.getElementById('impact-spent-val');
+    const safeTodayEl = document.getElementById('impact-safe-today');
+    const newDailyEl = document.getElementById('impact-new-daily');
+
+    if (iconEl) iconEl.textContent = isOverLimit ? "🚨" : "🟢";
+    if (titleEl) titleEl.textContent = isOverLimit ? "Daily Limit Exceeded!" : `Logged ${this.formatPeso(amount)}`;
+    if (spentValEl) spentValEl.textContent = `-${this.formatPeso(amount)}`;
+    if (safeTodayEl) {
+        safeTodayEl.textContent = this.formatPeso(remainingSafeToday);
+        safeTodayEl.style.color = remainingSafeToday <= 0 ? "var(--danger-red)" : "var(--text-dark)";
+    }
+    if (newDailyEl) {
+        newDailyEl.textContent = `${this.formatPeso(newDailyLimit)}/day`;
+        newDailyEl.style.color = newDailyLimit < oldLimit ? "var(--accent-orange)" : "var(--primary-green-dark)";
+    }
+
+    this.openModal('modal-impact-feedback');
 },
 
 filterRecentSpending(filterVal) {
@@ -1382,10 +1450,13 @@ deleteExpense(id) {
 calculateAffordability() {
     const priceInput = document.getElementById('afford-price');
     const price = parseFloat(priceInput?.value) || 0;
+    const buyNowBtn = document.getElementById('afford-buy-now-btn');
+
     if (price > 0) {
         this.state.affordChecksCount = (this.state.affordChecksCount || 0) + 1;
         this.saveState();
     }
+
     const curBalEl = document.getElementById('afford-current-bal');
     const purAmtEl = document.getElementById('afford-purchase-amt');
     const newBalEl = document.getElementById('afford-new-bal');
@@ -1401,7 +1472,7 @@ calculateAffordability() {
     const afterLimit = Math.max(0, Math.round(newBal / remDays));
 
     if (curBalEl) curBalEl.textContent = this.formatPeso(curBal);
-    if (purAmtEl) purAmtEl.textContent = `−${this.formatPeso(price)}`;
+    if (purAmtEl) purAmtEl.textContent = `-${this.formatPeso(price)}`;
     if (newBalEl) newBalEl.textContent = this.formatPeso(newBal);
     if (befLimitEl) befLimitEl.textContent = `${this.formatPeso(beforeLimit)}/day`;
     if (aftLimitEl) aftLimitEl.textContent = `${this.formatPeso(afterLimit)}/day`;
@@ -1410,25 +1481,57 @@ calculateAffordability() {
     if (price <= 0) {
         msgEl.className = "result-msg";
         msgEl.textContent = "Enter an item and price to check your budget impact.";
+        if (buyNowBtn) buyNowBtn.style.display = "none";
     } else if (newBal < 0) {
         msgEl.className = "result-msg warning";
         msgEl.textContent = "⚠️ Over budget! This purchase exceeds your total remaining balance.";
+        if (buyNowBtn) buyNowBtn.style.display = "none";
     } else if (afterLimit < 50) {
         msgEl.className = "result-msg warning";
         msgEl.textContent = "⚠️ Careful! This will cut your daily allowance to under ₱50/day.";
+        if (buyNowBtn) buyNowBtn.style.display = "flex";
     } else {
         msgEl.className = "result-msg";
         msgEl.textContent = `👍 You can afford this! Your daily limit will adjust to ${this.formatPeso(afterLimit)}/day.`;
+        if (buyNowBtn) buyNowBtn.style.display = "flex";
     }
 },
 
-checkAchievements() {
+logAffordedExpense() {
+    const itemName = document.getElementById('afford-item-name')?.value.trim() || 'Shopping Item';
+    const price = parseFloat(document.getElementById('afford-price')?.value) || 0;
+
+    if (price <= 0) return;
+
+    const amtInput = document.getElementById('expense-amount');
+    const noteInput = document.getElementById('expense-note');
+    if (amtInput) amtInput.value = price;
+    if (noteInput) noteInput.value = itemName;
+
+    this.saveExpense();
+
+    document.getElementById('afford-item-name').value = '';
+    document.getElementById('afford-price').value = '';
+},
+
+triggerConfettiCelebration() {
+        if (typeof confetti === 'function') {
+            confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+    },
+
+    checkAchievements() {
     if (!this.state.badges) return;
 
     const unlock = (id) => {
         const badge = this.state.badges.find(b => b.id === id);
         if (badge && !badge.unlocked) {
             badge.unlocked = true;
+            this.triggerConfettiCelebration();
             this.showToast(`🏆 Badge Unlocked: ${badge.name}!`);
         }
     };
@@ -1853,6 +1956,31 @@ checkCategoryCapAlert(category, newAmount) {
             this.showToast(`⚠️ Cap Alert: ${category} has reached ${pct}% of its cap!`);
         }, 600);
     }
+},
+
+renderCategoryCapBadgesOnGrid() {
+    const caps = this.state.categoryCaps || {};
+    const recentExpenses = this.state.recentExpenses || [];
+
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+        const cat = btn.getAttribute('data-cat');
+        btn.querySelector('.cat-cap-badge')?.remove();
+
+        const capVal = caps[cat];
+        if (capVal && capVal > 0) {
+            const spent = recentExpenses
+                .filter(e => e.category === cat)
+                .reduce((sum, e) => sum + e.amount, 0);
+
+            const pct = Math.round((spent / capVal) * 100);
+            if (pct >= 80) {
+                const badge = document.createElement('span');
+                badge.className = `cat-cap-badge ${pct >= 100 ? 'over-cap' : ''}`;
+                badge.textContent = `${pct}%`;
+                btn.appendChild(badge);
+            }
+        }
+    });
 }
 });
 
