@@ -1,4 +1,158 @@
 Object.assign(app, {
+    updateBurndownTrendFeedback(idealData, actualData, totalCycleDays) {
+    const feedbackBox = document.getElementById('burndown-trend-feedback');
+    const feedbackText = document.getElementById('burndown-trend-text');
+    if (!feedbackBox || !feedbackText) return;
+
+    // Find the latest day index that has actual balance data logged
+    let lastValidIdx = -1;
+    for (let i = actualData.length - 1; i >= 0; i--) {
+        if (actualData[i] !== null && actualData[i] !== undefined) {
+            lastValidIdx = i;
+            break;
+        }
+    }
+
+    // Hide box if there's insufficient cycle history
+    if (lastValidIdx < 0) {
+        feedbackBox.style.display = 'none';
+        return;
+    }
+
+    const currentActual = actualData[lastValidIdx];
+    const currentIdeal = idealData[lastValidIdx];
+    const diff = currentActual - currentIdeal;
+
+    feedbackBox.style.display = 'flex';
+
+    if (diff < -50) {
+        // Spending faster than ideal target slope
+        const deficit = Math.abs(Math.round(diff));
+        feedbackBox.style.background = 'var(--danger-red-light)';
+        feedbackBox.style.borderColor = 'var(--danger-red)';
+        feedbackText.style.color = 'var(--danger-red)';
+        feedbackText.innerHTML = `⚠️ <b>Fast Burn:</b> You are <b>${this.formatPeso(deficit)}</b> below ideal balance for Day ${lastValidIdx + 1}. Slow down to protect your cycle!`;
+    } else if (diff > 50) {
+        // Spending slower than target (Saving money)
+        const surplus = Math.round(diff);
+        feedbackBox.style.background = 'var(--primary-green-light)';
+        feedbackBox.style.borderColor = 'var(--primary-green)';
+        feedbackText.style.color = 'var(--primary-green-dark)';
+        feedbackText.innerHTML = `🟢 <b>Ahead of Budget:</b> You have saved <b>${this.formatPeso(surplus)}</b> more than the ideal pace for Day ${lastValidIdx + 1}!`;
+    } else {
+        // Perfect on-track pacing
+        feedbackBox.style.background = 'var(--bg-color)';
+        feedbackBox.style.borderColor = 'var(--border-color)';
+        feedbackText.style.color = 'var(--text-dark)';
+        feedbackText.innerHTML = `🎯 <b>Optimal Pace:</b> Your spending closely matches your ideal burn line for this cycle.`;
+    }
+},
+
+updateDailyVsSpentTrendFeedback(spentData, dailyLimitVal) {
+    const feedbackBox = document.getElementById('daily-trend-feedback');
+    const feedbackText = document.getElementById('daily-trend-text');
+    if (!feedbackBox || !feedbackText) return;
+
+    const overLimitDays = spentData.filter(amt => amt > dailyLimitVal && dailyLimitVal > 0).length;
+    const totalSpent = spentData.reduce((a, b) => a + b, 0);
+    const weekendSpent = (spentData[5] || 0) + (spentData[6] || 0); // Sat + Sun
+    const weekendPct = totalSpent > 0 ? Math.round((weekendSpent / totalSpent) * 100) : 0;
+
+    if (totalSpent === 0) {
+        feedbackBox.style.display = 'none';
+        return;
+    }
+
+    feedbackBox.style.display = 'flex';
+
+    if (overLimitDays >= 3) {
+        feedbackBox.style.background = 'var(--danger-red-light)';
+        feedbackBox.style.borderColor = 'var(--danger-red)';
+        feedbackText.style.color = 'var(--danger-red)';
+        feedbackText.innerHTML = `🚨 <b>Frequent Spikes:</b> Exceeded daily limit on <b>${overLimitDays} days</b> this week.`;
+    } else if (weekendPct >= 50 && weekendSpent > 0) {
+        feedbackBox.style.background = 'var(--accent-orange-light)';
+        feedbackBox.style.borderColor = 'var(--accent-orange)';
+        feedbackText.style.color = 'var(--accent-orange)';
+        feedbackText.innerHTML = `⚠️ <b>Weekend Drain:</b> <b>${weekendPct}%</b> of this week's expenses occurred on Sat & Sun.`;
+    } else {
+        feedbackBox.style.background = 'var(--primary-green-light)';
+        feedbackBox.style.borderColor = 'var(--primary-green)';
+        feedbackText.style.color = 'var(--primary-green-dark)';
+        feedbackText.innerHTML = `👏 <b>Balanced Pacing:</b> Spending is evenly distributed across the week.`;
+    }
+},
+    openChartZoomModal() {
+    this.openModal('modal-chart-zoom');
+    setTimeout(() => {
+        this.renderZoomBurndownChart();
+    }, 100);
+},
+
+renderZoomBurndownChart() {
+    const canvas = document.getElementById('zoomBurndownChart');
+    if (!canvas) return;
+
+    this.destroyChart('zoomBurndown', 'zoomBurndownChart');
+    const ctx = canvas.getContext('2d');
+
+    const originalChart = this.charts.burndown;
+    if (!originalChart) return;
+
+    this.charts.zoomBurndown = new Chart(ctx, {
+        type: 'line',
+        data: JSON.parse(JSON.stringify(originalChart.data)),
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { top: 12, right: 10, left: 4, bottom: 4 } },
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    display: true,
+                    align: 'center',
+                    labels: {
+                        boxWidth: 10,
+                        usePointStyle: true,
+                        font: { family: 'Nunito', size: 12, weight: '800' },
+                        color: this.state.darkMode ? '#f8fafc' : '#1e293b'
+                    }
+                },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: '#0f172a',
+                    titleColor: '#38bdf8',
+                    bodyColor: '#ffffff',
+                    titleFont: { family: 'Nunito', size: 13, weight: '800' },
+                    bodyFont: { family: 'Nunito', size: 12, weight: '700' },
+                    padding: 12,
+                    cornerRadius: 10,
+                    borderColor: '#334155',
+                    borderWidth: 1,
+                    displayColors: true
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        color: this.state.darkMode ? '#94a3b8' : '#64748b',
+                        font: { family: 'Nunito', size: 11, weight: '700' },
+                        maxTicksLimit: 8
+                    }
+                },
+                y: {
+                    grid: { color: 'rgba(226, 232, 240, 0.6)', borderDash: [4, 4] },
+                    ticks: {
+                        color: this.state.darkMode ? '#94a3b8' : '#64748b',
+                        font: { family: 'Nunito', size: 11, weight: '700' },
+                        callback: val => (val >= 1000 ? '₱' + (val / 1000) + 'k' : '₱' + val)
+                    }
+                }
+            }
+        }
+    });
+},
 destroyChart(key, canvasId) {
     if (this.charts && this.charts[key]) {
         this.charts[key].destroy();
@@ -108,7 +262,7 @@ renderBurndownChart() {
         const dateStr = currDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         labels.push(dateStr);
 
-        const idealVal = Math.max(0, initialAllowance - (i * (initialAllowance / totalCycleDays)));
+        const idealVal = Math.max(0, initialAllowance - ((i + 1) * (initialAllowance / totalCycleDays)));
         idealData.push(Math.round(idealVal));
 
         const dateKey = formatLocalDateKey(currDate);
@@ -234,6 +388,7 @@ renderBurndownChart() {
             }
         }
     });
+    this.updateBurndownTrendFeedback(idealData, actualData, totalCycleDays);
 },
 
 getDailyExpensesData(labels) {
@@ -378,6 +533,7 @@ renderDailyVsSpentChart() {
             }
         }
     });
+    this.updateDailyVsSpentTrendFeedback(spentData, dailyLimitVal);
 },
 
 renderInsightsCharts() {

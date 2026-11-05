@@ -628,21 +628,28 @@
     </div>
 </div>
 
-            <!-- Allowance Burndown Chart Card -->
-            <div class="card insight-card mb-4">
-                <div class="chart-card-header">
-                    <div class="chart-title-group">
-                        <i class="fa-solid fa-chart-line text-green" style="color: var(--primary-green);"></i>
-                        <span style="font-weight: 800; font-size: 0.95rem;">Allowance Burndown</span>
-                    </div>
-                    <span class="chart-badge" id="burndown-cycle-label">31-Day Cycle</span>
-                </div>
-                <div class="chart-container">
-                    <canvas id="burndownChart"></canvas>
-                </div>
-            </div>
+            <!-- 1. Allowance Burndown Chart Card -->
+<div class="card insight-card mb-4" onclick="app.openChartZoomModal()">
+    <div class="chart-card-header">
+        <div class="chart-title-group">
+            <i class="fa-solid fa-chart-line text-green" style="color: var(--primary-green);"></i>
+            <span style="font-weight: 800; font-size: 0.95rem;">Allowance Burndown</span>
+        </div>
+        <button class="chart-zoom-btn" onclick="event.stopPropagation(); app.openChartZoomModal();">
+            <i class="fa-solid fa-expand"></i> Zoom
+        </button>
+    </div>
+    <div class="chart-container">
+        <canvas id="burndownChart"></canvas>
+    </div>
+    <!-- NEW: Burndown Trend Feedback Banner -->
+    <div class="category-detail-box mt-3" id="burndown-trend-feedback" style="display:none; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-dark);">
+        <i class="fa-solid fa-lightbulb text-green" style="margin-right:6px;"></i>
+        <span id="burndown-trend-text" style="font-size:0.75rem; font-weight:700;">Analyzing burndown trajectory...</span>
+    </div>
+</div>
 
-            <!-- Daily Limit vs Spent Chart Card -->
+<!-- 2. Daily Limit vs Spent Chart Card -->
 <div class="card mb-4">
     <div class="chart-card-header">
         <div class="chart-title-group">
@@ -655,6 +662,11 @@
     </div>
     <div class="chart-container">
         <canvas id="dailyVsSpentChart"></canvas>
+    </div>
+    <!-- NEW: Daily vs Spent Trend Feedback Banner -->
+    <div class="category-detail-box mt-3" id="daily-trend-feedback" style="display:none; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-dark);">
+        <i class="fa-solid fa-chart-simple text-purple" style="margin-right:6px;"></i>
+        <span id="daily-trend-text" style="font-size:0.75rem; font-weight:700;">Analyzing weekly pacing...</span>
     </div>
 </div>
 
@@ -1186,6 +1198,28 @@
                 </button>
             </div>
         </div>
+
+<!-- Modal: Fullscreen Chart Zoom -->
+        <div id="modal-chart-zoom" class="modal-overlay">
+            <div class="modal-card chart-zoom-modal-card">
+                <div class="flex justify-between items-center mb-2">
+                    <div>
+                        <h3 class="modal-title" id="zoom-chart-title" style="margin-bottom:2px;">Allowance Burndown</h3>
+                        <span class="text-xs text-gray" id="zoom-chart-subtitle">Detailed Cycle View</span>
+                    </div>
+                    <button class="back-btn" onclick="app.closeModal('modal-chart-zoom')">✕</button>
+                </div>
+
+                <div class="zoom-chart-container">
+                    <canvas id="zoomBurndownChart"></canvas>
+                </div>
+
+                <div class="modal-actions mt-3">
+                    <button class="modal-btn btn-confirm" onclick="app.closeModal('modal-chart-zoom')">Close View</button>
+                </div>
+            </div>
+        </div>
+
     <script src="state.js"></script>
 <script src="calculations.js"></script>
 <script src="accounts.js"></script>

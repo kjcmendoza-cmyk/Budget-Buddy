@@ -2128,3 +2128,36 @@ body {
     color: var(--danger-red);
     border-color: var(--danger-red);
 }
+/* Chart Card Zoom Trigger Indicator */
+.card.insight-card {
+    cursor: pointer;
+    position: relative;
+}
+
+.chart-zoom-btn {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-dark);
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+/* Fullscreen Zoom Modal Styling */
+.chart-zoom-modal-card {
+    width: 95% !important;
+    max-width: 390px !important;
+    padding: 1.25rem !important;
+}
+
+.zoom-chart-container {
+    position: relative;
+    width: 100%;
+    height: 320px !important;
+    margin-top: 1rem;
+}
