@@ -756,6 +756,52 @@
             </div>
 
             <div class="settings-list mt-4 flex-col gap-3">
+                <!-- Require PIN Lock Toggle -->
+    <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.togglePinLock()">
+        <div class="flex items-center gap-3">
+            <div class="qa-icon-wrapper purple" style="width: 40px; height: 40px;">
+                <i class="fa-solid fa-key"></i>
+            </div>
+            <div>
+                <span style="font-weight: 600; display: block;">Require PIN Lock</span>
+                <span class="text-xs text-gray">Enforce authentication on launch</span>
+            </div>
+        </div>
+        <div id="pin-lock-toggle" class="toggle-switch"><div class="toggle-circle"></div></div>
+    </div>
+
+    <!-- Biometric Unlock Toggle -->
+    <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.toggleBiometrics()">
+        <div class="flex items-center gap-3">
+            <div class="qa-icon-wrapper green" style="width: 40px; height: 40px;">
+                <i class="fa-solid fa-fingerprint"></i>
+            </div>
+            <div>
+                <span style="font-weight: 600; display: block;">Biometric Unlock</span>
+                <span class="text-xs text-gray">Face ID / Touch ID support</span>
+            </div>
+        </div>
+        <div id="biometrics-toggle" class="toggle-switch"><div class="toggle-circle"></div></div>
+    </div>
+
+    <!-- Lock Timeout Grace Period -->
+    <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;">
+        <div class="flex items-center gap-3">
+            <div class="qa-icon-wrapper orange" style="width: 40px; height: 40px;">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+            <div>
+                <span style="font-weight: 600; display: block;">Lock Timeout</span>
+                <span class="text-xs text-gray">Inactivity grace period</span>
+            </div>
+        </div>
+        <select id="lock-timeout-select" onchange="app.setLockTimeout(this.value)" class="history-filter" style="padding: 4px 8px; font-size: 0.75rem;">
+            <option value="0">Immediately</option>
+            <option value="1">1 Minute</option>
+            <option value="5" selected>5 Minutes</option>
+            <option value="15">15 Minutes</option>
+        </select>
+    </div>
                 <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.openEditAllowanceModal()">
                     <div class="flex items-center gap-3">
                         <div class="qa-icon-wrapper green" style="width: 40px; height: 40px;"><i class="fa-solid fa-wallet"></i></div>

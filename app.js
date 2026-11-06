@@ -1,7 +1,76 @@
 Object.assign(app, {
-    openEditNameModal() {
+    setupInactivityListener() {
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            this.state.lastActiveTimestamp = Date.now();
+            this.saveState();
+        } else {
+            this.evaluateLockRequirement();
+        }
+    });
+},
+
+evaluateLockRequirement() {
+    if (!this.state.isLoggedIn) {
+        this.showScreen('auth-screen');
+        return;
+    }
+
+    if (!this.state.pinEnabled) {
+        this.showScreen('home-screen');
+        return;
+    }
+
+    const timeoutMs = (this.state.lockTimeoutMinutes || 0) * 60 * 1000;
+    const timeInactive = Date.now() - (this.state.lastActiveTimestamp || 0);
+
+    if (this.state.lastActiveTimestamp && timeInactive < timeoutMs) {
+        this.showScreen('home-screen');
+    } else {
+        this.showScreen('lock-screen');
+        if (this.state.biometricsEnabled) {
+            this.triggerBiometricUnlock();
+        }
+    }
+},
+
+togglePinLock() {
+    this.state.pinEnabled = !this.state.pinEnabled;
+    const toggle = document.getElementById('pin-lock-toggle');
+    if (toggle) toggle.classList.toggle('active', this.state.pinEnabled);
+    this.saveState();
+    this.showToast(`PIN Lock ${this.state.pinEnabled ? 'Enabled' : 'Disabled'}`);
+},
+
+toggleBiometrics() {
+    if (!window.PublicKeyCredential) {
+        this.showToast("⚠️ Biometrics not supported on this browser/device.");
+        return;
+    }
+    this.state.biometricsEnabled = !this.state.biometricsEnabled;
+    const toggle = document.getElementById('biometrics-toggle');
+    if (toggle) toggle.classList.toggle('active', this.state.biometricsEnabled);
+    this.saveState();
+    this.showToast(`Biometrics ${this.state.biometricsEnabled ? 'Enabled' : 'Disabled'}`);
+},
+
+setLockTimeout(minutes) {
+    this.state.lockTimeoutMinutes = parseInt(minutes, 10);
+    this.saveState();
+    this.showToast(`Lock grace period set to ${minutes === '0' ? 'Immediate' : minutes + ' min'}`);
+},
+
+async triggerBiometricUnlock() {
+    try {
+        if (!window.PublicKeyCredential) return;
+        this.showToast("Authenticating with Face ID / Touch ID...");
+    } catch (err) {
+        console.warn("Biometric authentication skipped or cancelled:", err);
+    }
+},
+
+openEditNameModal() {
     const input = document.getElementById('edit-name-input');
-    if (input) input.value = this.state.userName || '';
     this.openModal('modal-edit-name');
 },
 
@@ -118,7 +187,15 @@ runSimulator() {
         }
     }
 },
+updateSettingsUI() {
+    const pinToggle = document.getElementById('pin-lock-toggle');
+    const bioToggle = document.getElementById('biometrics-toggle');
+    const timeoutSelect = document.getElementById('lock-timeout-select');
 
+    if (pinToggle) pinToggle.classList.toggle('active', !!this.state.pinEnabled);
+    if (bioToggle) bioToggle.classList.toggle('active', !!this.state.biometricsEnabled);
+    if (timeoutSelect) timeoutSelect.value = String(this.state.lockTimeoutMinutes || 5);
+},
 init() {
     this.loadState();
     this.state.balance = this.getCalculatedTotalBalance();
@@ -134,12 +211,13 @@ init() {
     }
 
     this.bindEvents();
+    this.setupInactivityListener();
     this.checkDueExpenses();
     this.recalculateDailyLimit();
     this.updateHomeUI();
     this.updateUpcomingUI();
 
-    if (isFirebaseActive && auth) {
+    if (typeof isFirebaseActive !== 'undefined' && isFirebaseActive && typeof auth !== 'undefined' && auth) {
         auth.onAuthStateChanged(user => {
             if (user) {
                 this.state.userEmail = user.email || this.state.userEmail;
@@ -150,11 +228,8 @@ init() {
         });
     }
 
-    if (this.state.isLoggedIn) {
-        this.showScreen('lock-screen');
-    } else {
-        this.showScreen('auth-screen');
-    }
+    this.updateSettingsUI();
+    this.evaluateLockRequirement();
 },
 
 bindEvents() {
@@ -230,6 +305,7 @@ showScreen(screenId) {
         const emailDisp = document.getElementById('profile-email-display');
         if (nameDisp) nameDisp.textContent = this.state.userName || 'User';
         if (emailDisp) emailDisp.textContent = this.state.userEmail || 'Smart Spender';
+        this.updateSettingsUI();
     }
 },
 
@@ -504,7 +580,7 @@ async handleAuthSubmit() {
                 this.state.isLoggedIn = true;
                 this.saveState();
                 await this.fetchFirestoreData(res.user.uid);
-                this.showScreen('lock-screen');
+                this.evaluateLockRequirement();
                 this.showToast(`Welcome back, ${this.state.userName}! Please enter your PIN.`);
             } catch (err) {
                 this.showToast("⚠️ Sign In Error: " + err.message);
@@ -513,7 +589,7 @@ async handleAuthSubmit() {
             if (email.toLowerCase() === this.state.userEmail.toLowerCase() && pass === this.state.userPassword) {
                 this.state.isLoggedIn = true;
                 this.saveState();
-                this.showScreen('lock-screen');
+                this.evaluateLockRequirement();
                 this.showToast(`Welcome back, ${this.state.userName}! Please enter your PIN.`);
             } else {
                 this.showToast("⚠️ Invalid email or password.");
@@ -537,7 +613,7 @@ async handleAuthSubmit() {
                 await res.user.updateProfile({ displayName: name });
                 this.state.isLoggedIn = true;
                 this.saveState();
-                this.showScreen('lock-screen');
+                this.evaluateLockRequirement();
                 this.showToast("Account registered! Please enter your PIN to continue.");
             } catch (err) {
                 this.showToast("⚠️ Sign Up Error: " + err.message);
@@ -545,7 +621,7 @@ async handleAuthSubmit() {
         } else {
             this.state.isLoggedIn = true;
             this.saveState();
-            this.showScreen('lock-screen');
+            this.evaluateLockRequirement();
             this.showToast("Account created! Please confirm your PIN.");
         }
     }

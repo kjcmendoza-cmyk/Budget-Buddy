@@ -1,3 +1,4 @@
+const app = window.app = window.app || {};
 function safeAdd(a, b) {
     return Math.round(((Number(a) || 0) + (Number(b) || 0) + Number.EPSILON) * 100) / 100;
 }
@@ -56,6 +57,10 @@ const defaultState = {
     authTab: 'signin',
     darkMode: false,
     notificationsEnabled: true,
+    pinEnabled: false,
+    biometricsEnabled: false,
+    lockTimeoutMinutes: 5,
+    lastActiveTimestamp: 0,
     selectedCategory: 'Food',
     balance: 0,
     initialAllowance: 0,
