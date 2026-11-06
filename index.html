@@ -9,8 +9,8 @@
 
     <!-- App Favicon & Home Screen Icons -->
     <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" href="BUDGET-BUDDDY.png">
-<link rel="apple-touch-icon" href="BUDGET-BUDDDY.png">
+    <link rel="icon" type="image/png" href="BUDGET-BUDDDY.png">
+    <link rel="apple-touch-icon" href="BUDGET-BUDDDY.png">
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -36,8 +36,8 @@
         <div id="lock-screen" class="screen active p-4 flex-col justify-between items-center text-center">
             <div class="lock-header mt-4" style="width:100%;">
                 <div class="lock-logo" style="background: transparent;">
-    <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
-</div>
+                    <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
+                </div>
                 <h2>BudgetBuddy</h2>
                 <p class="text-sm text-gray mt-2">Welcome back, <span id="lock-user-name" style="font-weight:700;">User</span></p>
             </div>
@@ -80,8 +80,8 @@
                 <div>
                     <div class="text-center mt-4 mb-4">
                         <div class="lock-logo" style="background: transparent;">
-    <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
-</div>
+                            <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
+                        </div>
                         <h2>BudgetBuddy</h2>
                         <p class="text-xs text-gray">Smart Spender Account Portal</p>
                     </div>
@@ -106,11 +106,7 @@
                                 <i class="fa-solid fa-user"></i>
                                 <input type="text" id="auth-name" placeholder="Full Name" value="">
                             </div>
-                            <div class="input-group">
-                                <i class="fa-solid fa-key"></i>
-                                <input type="password" id="auth-pin" placeholder="Set 4-Digit PIN (e.g. 1234)" maxlength="4" inputmode="numeric">
                             </div>
-                        </div>
 
                         <button id="auth-submit-btn" class="btn-large btn-green mt-4" onclick="app.handleAuthSubmit()">
                             Sign In <i class="fa-solid fa-right-to-bracket"></i>
@@ -120,29 +116,29 @@
             </div>
         </div>
 
-<!-- ==============================
+        <!-- ==============================
              SCREEN 1: HOME DASHBOARD
              ============================== -->
-        <div id="home-screen" class="screen p-4">
+        <div id="home-screen" class="screen active p-4">
             <header class="header-top">
-    <div class="flex items-center gap-3">
-        <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" class="header-logo-img">
-        <div class="greeting">
-            <h1 id="home-greeting">Good morning 👋</h1>
-            <p>Let’s make today a smart spend!</p>
-        </div>
-    </div>
-    <div class="notification-bell" onclick="app.showToast('No new notifications')">
-        <i class="fa-regular fa-bell"></i>
-        <div class="notification-dot"></div>
-    </div>
-</header>
+                <div class="flex items-center gap-3">
+                    <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" class="header-logo-img">
+                    <div class="greeting">
+                        <h1 id="home-greeting">Good morning 👋</h1>
+                        <p>Let’s make today a smart spend!</p>
+                    </div>
+                </div>
+                <div class="notification-bell" onclick="app.showToast('No new notifications')">
+                    <i class="fa-regular fa-bell"></i>
+                    <div class="notification-dot"></div>
+                </div>
+            </header>
 
             <!-- 1. Available Money Card -->
-<div class="available-money-card" style="position: relative;" onclick="app.showScreen('accounts-screen')" title="View Cards & Accounts">
-    <div class="card-add-badge" style="position: absolute; top: 12px; right: 12px; z-index: 10; cursor: pointer; pointer-events: auto;" onclick="event.stopPropagation(); app.openEditAllowanceModal();" title="Set Allowance Cycle">
-        <i class="fa-solid fa-plus" style="pointer-events: none;"></i>
-    </div>  
+            <div class="available-money-card" style="position: relative;" onclick="app.showScreen('accounts-screen')" title="View Cards & Accounts">
+                <div class="card-add-badge" style="position: absolute; top: 12px; right: 12px; z-index: 10; cursor: pointer; pointer-events: auto;" onclick="event.stopPropagation(); app.openEditAllowanceModal();" title="Set Allowance Cycle">
+                    <i class="fa-solid fa-plus" style="pointer-events: none;"></i>
+                </div>  
                 <div class="am-left">
                     <div class="label">
                         <i class="fa-solid fa-wallet"></i> AVAILABLE MONEY
@@ -160,31 +156,31 @@
                 </svg>
             </div>
 
-<!-- 2. Safe to Spend Card -->
-<div class="card safe-spend-card">
-    <div class="safe-card-header">
-        <div class="safe-card-title">Safe to spend per day</div>
-        <div class="mascot-status-box">
-            <div class="mascot-text" id="mascot-bubble">You're on track!</div>
-            <div class="mascot-icon-wrapper" id="mascot-icon">🤖</div>
-        </div>
-    </div>
-    <div class="safe-spend-main">
-        <div class="amount" id="home-daily-limit">₱0</div>
-        <div class="text-xs mt-1" id="home-safe-remaining"></div>
-    </div>
+            <!-- 2. Safe to Spend Card -->
+            <div class="card safe-spend-card">
+                <div class="safe-card-header">
+                    <div class="safe-card-title">Safe to spend per day</div>
+                    <div class="mascot-status-box">
+                        <div class="mascot-text" id="mascot-bubble">You're on track!</div>
+                        <div class="mascot-icon-wrapper" id="mascot-icon">🤖</div>
+                    </div>
+                </div>
+                <div class="safe-spend-main">
+                    <div class="amount" id="home-daily-limit">₱0</div>
+                    <div class="text-xs mt-1" id="home-safe-remaining"></div>
+                </div>
 
-    <div class="safe-metrics-grid">
-        <div class="metric-item">
-            <span class="metric-label">Remaining Today</span>
-            <span class="metric-val green" id="val-remaining">₱0</span>
-        </div>
-        <div class="metric-item">
-            <span class="metric-label">Spent Today</span>
-            <span class="metric-val" id="val-spent">₱0</span>
-        </div>
-    </div>
-</div>
+                <div class="safe-metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">Remaining Today</span>
+                        <span class="metric-val green" id="val-remaining">₱0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Spent Today</span>
+                        <span class="metric-val" id="val-spent">₱0</span>
+                    </div>
+                </div>
+            </div>
 
             <!-- 3. Quick Actions -->
             <div class="section-header">
@@ -195,7 +191,6 @@
                     <div class="qa-icon-wrapper green"><i class="fa-solid fa-plus"></i></div>
                     <div class="qa-label">Add<br>Expense</div>
                 </div>
-                <!-- CASH-IN BUTTON -->
                 <div class="qa-item" onclick="app.openAddDepositModal()">
                     <div class="qa-icon-wrapper green" style="background: var(--primary-green-light); color: var(--primary-green-dark);"><i class="fa-solid fa-hand-holding-dollar"></i></div>
                     <div class="qa-label">Add<br>Cash-In</div>
@@ -282,15 +277,15 @@
             </div>
         </div>
 
-<!-- ==============================
+        <!-- ==============================
              SCREEN 1B: ACCOUNTS & WALLETS
              ============================== -->
         <div id="accounts-screen" class="screen p-4">
-    <div class="screen-header">
-        <div class="header-title-group">
-            <h2>Accounts & Cards 💳</h2>
-        </div>
-    </div>
+            <div class="screen-header">
+                <div class="header-title-group">
+                    <h2>Accounts & Cards 💳</h2>
+                </div>
+            </div>
 
             <!-- Total Net Balance Header -->
             <div class="card p-3 mb-3 flex justify-between items-center">
@@ -317,18 +312,16 @@
         </div>
 
         <!-- ===========================
-     SCREEN 2: QUICK ADD EXPENSE
-     =========================== -->
-<div id="quick-add-screen" class="screen p-4">
-    <div class="screen-header">
-        <div class="header-title-group">
-            <h2>Quick Add ⚡</h2> 
-            <span class="header-subtitle">Add expense in 3 seconds</span> 
-        </div>
-        
-        <!-- Empty placeholder to keep the title perfectly centered -->
-        <div style="width: 40px;"></div>
-    </div>
+             SCREEN 2: QUICK ADD EXPENSE
+             =========================== -->
+        <div id="quick-add-screen" class="screen p-4">
+            <div class="screen-header">
+                <div class="header-title-group">
+                    <h2>Quick Add ⚡</h2> 
+                    <span class="header-subtitle">Add expense in 3 seconds</span> 
+                </div>
+                <div style="width: 40px;"></div>
+            </div>
 
             <div class="amount-input-area">
                 <div class="amount-wrapper">
@@ -372,11 +365,9 @@
                 </div>
             </div>
             <div class="mt-3">
-    <label class="text-sm" style="font-weight: 700;">Pay From Account</label>
-    <select id="expense-account-select" class="generic-input mt-2" style="margin-bottom:0;">
-        <!-- Dynamically populated from JS -->
-    </select>
-</div>
+                <label class="text-sm" style="font-weight: 700;">Pay From Account</label>
+                <select id="expense-account-select" class="generic-input mt-2" style="margin-bottom:0;"></select>
+            </div>
             <div class="note-area">
                 <label class="text-sm" style="font-weight: 700;">Add note (optional)</label>
                 <input type="text" id="expense-note" class="note-input" placeholder="e.g., lunch, jeep fare, milk tea...">
@@ -391,12 +382,12 @@
              DEDICATED TRANSACTION HISTORY
              ============================== -->
         <div id="history-screen" class="screen p-4">
-    <div class="screen-header">
-        <div class="header-title-group">
-            <h2>History 📜</h2>
-            <span class="header-subtitle">All Transactions</span>
-        </div>
-    </div>
+            <div class="screen-header">
+                <div class="header-title-group">
+                    <h2>History 📜</h2>
+                    <span class="header-subtitle">All Transactions</span>
+                </div>
+            </div>
 
             <div class="history-controls">
                 <input type="text" id="history-search-input" class="history-search" placeholder="Search expenses..." oninput="app.renderHistoryUI()">
@@ -419,13 +410,13 @@
         <!-- ==============================
              SCREEN 3: CAN I AFFORD IT?
              ============================== -->
-       <div id="afford-screen" class="screen p-4">
-    <div class="screen-header">
-        <div class="header-title-group">
-            <h2>Can I Afford It? 🛍️</h2>
-            <span class="header-subtitle">Budget Impact Checker</span>
-        </div>
-    </div>
+        <div id="afford-screen" class="screen p-4">
+            <div class="screen-header">
+                <div class="header-title-group">
+                    <h2>Can I Afford It? 🛍️</h2>
+                    <span class="header-subtitle">Budget Impact Checker</span>
+                </div>
+            </div>
 
             <div class="afford-header-illus">
                 <i class="fa-solid fa-bag-shopping"></i>
@@ -491,14 +482,13 @@
              SCREEN 4: GOALS SCREEN
              ============================== -->
         <div id="goals-screen" class="screen p-4">
-    <div class="screen-header">
-        <div class="header-title-group">
-            <h2>Goals & Badges 🎯</h2>
-            <span class="header-subtitle">Savings Milestones</span>
-        </div>
-    </div>
+            <div class="screen-header">
+                <div class="header-title-group">
+                    <h2>Goals & Badges 🎯</h2>
+                    <span class="header-subtitle">Savings Milestones</span>
+                </div>
+            </div>
 
-            <!-- Gamification Badges Grid -->
             <div class="card mb-4">
                 <div class="flex justify-between items-center mb-2">
                     <h4 style="font-size: 0.9rem;">🏆 Unlocked Achievements</h4>
@@ -530,14 +520,13 @@
              SCREEN 5: UPCOMING BILLS
              ============================== -->
         <div id="upcoming-screen" class="screen p-4">
-    <div class="screen-header">
-        <div class="header-title-group">
-            <h2>Upcoming Bills 🗓️</h2>
-            <span class="header-subtitle">Scheduled Expenses</span>
-        </div>
-    </div>
+            <div class="screen-header">
+                <div class="header-title-group">
+                    <h2>Upcoming Bills 🗓️</h2>
+                    <span class="header-subtitle">Scheduled Expenses</span>
+                </div>
+            </div>
             
-            <!-- Visual Calendar Widget -->
             <div class="calendar-card">
                 <div class="calendar-header">
                     <button class="calendar-nav-btn" onclick="app.prevCalMonth()"><i class="fa-solid fa-chevron-left"></i></button>
@@ -548,7 +537,6 @@
                     <button class="calendar-nav-btn" onclick="app.nextCalMonth()"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
                 
-                <!-- Collapsible Container Wrapper -->
                 <div id="calendar-body">
                     <div class="calendar-days-header">
                         <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
@@ -562,7 +550,6 @@
                 </div>
             </div>
 
-            <!-- Schedule Form Card -->
             <div class="schedule-form-card">
                 <div class="schedule-form-title">Add New Scheduled Cost</div>
                 
@@ -609,90 +596,83 @@
              SCREEN 6: INSIGHTS
              ============================== -->
         <div id="insights-screen" class="screen p-4">
-    <div class="screen-header">
-        <div class="header-title-group">
-            <h2>Insights 📊</h2>
-            <span class="header-subtitle">Analytics & Pace</span>
-        </div>
-    </div>
-
-            <!-- Executive Metric Overview -->
-<div class="insights-hero-summary mb-3">
-    <div class="hero-stat-card">
-        <div class="hero-stat-label">Daily Pace Status</div>
-        <div class="hero-stat-value" id="insights-pace-status">On Track 🟢</div>
-    </div>
-    <div class="hero-stat-card">
-        <div class="hero-stat-label">Projected End Balance</div>
-        <div class="hero-stat-value" id="projected-end-bal">₱0</div>
-    </div>
-</div>
-
-            <!-- 1. Allowance Burndown Chart Card -->
-<div class="card insight-card mb-4" onclick="app.openChartZoomModal()">
-    <div class="chart-card-header">
-        <div class="chart-title-group">
-            <i class="fa-solid fa-chart-line text-green" style="color: var(--primary-green);"></i>
-            <span style="font-weight: 800; font-size: 0.95rem;">Allowance Burndown</span>
-        </div>
-        <button class="chart-zoom-btn" onclick="event.stopPropagation(); app.openChartZoomModal();">
-            <i class="fa-solid fa-expand"></i> Zoom
-        </button>
-    </div>
-    <div class="chart-container">
-        <canvas id="burndownChart"></canvas>
-    </div>
-    <!-- NEW: Burndown Trend Feedback Banner -->
-    <div class="category-detail-box mt-3" id="burndown-trend-feedback" style="display:none; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-dark);">
-        <i class="fa-solid fa-lightbulb text-green" style="margin-right:6px;"></i>
-        <span id="burndown-trend-text" style="font-size:0.75rem; font-weight:700;">Analyzing burndown trajectory...</span>
-    </div>
-</div>
-
-<!-- 2. Daily Limit vs Spent Chart Card -->
-<div class="card mb-4">
-    <div class="chart-card-header">
-        <div class="chart-title-group">
-            <div class="chart-card-title">
-                <i class="fa-solid fa-chart-bar text-green" style="color: var(--primary-green);"></i>
-                <span>Daily Limit vs. Spent</span>
+            <div class="screen-header">
+                <div class="header-title-group">
+                    <h2>Insights 📊</h2>
+                    <span class="header-subtitle">Analytics & Pace</span>
+                </div>
             </div>
-            <span class="chart-subtitle">Mon - Sun</span>
-        </div>
-    </div>
-    <div class="chart-container">
-        <canvas id="dailyVsSpentChart"></canvas>
-    </div>
-    <!-- NEW: Daily vs Spent Trend Feedback Banner -->
-    <div class="category-detail-box mt-3" id="daily-trend-feedback" style="display:none; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-dark);">
-        <i class="fa-solid fa-chart-simple text-purple" style="margin-right:6px;"></i>
-        <span id="daily-trend-text" style="font-size:0.75rem; font-weight:700;">Analyzing weekly pacing...</span>
-    </div>
-</div>
 
-            <!-- 2. Category Spending Breakdown (Donut Chart) -->
+            <div class="insights-hero-summary mb-3">
+                <div class="hero-stat-card">
+                    <div class="hero-stat-label">Daily Pace Status</div>
+                    <div class="hero-stat-value" id="insights-pace-status">On Track 🟢</div>
+                </div>
+                <div class="hero-stat-card">
+                    <div class="hero-stat-label">Projected End Balance</div>
+                    <div class="hero-stat-value" id="projected-end-bal">₱0</div>
+                </div>
+            </div>
+
+            <div class="card insight-card mb-4" onclick="app.openChartZoomModal()">
+                <div class="chart-card-header">
+                    <div class="chart-title-group">
+                        <i class="fa-solid fa-chart-line text-green" style="color: var(--primary-green);"></i>
+                        <span style="font-weight: 800; font-size: 0.95rem;">Allowance Burndown</span>
+                    </div>
+                    <button class="chart-zoom-btn" onclick="event.stopPropagation(); app.openChartZoomModal();">
+                        <i class="fa-solid fa-expand"></i> Zoom
+                    </button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="burndownChart"></canvas>
+                </div>
+                <div class="category-detail-box mt-3" id="burndown-trend-feedback" style="display:none; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-dark);">
+                    <i class="fa-solid fa-lightbulb text-green" style="margin-right:6px;"></i>
+                    <span id="burndown-trend-text" style="font-size:0.75rem; font-weight:700;">Analyzing burndown trajectory...</span>
+                </div>
+            </div>
+
             <div class="card mb-4">
-    <div class="chart-card-header flex justify-between items-center">
-        <div class="chart-card-title">
-            <i class="fa-solid fa-chart-pie text-purple"></i> Category Breakdown
-        </div>
-        <button onclick="app.openCategoryCapsModal()" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-dark); border-radius: 8px; padding: 4px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: 'Nunito';">
-            ⚙️ Set Caps
-        </button>
-    </div>
-    
-    <div class="chart-container" style="height: 180px;">
-        <canvas id="categoryDonutChart"></canvas>
-    </div>
+                <div class="chart-card-header">
+                    <div class="chart-title-group">
+                        <div class="chart-card-title">
+                            <i class="fa-solid fa-chart-bar text-green" style="color: var(--primary-green);"></i>
+                            <span>Daily Limit vs. Spent</span>
+                        </div>
+                        <span class="chart-subtitle">Mon - Sun</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="dailyVsSpentChart"></canvas>
+                </div>
+                <div class="category-detail-box mt-3" id="daily-trend-feedback" style="display:none; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-dark);">
+                    <i class="fa-solid fa-chart-simple text-purple" style="margin-right:6px;"></i>
+                    <span id="daily-trend-text" style="font-size:0.75rem; font-weight:700;">Analyzing weekly pacing...</span>
+                </div>
+            </div>
 
-    <div class="category-breakdown-list" id="category-breakdown-list"></div>
-    <div class="category-detail-box" id="cat-insight-detail">
-        <span>Awaiting data:</span>
-        <span style="color: var(--danger-red);">No categories yet</span>
-    </div>
-</div>
+            <div class="card mb-4">
+                <div class="chart-card-header flex justify-between items-center">
+                    <div class="chart-card-title">
+                        <i class="fa-solid fa-chart-pie text-purple"></i> Category Breakdown
+                    </div>
+                    <button onclick="app.openCategoryCapsModal()" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-dark); border-radius: 8px; padding: 4px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: 'Nunito';">
+                        ⚙️ Set Caps
+                    </button>
+                </div>
+                
+                <div class="chart-container" style="height: 180px;">
+                    <canvas id="categoryDonutChart"></canvas>
+                </div>
 
-            <!-- 4. Top Spending Days & Peak Hours -->
+                <div class="category-breakdown-list" id="category-breakdown-list"></div>
+                <div class="category-detail-box" id="cat-insight-detail">
+                    <span>Awaiting data:</span>
+                    <span style="color: var(--danger-red);">No categories yet</span>
+                </div>
+            </div>
+
             <div class="card mb-4">
                 <div class="chart-card-header">
                     <div class="chart-card-title">
@@ -713,7 +693,6 @@
                 </div>
             </div>
 
-            <!-- 5. Goal Contribution Progress -->
             <div class="goal-savings-widget mb-4">
                 <div class="flex justify-between items-center mb-2">
                     <h4 style="font-size: 1rem;">Discipline Auto-Savings</h4>
@@ -735,12 +714,12 @@
              SCREEN 7: PROFILE SCREEN
              ============================== -->
         <div id="profile-screen" class="screen p-4">
-    <div class="screen-header">
-        <div class="header-title-group">
-            <h2>Profile 👤</h2>
-            <span class="header-subtitle">Account & Settings</span>
-        </div>
-    </div>
+            <div class="screen-header">
+                <div class="header-title-group">
+                    <h2>Profile 👤</h2>
+                    <span class="header-subtitle">Account & Settings</span>
+                </div>
+            </div>
 
             <div class="profile-header flex-col items-center justify-center mt-4">
                 <div class="profile-avatar">
@@ -756,52 +735,6 @@
             </div>
 
             <div class="settings-list mt-4 flex-col gap-3">
-                <!-- Require PIN Lock Toggle -->
-    <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.togglePinLock()">
-        <div class="flex items-center gap-3">
-            <div class="qa-icon-wrapper purple" style="width: 40px; height: 40px;">
-                <i class="fa-solid fa-key"></i>
-            </div>
-            <div>
-                <span style="font-weight: 600; display: block;">Require PIN Lock</span>
-                <span class="text-xs text-gray">Enforce authentication on launch</span>
-            </div>
-        </div>
-        <div id="pin-lock-toggle" class="toggle-switch"><div class="toggle-circle"></div></div>
-    </div>
-
-    <!-- Biometric Unlock Toggle -->
-    <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.toggleBiometrics()">
-        <div class="flex items-center gap-3">
-            <div class="qa-icon-wrapper green" style="width: 40px; height: 40px;">
-                <i class="fa-solid fa-fingerprint"></i>
-            </div>
-            <div>
-                <span style="font-weight: 600; display: block;">Biometric Unlock</span>
-                <span class="text-xs text-gray">Face ID / Touch ID support</span>
-            </div>
-        </div>
-        <div id="biometrics-toggle" class="toggle-switch"><div class="toggle-circle"></div></div>
-    </div>
-
-    <!-- Lock Timeout Grace Period -->
-    <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;">
-        <div class="flex items-center gap-3">
-            <div class="qa-icon-wrapper orange" style="width: 40px; height: 40px;">
-                <i class="fa-solid fa-clock"></i>
-            </div>
-            <div>
-                <span style="font-weight: 600; display: block;">Lock Timeout</span>
-                <span class="text-xs text-gray">Inactivity grace period</span>
-            </div>
-        </div>
-        <select id="lock-timeout-select" onchange="app.setLockTimeout(this.value)" class="history-filter" style="padding: 4px 8px; font-size: 0.75rem;">
-            <option value="0">Immediately</option>
-            <option value="1">1 Minute</option>
-            <option value="5" selected>5 Minutes</option>
-            <option value="15">15 Minutes</option>
-        </select>
-    </div>
                 <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.openEditAllowanceModal()">
                     <div class="flex items-center gap-3">
                         <div class="qa-icon-wrapper green" style="width: 40px; height: 40px;"><i class="fa-solid fa-wallet"></i></div>
@@ -825,39 +758,40 @@
                     </div>
                     <div id="dark-mode-toggle" class="toggle-switch"><div class="toggle-circle"></div></div>
                 </div>
-                <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.nukeAndResetSystem()">
-    <div class="flex items-center gap-3">
-        <div class="qa-icon-wrapper" style="width: 40px; height: 40px; background: var(--danger-red-light); color: var(--danger-red);">
-            <i class="fa-solid fa-rotate-left"></i>
-        </div>
-        <span style="font-weight: 600; color: var(--danger-red);">Reset to Default</span>
-    </div>
-</div>
 
-<div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.logout()">
-            <div class="flex items-center gap-3">
-                <div class="qa-icon-wrapper" style="width: 40px; height: 40px; background: var(--danger-red-light); color: var(--danger-red);">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.openModal('modal-confirm-reset')">
+                    <div class="flex items-center gap-3">
+                        <div class="qa-icon-wrapper" style="width: 40px; height: 40px; background: var(--danger-red-light); color: var(--danger-red);">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </div>
+                        <span style="font-weight: 600; color: var(--danger-red);">Reset to Default</span>
+                    </div>
                 </div>
-                <span style="font-weight: 600; color: var(--danger-red);">Log Out</span>
+
+                <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.openModal('modal-confirm-logout')">
+                    <div class="flex items-center gap-3">
+                        <div class="qa-icon-wrapper" style="width: 40px; height: 40px; background: var(--danger-red-light); color: var(--danger-red);">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        </div>
+                        <span style="font-weight: 600; color: var(--danger-red);">Log Out</span>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-<!-- ==============================
+
+        <!-- ==============================
              SCREEN 8: WHAT-IF SIMULATOR
              ============================== -->
-       <div id="simulator-screen" class="screen p-4">
-    <div class="screen-header">
-        <div class="header-title-group">
-            <h2 style="color: var(--accent-orange);">"What-If" Simulator ⚡</h2>
-            <span class="header-subtitle">Scenario Planning</span>
-        </div>
-    </div>
+        <div id="simulator-screen" class="screen p-4">
+            <div class="screen-header">
+                <div class="header-title-group">
+                    <h2 style="color: var(--accent-orange);">"What-If" Simulator ⚡</h2>
+                    <span class="header-subtitle">Scenario Planning</span>
+                </div>
+            </div>
             
             <p class="text-center text-sm text-gray mb-4" style="font-weight:600;">Test financial changes before making them.</p>
 
-            <!-- Flexible Income Card -->
             <div class="card mb-4">
                 <div class="flex justify-between items-center mb-2">
                     <h3 class="text-sm text-gray" style="font-weight: 700;">Income Change</h3>
@@ -874,7 +808,6 @@
                 <input type="range" id="sim-income-slider" min="-10000" max="10000" step="100" value="0" class="sim-slider" oninput="app.runSimulator()">
             </div>
 
-            <!-- Flexible Expense Card -->
             <div class="card mb-4">
                 <div class="flex justify-between items-center mb-2">
                     <h3 class="text-sm text-gray" style="font-weight: 700;">New Regular Expense</h3>
@@ -906,10 +839,10 @@
                 <p id="sim-goal-impact" class="text-xs mt-3 text-center" style="font-weight: 700; color: var(--text-dark);">Your savings timeline remains unchanged.</p>
             </div>
         </div>
-<!-- ==============================
+
+        <!-- ==============================
              BOTTOM NAVIGATION
              ============================== -->
-        <!-- Floating Financial Health Badge -->
         <div class="floating-health-widget" id="floating-health-widget" onclick="app.openHealthScoreModal()" title="View Financial Health Breakdown">
             <i class="fa-solid fa-heart-pulse floating-health-heart" id="floating-health-icon"></i>
             <span class="floating-health-val" id="floating-health-score">0</span>
@@ -942,7 +875,6 @@
         <!-- ==============================
              MODALS
              ============================== -->
-             <!-- Category Budget Caps Modal -->
         <div id="modal-category-caps" class="modal-overlay">
             <div class="modal-card" style="max-width: 380px;">
                 <div class="flex justify-between items-center mb-2">
@@ -951,9 +883,7 @@
                 </div>
                 <p class="text-xs text-gray mb-3">Set max spending limits to receive warning alerts as you approach them.</p>
 
-                <div id="category-caps-input-list" style="max-height: 280px; overflow-y: auto; padding-right: 4px;">
-                    <!-- Dynamically populated from JavaScript -->
-                </div>
+                <div id="category-caps-input-list" style="max-height: 280px; overflow-y: auto; padding-right: 4px;"></div>
 
                 <div class="modal-actions">
                     <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-category-caps')">Cancel</button>
@@ -961,7 +891,7 @@
                 </div>
             </div>
         </div>
-             <!-- Financial Health Score Modal -->
+
         <div id="modal-health-score" class="modal-overlay">
             <div class="modal-card" style="max-width: 360px; width: 90%;">
                 <div class="flex justify-between items-center mb-2">
@@ -1020,6 +950,7 @@
                 </div>
             </div>
         </div>
+
         <div id="modal-forgot-pin" class="modal-overlay">
             <div class="modal-card">
                 <h3 class="modal-title">Reset Your PIN</h3>
@@ -1051,9 +982,7 @@
                 <p id="funds-target-name" class="text-sm text-gray mb-3" style="margin-top:-10px;"></p>
 
                 <label class="text-xs text-gray" style="font-weight:700;">Fund Source</label>
-                <select id="add-funds-source-select" class="generic-input">
-                    <!-- Dynamically populated from JS -->
-                </select>
+                <select id="add-funds-source-select" class="generic-input"></select>
 
                 <label class="text-xs text-gray" style="font-weight:700;">Amount to Add (₱)</label>
                 <input type="number" id="add-funds-amount" class="generic-input" placeholder="Amount to add (₱)" inputmode="decimal">
@@ -1076,112 +1005,104 @@
             </div>
         </div>
 
-<!-- Modal: Set Allowance Cycle -->
-<div id="modal-edit-allowance" class="modal-overlay">
-    <div class="modal-card">
-        <h3 class="modal-title">Set Allowance Cycle 📅</h3>
-        
-        <div class="flex justify-between items-center mb-1">
-            <label class="text-xs text-gray" style="font-weight:700;">Account to Set Allowance</label>
-            <button type="button" onclick="app.closeModal('modal-edit-allowance'); app.openAddAccountModal();" style="background:none; border:none; color:var(--primary-green); font-size:0.75rem; font-weight:700; cursor:pointer;">+ Add Card</button>
-        </div>
-        
-        <select id="edit-allowance-account-select" class="generic-input" onchange="app.onAllowanceAccountChange(this.value)">
-            <!-- Dynamically populated from JavaScript -->
-        </select>
+        <div id="modal-edit-allowance" class="modal-overlay">
+            <div class="modal-card">
+                <h3 class="modal-title">Set Allowance Cycle 📅</h3>
+                
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs text-gray" style="font-weight:700;">Account to Set Allowance</label>
+                    <button type="button" onclick="app.closeModal('modal-edit-allowance'); app.openModal('modal-add-account');" style="background:none; border:none; color:var(--primary-green); font-size:0.75rem; font-weight:700; cursor:pointer;">+ Add Card</button>
+                </div>
+                
+                <select id="edit-allowance-account-select" class="generic-input" onchange="app.onAllowanceAccountChange(this.value)"></select>
 
-        <label class="text-xs text-gray" style="font-weight:700;">Starting Allowance Amount (₱)</label>
-        <input type="number" id="edit-allowance-amount" class="generic-input" placeholder="e.g. 5000" inputmode="decimal" oninput="app.updateSplitPreview('allowance')">
+                <label class="text-xs text-gray" style="font-weight:700;">Starting Allowance Amount (₱)</label>
+                <input type="number" id="edit-allowance-amount" class="generic-input" placeholder="e.g. 5000" inputmode="decimal" oninput="app.updateSplitPreview('allowance')">
 
-        <!-- Split to Savings for Allowance Cycle -->
-        <div style="margin-bottom: 10px;">
-            <div class="flex justify-between items-center mb-1">
-                <label class="text-xs text-gray" style="font-weight:700;">Split to Savings (Optional)</label>
-                <span id="allowance-split-preview" class="text-xs text-green" style="font-weight:700;">₱0 to savings</span>
+                <div style="margin-bottom: 10px;">
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs text-gray" style="font-weight:700;">Split to Savings (Optional)</label>
+                        <span id="allowance-split-preview" class="text-xs text-green" style="font-weight:700;">₱0 to savings</span>
+                    </div>
+                    <div class="preset-grid" style="grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 4px;">
+                        <button type="button" class="preset-chip selected" onclick="app.setSplitPct('0', 'allowance', this)">0%</button>
+                        <button type="button" class="preset-chip" onclick="app.setSplitPct('10', 'allowance', this)">10%</button>
+                        <button type="button" class="preset-chip" onclick="app.setSplitPct('20', 'allowance', this)">20%</button>
+                        <button type="button" class="preset-chip" onclick="app.setSplitPct('30', 'allowance', this)">30%</button>
+                        <button type="button" class="preset-chip" onclick="app.setSplitPct('custom', 'allowance', this)">Custom</button>
+                    </div>
+                    <div id="allowance-custom-input-wrap" style="display:none; margin-top: 6px;">
+                        <input type="number" id="allowance-custom-savings" class="generic-input" style="margin-bottom:0; padding:6px 10px; font-size:0.8rem;" placeholder="Custom Savings Amount (₱)" inputmode="decimal" oninput="app.updateSplitPreview('allowance')">
+                    </div>
+                </div>
+
+                <label class="text-xs text-gray" style="font-weight:700; margin-top: 5px; display: block;">Next Allowance Date <span style="color:var(--danger-red);">* Required</span></label>
+                <input type="date" id="edit-allowance-date" class="generic-input" required>
+                
+                <div class="modal-actions">
+                    <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-edit-allowance')">Cancel</button>
+                    <button class="modal-btn btn-confirm" onclick="app.confirmEditAllowance()">Save Cycle</button>
+                </div>
             </div>
-            <div class="preset-grid" style="grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 4px;">
-                <button type="button" class="preset-chip selected" onclick="app.setSplitPct('0', 'allowance', this)">0%</button>
-                <button type="button" class="preset-chip" onclick="app.setSplitPct('10', 'allowance', this)">10%</button>
-                <button type="button" class="preset-chip" onclick="app.setSplitPct('20', 'allowance', this)">20%</button>
-                <button type="button" class="preset-chip" onclick="app.setSplitPct('30', 'allowance', this)">30%</button>
-                <button type="button" class="preset-chip" onclick="app.setSplitPct('custom', 'allowance', this)">Custom</button>
+        </div>
+
+        <div id="modal-add-deposit" class="modal-overlay">
+            <div class="modal-card">
+                <h3 class="modal-title">Add Cash-In / Top-Up 💵</h3>
+                <p class="text-xs text-gray mb-3">Add unexpected money, gifts, or weekly top-ups without changing your monthly cycle date.</p>
+                
+                <label class="text-xs text-gray" style="font-weight:700;">Deposit To Account</label>
+                <select id="deposit-account-select" class="generic-input"></select>
+
+                <label class="text-xs text-gray" style="font-weight:700;">Amount Received (₱)</label>
+                <input type="number" id="deposit-amount" class="generic-input" placeholder="e.g. 500" inputmode="decimal" oninput="app.updateSplitPreview('deposit')">
+
+                <div style="margin-bottom: 10px;">
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs text-gray" style="font-weight:700;">Split to Savings (Optional)</label>
+                        <span id="deposit-split-preview" class="text-xs text-green" style="font-weight:700;">₱0 to savings</span>
+                    </div>
+                    <div class="preset-grid" style="grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 4px;">
+                        <button type="button" class="preset-chip selected" onclick="app.setSplitPct('0', 'deposit', this)">0%</button>
+                        <button type="button" class="preset-chip" onclick="app.setSplitPct('10', 'deposit', this)">10%</button>
+                        <button type="button" class="preset-chip" onclick="app.setSplitPct('20', 'deposit', this)">20%</button>
+                        <button type="button" class="preset-chip" onclick="app.setSplitPct('30', 'deposit', this)">30%</button>
+                        <button type="button" class="preset-chip" onclick="app.setSplitPct('custom', 'deposit', this)">Custom</button>
+                    </div>
+                    <div id="deposit-custom-input-wrap" style="display:none; margin-top: 6px;">
+                        <input type="number" id="deposit-custom-savings" class="generic-input" style="margin-bottom:0; padding:6px 10px; font-size:0.8rem;" placeholder="Custom Savings Amount (₱)" inputmode="decimal" oninput="app.updateSplitPreview('deposit')">
+                    </div>
+                </div>
+
+                <label class="text-xs text-gray" style="font-weight:700;">Note / Source (Optional)</label>
+                <input type="text" id="deposit-note" class="generic-input" placeholder="e.g. Gift from Aunt, Weekly Top-Up">
+
+                <label class="text-xs text-gray" style="font-weight:700; margin-top: 5px; display: block;">Deposit Date <span style="color:var(--danger-red);">* Required</span></label>
+                <input type="date" id="deposit-date" class="generic-input" required>
+                
+                <div class="modal-actions">
+                    <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-add-deposit')">Cancel</button>
+                    <button class="modal-btn btn-confirm" onclick="app.confirmAddDeposit()">Add Deposit</button>
+                </div>
             </div>
-            <div id="allowance-custom-input-wrap" style="display:none; margin-top: 6px;">
-                <input type="number" id="allowance-custom-savings" class="generic-input" style="margin-bottom:0; padding:6px 10px; font-size:0.8rem;" placeholder="Custom Savings Amount (₱)" inputmode="decimal" oninput="app.updateSplitPreview('allowance')">
-            </div>
         </div>
 
-        <label class="text-xs text-gray" style="font-weight:700; margin-top: 5px; display: block;">Next Allowance Date <span style="color:var(--danger-red);">* Required</span></label>
-        <input type="date" id="edit-allowance-date" class="generic-input" required>
-        
-        <div class="modal-actions">
-            <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-edit-allowance')">Cancel</button>
-            <button class="modal-btn btn-confirm" onclick="app.confirmEditAllowance()">Save Cycle</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Add Cash-In / Top-Up (Mid-Cycle Extra Money) -->
-<div id="modal-add-deposit" class="modal-overlay">
-    <div class="modal-card">
-        <h3 class="modal-title">Add Cash-In / Top-Up 💵</h3>
-        <p class="text-xs text-gray mb-3">Add unexpected money, gifts, or weekly top-ups without changing your monthly cycle date.</p>
-        
-        <label class="text-xs text-gray" style="font-weight:700;">Deposit To Account</label>
-        <select id="deposit-account-select" class="generic-input">
-            <!-- Dynamically populated from JavaScript -->
-        </select>
-
-        <label class="text-xs text-gray" style="font-weight:700;">Amount Received (₱)</label>
-<input type="number" id="deposit-amount" class="generic-input" placeholder="e.g. 500" inputmode="decimal" oninput="app.updateSplitPreview('deposit')">
-
-<!-- Split to Savings (with Custom) -->
-<div style="margin-bottom: 10px;">
-    <div class="flex justify-between items-center mb-1">
-        <label class="text-xs text-gray" style="font-weight:700;">Split to Savings (Optional)</label>
-        <span id="deposit-split-preview" class="text-xs text-green" style="font-weight:700;">₱0 to savings</span>
-    </div>
-    <div class="preset-grid" style="grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 4px;">
-        <button type="button" class="preset-chip selected" onclick="app.setSplitPct('0', 'deposit', this)">0%</button>
-        <button type="button" class="preset-chip" onclick="app.setSplitPct('10', 'deposit', this)">10%</button>
-        <button type="button" class="preset-chip" onclick="app.setSplitPct('20', 'deposit', this)">20%</button>
-        <button type="button" class="preset-chip" onclick="app.setSplitPct('30', 'deposit', this)">30%</button>
-        <button type="button" class="preset-chip" onclick="app.setSplitPct('custom', 'deposit', this)">Custom</button>
-    </div>
-    <div id="deposit-custom-input-wrap" style="display:none; margin-top: 6px;">
-        <input type="number" id="deposit-custom-savings" class="generic-input" style="margin-bottom:0; padding:6px 10px; font-size:0.8rem;" placeholder="Custom Savings Amount (₱)" inputmode="decimal" oninput="app.updateSplitPreview('deposit')">
-    </div>
-</div>
-
-        <label class="text-xs text-gray" style="font-weight:700;">Note / Source (Optional)</label>
-        <input type="text" id="deposit-note" class="generic-input" placeholder="e.g. Gift from Aunt, Weekly Top-Up">
-
-        <label class="text-xs text-gray" style="font-weight:700; margin-top: 5px; display: block;">Deposit Date <span style="color:var(--danger-red);">* Required</span></label>
-        <input type="date" id="deposit-date" class="generic-input" required>
-        
-        <div class="modal-actions">
-            <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-add-deposit')">Cancel</button>
-            <button class="modal-btn btn-confirm" onclick="app.confirmAddDeposit()">Add Deposit</button>
-        </div>
-    </div>
-</div>
-<div id="modal-add-account" class="modal-overlay">
+        <div id="modal-add-account" class="modal-overlay">
     <div class="modal-card" style="max-width: 420px; width: 92%;">
         <div class="flex justify-between items-center mb-3">
             <h3 class="modal-title" style="margin-bottom:0;">Add Account / Card 💳</h3>
             <button type="button" class="btn-cancel" style="border:none; background:none; font-size:1.2rem; cursor:pointer;" onclick="app.closeModal('modal-add-account')">✕</button>
         </div>
         
-        <!-- Interactive Live Card Preview -->
+        <!-- Card Preview -->
         <div id="card-preview" class="card-gradient-gcash mb-3" style="border-radius: 16px; padding: 1.2rem; color: white; transition: all 0.3s ease;">
             <div style="display:flex; justify-content: space-between; align-items:flex-start;">
                 <span id="preview-type" class="text-xs uppercase tracking-wider" style="font-size:0.7rem; font-weight:800; opacity:0.85;">DIGITAL WALLET</span>
                 <i class="fa-solid fa-wifi" style="font-size:0.8rem; opacity:0.7;"></i>
             </div>
             <div id="preview-name" style="font-size:1.3rem; font-weight:800; margin-top:0.4rem;">GCash</div>
-            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:1rem;">
+            <div style="display:flex; justify-content: space-between; align-items:flex-end; margin-top:1rem;">
                 <span id="preview-balance" style="font-size:0.95rem; font-weight:800;">₱0.00</span>
-                <span id="preview-digits" style="font-size:0.75rem; font-family:monospace; opacity:0.85;">•••• 1234</span>
             </div>
         </div>
 
@@ -1244,7 +1165,7 @@
                 <input type="number" id="acc-balance-input" class="generic-input" placeholder="0.00" inputmode="decimal" oninput="app.updateCardPreview(); app.updateSplitPreview('account');">
             </div>
         </div>
-        <!-- Split to Savings for New Account -->
+
         <div style="margin-top: 6px; margin-bottom: 10px;">
             <div class="flex justify-between items-center mb-1">
                 <label class="text-xs text-gray" style="font-weight:700;">Split to Savings (Optional)</label>
@@ -1262,15 +1183,9 @@
             </div>
         </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:4px;">
-            <div>
-                <label class="text-xs text-gray" style="font-weight:700;">Next Allowance Date</label>
-                <input type="date" id="acc-date-input" class="generic-input" required>
-            </div>
-            <div>
-                <label class="text-xs text-gray" style="font-weight:700;">Last 4 Digits</label>
-                <input type="text" id="acc-digits-input" class="generic-input" placeholder="1234" maxlength="4">
-            </div>
+        <div style="margin-top:4px;">
+            <label class="text-xs text-gray" style="font-weight:700; display:block; margin-bottom: 4px;">Next Allowance Date</label>
+            <input type="date" id="acc-date-input" class="generic-input" required>
         </div>
 
         <div class="modal-actions mt-3">
@@ -1279,7 +1194,7 @@
         </div>
     </div>
 </div>
-<!-- Modal: Instant Post-Action Impact Feedback -->
+
         <div id="modal-impact-feedback" class="modal-overlay">
             <div class="modal-card" style="max-width: 360px; text-align: center;">
                 <div id="impact-icon-wrapper" style="font-size: 2.5rem; margin-bottom: 0.5rem;">🟢</div>
@@ -1287,19 +1202,19 @@
                 <p id="impact-subtitle" class="text-xs text-gray mb-3">Here is how your budget adjusted:</p>
                 
                 <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 14px; padding: 12px; margin-bottom: 1rem;">
-    <div class="flex justify-between items-center text-xs mb-2">
-        <span class="text-gray" style="font-weight:700;">Spent Amount:</span>
-        <span id="impact-spent-val" style="font-weight:800; color:var(--danger-red);">-₱0</span>
-    </div>
-    <div class="flex justify-between items-center text-xs mb-2">
-        <span class="text-gray" style="font-weight:700;">Remaining Safe Today:</span>
-        <span id="impact-safe-today" style="font-weight:800;">₱0</span>
-    </div>
-    <div class="flex justify-between items-center text-xs border-top pt-2" style="border-top: 1px dashed var(--border-color);">
-        <span class="text-gray" style="font-weight:700;">New Daily Limit:</span>
-        <span id="impact-new-daily" style="font-weight:800; color:var(--primary-green-dark);">₱0/day</span>
-    </div>
-</div>
+                    <div class="flex justify-between items-center text-xs mb-2">
+                        <span class="text-gray" style="font-weight:700;">Spent Amount:</span>
+                        <span id="impact-spent-val" style="font-weight:800; color:var(--danger-red);">-₱0</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs mb-2">
+                        <span class="text-gray" style="font-weight:700;">Remaining Safe Today:</span>
+                        <span id="impact-safe-today" style="font-weight:800;">₱0</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs border-top pt-2" style="border-top: 1px dashed var(--border-color);">
+                        <span class="text-gray" style="font-weight:700;">New Daily Limit:</span>
+                        <span id="impact-new-daily" style="font-weight:800; color:var(--primary-green-dark);">₱0/day</span>
+                    </div>
+                </div>
 
                 <button class="btn-large btn-green" style="margin-top: 0; padding: 10px;" onclick="app.closeModal('modal-impact-feedback'); app.showScreen('home-screen');">
                     Got it <i class="fa-solid fa-arrow-right"></i>
@@ -1307,7 +1222,6 @@
             </div>
         </div>
 
-<!-- Modal: Fullscreen Chart Zoom -->
         <div id="modal-chart-zoom" class="modal-overlay">
             <div class="modal-card chart-zoom-modal-card">
                 <div class="flex justify-between items-center mb-2">
@@ -1327,13 +1241,40 @@
                 </div>
             </div>
         </div>
-
+<!-- Modal: Confirm Reset System -->
+<div id="modal-confirm-reset" class="modal-overlay">
+    <div class="modal-card" style="max-width: 360px; text-align: center;">
+        <div style="font-size: 2.5rem; color: var(--danger-red); margin-bottom: 0.5rem;">⚠️</div>
+        <h3 class="modal-title" style="margin-bottom: 0.5rem; color: var(--danger-red);">Reset to Default?</h3>
+        <p class="text-xs text-gray mb-4" style="line-height: 1.4;">
+            Are you sure you want to reset all account data, cards, and transactions? <b>This action cannot be undone.</b>
+        </p>
+        <div class="modal-actions">
+            <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-confirm-reset')">Cancel</button>
+            <button class="modal-btn" style="background: var(--danger-red); color: white;" onclick="app.nukeAndResetSystem()">Reset Everything</button>
+        </div>
+    </div>
+</div>
+<!-- Modal: Confirm Log Out -->
+<div id="modal-confirm-logout" class="modal-overlay">
+    <div class="modal-card" style="max-width: 360px; text-align: center;">
+        <div style="font-size: 2.5rem; color: var(--danger-red); margin-bottom: 0.5rem;">🚪</div>
+        <h3 class="modal-title" style="margin-bottom: 0.5rem; color: var(--danger-red);">Log Out?</h3>
+        <p class="text-xs text-gray mb-4" style="line-height: 1.4;">
+            Are you sure you want to log out of your account?
+        </p>
+        <div class="modal-actions">
+            <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-confirm-logout')">Cancel</button>
+            <button class="modal-btn" style="background: var(--danger-red); color: white;" onclick="app.logout()">Log Out</button>
+        </div>
+    </div>
+</div>
     <script src="state.js"></script>
-<script src="calculations.js"></script>
-<script src="accounts.js"></script>
-<script src="healthscore.js"></script>
-<script src="charts.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<script src="app.js"></script>
+    <script src="calculations.js"></script>
+    <script src="accounts.js"></script>
+    <script src="healthscore.js"></script>
+    <script src="charts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

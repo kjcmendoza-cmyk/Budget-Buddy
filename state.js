@@ -48,7 +48,7 @@ function getNextCycleDate(currentDateStr, cycle) {
 }
 
 const defaultState = {
-    isLoggedIn: false,
+    isLoggedIn: true,
     userName: '',
     userEmail: '',
     userPassword: '',

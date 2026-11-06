@@ -1,36 +1,15 @@
 Object.assign(app, {
     setupInactivityListener() {
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            this.state.lastActiveTimestamp = Date.now();
-            this.saveState();
-        } else {
-            this.evaluateLockRequirement();
-        }
-    });
+    // Intentionally left blank to disable the background lock check
 },
 
 evaluateLockRequirement() {
     if (!this.state.isLoggedIn) {
         this.showScreen('auth-screen');
-        return;
-    }
-
-    if (!this.state.pinEnabled) {
-        this.showScreen('home-screen');
-        return;
-    }
-
-    const timeoutMs = (this.state.lockTimeoutMinutes || 0) * 60 * 1000;
-    const timeInactive = Date.now() - (this.state.lastActiveTimestamp || 0);
-
-    if (this.state.lastActiveTimestamp && timeInactive < timeoutMs) {
-        this.showScreen('home-screen');
-    } else {
+    } else if (this.state.pinEnabled) {
         this.showScreen('lock-screen');
-        if (this.state.biometricsEnabled) {
-            this.triggerBiometricUnlock();
-        }
+    } else {
+        this.showScreen('home-screen');
     }
 },
 
@@ -198,8 +177,11 @@ updateSettingsUI() {
 },
 init() {
     this.loadState();
+    
+    this.state.enteredPin = '';
     this.state.balance = this.getCalculatedTotalBalance();
     this.checkCycleReset();
+
     const appEl = document.getElementById('app');
     const darkToggle = document.getElementById('dark-mode-toggle');
     if (this.state.darkMode) {
@@ -211,24 +193,13 @@ init() {
     }
 
     this.bindEvents();
-    this.setupInactivityListener();
     this.checkDueExpenses();
     this.recalculateDailyLimit();
     this.updateHomeUI();
     this.updateUpcomingUI();
-
-    if (typeof isFirebaseActive !== 'undefined' && isFirebaseActive && typeof auth !== 'undefined' && auth) {
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                this.state.userEmail = user.email || this.state.userEmail;
-                if (user.displayName) this.state.userName = user.displayName;
-                this.state.isLoggedIn = true;
-                this.fetchFirestoreData(user.uid);
-            }
-        });
-    }
-
     this.updateSettingsUI();
+    
+    // Directs user to Auth, Lock, or Home screen based on login status
     this.evaluateLockRequirement();
 },
 
@@ -257,7 +228,10 @@ formatPeso(num) {
     });
 },
 
-showScreen(screenId) {
+    showScreen(screenId) {
+    // Automatically close any open modals when navigating screens
+    document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
+
     if (screenId === 'accounts-screen') this.renderAccountsUI();
     if (screenId === 'quick-add-screen') {
         this.populateAccountDropdown();
@@ -267,7 +241,7 @@ showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(screenId);
     if (target) target.classList.add('active');
-    
+        
     const nav = document.querySelector('.bottom-nav');
     if (screenId === 'lock-screen' || screenId === 'auth-screen') {
         if (nav) nav.style.display = 'none';
@@ -319,8 +293,21 @@ showToast(message) {
     }, 3000);
 },
 
-openModal(id) { document.getElementById(id)?.classList.add('active'); },
-closeModal(id) { document.getElementById(id)?.classList.remove('active'); },
+openModal(id) { 
+    const el = document.getElementById(id);
+    if (el) {
+        el.style.display = 'flex';
+        el.classList.add('active'); 
+    }
+},
+
+closeModal(id) { 
+    const el = document.getElementById(id);
+    if (el) {
+        el.classList.remove('active');
+        el.style.display = 'none';
+    }
+},
 
 getTodayTotal() {
     const todayKey = formatLocalDateKey(new Date());
@@ -597,15 +584,12 @@ async handleAuthSubmit() {
         }
     } else {
         const name = document.getElementById('auth-name').value.trim();
-        const pin = document.getElementById('auth-pin').value.trim();
 
         if (!name) return this.showToast("⚠️ Please enter your name.");
-        if (!pin || pin.length !== 4 || isNaN(pin)) return this.showToast("⚠️ Please set a valid 4-digit PIN.");
 
         this.state.userName = name;
         this.state.userEmail = email;
         this.state.userPassword = pass;
-        this.state.userPin = pin;
 
         if (typeof isFirebaseActive !== 'undefined' && isFirebaseActive && typeof auth !== 'undefined' && auth) {
             try {
@@ -614,7 +598,7 @@ async handleAuthSubmit() {
                 this.state.isLoggedIn = true;
                 this.saveState();
                 this.evaluateLockRequirement();
-                this.showToast("Account registered! Please enter your PIN to continue.");
+                this.showToast("Account registered successfully!");
             } catch (err) {
                 this.showToast("⚠️ Sign Up Error: " + err.message);
             }
@@ -622,15 +606,25 @@ async handleAuthSubmit() {
             this.state.isLoggedIn = true;
             this.saveState();
             this.evaluateLockRequirement();
-            this.showToast("Account created! Please confirm your PIN.");
+            this.showToast("Account created successfully!");
         }
     }
 },
 
 async logout() {
+    // 1. Force close and hide all modal overlays immediately
+    this.closeModal('modal-confirm-logout');
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+    });
+
+    // 2. Perform Firebase sign out
     if (typeof isFirebaseActive !== 'undefined' && isFirebaseActive && typeof auth !== 'undefined' && auth) {
         try { await auth.signOut(); } catch (e) { console.error(e); }
     }
+
+    // 3. Reset state & navigate
     this.state.enteredPin = '';
     this.state.isLoggedIn = false;
     this.saveState();

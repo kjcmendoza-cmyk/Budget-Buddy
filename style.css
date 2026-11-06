@@ -154,19 +154,20 @@
             cursor: pointer;
             box-shadow: var(--shadow-sm);
         }
-        #app.dark-theme {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
+        #app.dark-theme, body.dark-mode, .dark-theme, .dark-mode {
+            --bg-color: #0b1120;
+            --card-bg: #151e32;
             --text-dark: #f8fafc;
             --text-gray: #94a3b8;
-            --text-light: #64748b;
-            --border-color: #334155;
+            --text-light: #cbd5e1;
+            --border-color: #24344d;
 
-            --primary-green-light: rgba(16, 185, 129, 0.2);
-            --secondary-purple-light: rgba(139, 92, 246, 0.2);
-            --accent-orange-light: rgba(249, 115, 22, 0.2);
-            --accent-blue-light: rgba(59, 130, 246, 0.2);
-            --danger-red-light: rgba(239, 68, 68, 0.2);
+            --primary-green-dark: #34d399; /* Bright emerald for text visibility */
+            --primary-green-light: rgba(16, 185, 129, 0.18);
+            --secondary-purple-light: rgba(192, 132, 252, 0.18);
+            --accent-orange-light: rgba(251, 146, 60, 0.18);
+            --accent-blue-light: rgba(59, 130, 246, 0.18);
+            --danger-red-light: rgba(248, 113, 113, 0.18);
         }
 
 .view-toggle-btns {
@@ -1119,7 +1120,7 @@ body {
     -webkit-backdrop-filter: blur(12px); 
     border-radius: 24px 24px 0 0;
     box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
-    display: none; 
+    display: flex; 
     justify-content: space-around;
     align-items: center;
     z-index: 100;
@@ -2278,4 +2279,156 @@ body {
 }
 #floating-health-widget {
     display: none; /* Hide by default until home screen activates */
+}
+/* ==========================================
+   DARK MODE HIGH-CONTRAST VISIBILITY FIXES
+   ========================================== */
+.dark-theme, .dark-mode, #app.dark-theme, body.dark-mode {
+
+    /* 1. Headings & Primary Text */
+    h1, h2, h3, h4, h5,
+    .safe-card-title,
+    .amount,
+    .modal-title,
+    .section-header h2,
+    .card-title-group h3,
+    .greeting h1,
+    .chart-title-group span,
+    .chart-card-title,
+    .chart-title,
+    .chart-card-title span,
+    .chart-card-header span,
+    .chart-card-header h3,
+    #burndown-cycle-label,
+    .chart-subtitle {
+        color: #f8fafc !important;
+        opacity: 1 !important;
+    }
+
+    /* 2. Secondary & Label Text */
+    label,
+    .text-gray,
+    .metric-label,
+    .header-subtitle,
+    .schedule-form-title,
+    .peak-stat-label,
+    .health-factor-sub,
+    .text-xs.text-gray,
+    .greeting p,
+    #home-safe-remaining {
+        color: #94a3b8 !important;
+    }
+
+    /* 3. Available Money Card Sub-text & Badges */
+    .available-money-card .am-right .next-allowance,
+    .available-money-card .am-right .days-left,
+    .available-money-card .badge-ontrack {
+        color: #ffffff !important;
+        opacity: 1 !important;
+    }
+
+    /* 4. Quick Actions & Category Grid Labels */
+    .qa-label,
+    .cat-label {
+        color: #cbd5e1 !important;
+        font-weight: 700;
+    }
+
+    .qa-item:hover .qa-label,
+    .cat-btn:hover .cat-label {
+        color: #ffffff !important;
+    }
+
+    /* 5. Form Inputs, Select Dropdowns & Placeholders */
+    input,
+    select,
+    .generic-input,
+    .schedule-input,
+    .history-search,
+    .history-filter,
+    .note-input {
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+        border: 1px solid #334155 !important;
+    }
+
+    input::placeholder,
+    .note-input::placeholder,
+    .schedule-input::placeholder,
+    .generic-input::placeholder {
+        color: #64748b !important;
+    }
+
+    option {
+        background-color: #151e32 !important;
+        color: #f8fafc !important;
+    }
+
+    /* 6. Informational Banners & Tip Cards */
+    .peer-nudge-card,
+    .tip-card {
+        background: rgba(16, 185, 129, 0.12) !important;
+        border: 1px solid rgba(16, 185, 129, 0.35) !important;
+    }
+
+    .peer-nudge-card div,
+    .peer-nudge-card i,
+    #tip-title,
+    .tip-icon {
+        color: #34d399 !important;
+    }
+
+    /* 7. Cards, Preset Chips, Badges & Stat Boxes */
+    .card,
+    .peak-stat-box,
+    .history-controls input,
+    .history-controls select {
+        background-color: #151e32;
+        border-color: #24344d;
+    }
+
+    /* Badges & Achievements text visibility fix */
+    .badge-box,
+    .badge-item,
+    .badge-card,
+    .badges-grid div,
+    .badge-box div,
+    .badge-box p,
+    .badge-box span,
+    .badge-box h4,
+    .badge-title,
+    .badge-name {
+        color: #cbd5e1 !important;
+    }
+
+    .badge-box:not(.unlocked),
+    .badge-item.locked {
+        background: #1e293b !important;
+        border: 1px solid #334155 !important;
+        opacity: 0.9 !important;
+    }
+
+    .preset-chip {
+        color: #cbd5e1;
+        background-color: #151e32;
+        border-color: #24344d;
+    }
+
+    .preset-chip:hover,
+    .preset-chip.selected {
+        background-color: rgba(16, 185, 129, 0.2) !important;
+        color: #34d399 !important;
+        border-color: #34d399 !important;
+    }
+
+    /* 8. Screen Headers & Sticky Navigation */
+    .screen-header {
+        background: #151e32 !important;
+        border-bottom-color: #24344d !important;
+    }
+
+    .bottom-nav {
+        background: rgba(15, 23, 42, 0.92) !important;
+        border-top: 1px solid #24344d;
+    }
 }
