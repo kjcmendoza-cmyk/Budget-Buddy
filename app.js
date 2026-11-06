@@ -1,4 +1,19 @@
 Object.assign(app, {
+    nukeAndResetSystem() {
+    try {
+        localStorage.removeItem('budget_app_state');
+        if (typeof isFirebaseActive !== 'undefined' && isFirebaseActive && typeof db !== 'undefined' && db && typeof auth !== 'undefined' && auth && auth.currentUser) {
+            db.collection('users').doc(auth.currentUser.uid).delete().catch(err => console.error("Firestore reset error:", err));
+        }
+        this.closeModal('modal-confirm-reset');
+        this.showToast("System reset complete.");
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
+    } catch (e) {
+        console.error("Failed to reset system:", e);
+    }
+},
     setupInactivityListener() {
     // Intentionally left blank to disable the background lock check
 },
@@ -296,6 +311,7 @@ showToast(message) {
 openModal(id) { 
     const el = document.getElementById(id);
     if (el) {
+        el.style.removeProperty('display');
         el.style.display = 'flex';
         el.classList.add('active'); 
     }
@@ -305,6 +321,7 @@ closeModal(id) {
     const el = document.getElementById(id);
     if (el) {
         el.classList.remove('active');
+        el.style.removeProperty('display');
         el.style.display = 'none';
     }
 },
@@ -1820,15 +1837,15 @@ confirmAddFunds() {
 },
 
 openEditAllowanceModal() {
-        this.resetSplitState('allowance');
+    this.resetSplitState('allowance');
 
-        if (!this.state.accounts || this.state.accounts.length === 0) {
-            this.showToast("Please add your first card to start your budget!");
-            this.openAddAccountModal();
-            return;
-        }
+    // If no cards exist, cleanly open the Add Account modal without showing an alert toast
+    if (!this.state.accounts || this.state.accounts.length === 0) {
+        this.openAddAccountModal();
+        return;
+    }
 
-        const selectEl = document.getElementById('edit-allowance-account-select');
+    const selectEl = document.getElementById('edit-allowance-account-select');
         if (selectEl) {
             selectEl.innerHTML = '';
             this.state.accounts.forEach(acc => {

@@ -18,10 +18,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Firebase SDKs (v9 Compat Mode) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     
 </head>
 <body>
@@ -1268,7 +1264,31 @@
             <button class="modal-btn" style="background: var(--danger-red); color: white;" onclick="app.logout()">Log Out</button>
         </div>
     </div>
-</div>
+</div> <!-- This is your current line 1271 -->
+
+    <!-- 1. Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <!-- 2. Your Firebase Config -->
+    <script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCRlksU0fope2AvXHi6XTlnEKZe-v1eTIc",
+    authDomain: "budget-buddy-75044.firebaseapp.com",
+    projectId: "budget-buddy-75044",
+    storageBucket: "budget-buddy-75044.firebasestorage.app",
+    messagingSenderId: "13838646881",
+    appId: "1:13838646881:web:27bf59c84ad28b34d37420",
+    measurementId: "G-X0XS31QNEB"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+</script>
+
+    <!-- 3. Your App Scripts (These are your current lines 1272-1278) -->
     <script src="state.js"></script>
     <script src="calculations.js"></script>
     <script src="accounts.js"></script>

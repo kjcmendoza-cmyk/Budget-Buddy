@@ -62,10 +62,15 @@ Object.assign(app, {
 
     openAddAccountModal() {
         this.resetSplitState('account');
-        document.getElementById('acc-name-input').value = '';
-        document.getElementById('acc-balance-input').value = '';
-        document.getElementById('acc-digits-input').value = '';
         
+        const nameInput = document.getElementById('acc-name-input');
+        const balInput = document.getElementById('acc-balance-input');
+        const digitsInput = document.getElementById('acc-digits-input');
+        
+        if (nameInput) nameInput.value = '';
+        if (balInput) balInput.value = '';
+        if (digitsInput) digitsInput.value = '';
+
         const dateInput = document.getElementById('acc-date-input');
         if (dateInput) {
             dateInput.value = this.state.targetAllowanceDate || '';
@@ -79,32 +84,46 @@ Object.assign(app, {
     },
 
     selectAccountPreset(name, type, last4) {
-        if (name) document.getElementById('acc-name-input').value = name;
-        document.getElementById('acc-type-select').value = type;
-        if (last4) document.getElementById('acc-digits-input').value = last4;
+        const nameEl = document.getElementById('acc-name-input');
+        const typeEl = document.getElementById('acc-type-select');
+        const digitsEl = document.getElementById('acc-digits-input');
+
+        if (name && nameEl) nameEl.value = name;
+        if (typeEl) typeEl.value = type;
+        if (last4 && digitsEl) digitsEl.value = last4;
+        
         this.updateCardPreview();
     },
 
     selectCardColor(gradientClass, swatchEl) {
         this.state.selectedCardGradient = gradientClass;
-        document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-        if (swatchEl) swatchEl.classList.add('selected');
+        if (swatchEl && swatchEl.parentElement) {
+            swatchEl.parentElement.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+            swatchEl.classList.add('selected');
+        }
         this.updateCardPreview();
     },
 
     updateCardPreview() {
         const card = document.getElementById('card-preview');
         if (!card) return;
+
         const name = document.getElementById('acc-name-input')?.value || 'GCash';
         const type = document.getElementById('acc-type-select')?.value || 'digital';
         const bal = parseFloat(document.getElementById('acc-balance-input')?.value) || 0;
         const last4 = document.getElementById('acc-digits-input')?.value || '1234';
 
         card.className = `${this.state.selectedCardGradient || 'card-gradient-gcash'} mb-3`;
-        document.getElementById('preview-name').textContent = name || 'Account Name';
-        document.getElementById('preview-type').textContent = type.toUpperCase() + ' WALLET';
-        document.getElementById('preview-balance').textContent = this.formatPeso(bal);
-        document.getElementById('preview-digits').textContent = `•••• ${last4 || '1234'}`;
+
+        const prevName = document.getElementById('preview-name');
+        const prevType = document.getElementById('preview-type');
+        const prevBal = document.getElementById('preview-balance');
+        const prevDigits = document.getElementById('preview-digits');
+
+        if (prevName) prevName.textContent = name || 'Account Name';
+        if (prevType) prevType.textContent = type.toUpperCase() + ' WALLET';
+        if (prevBal) prevBal.textContent = this.formatPeso(bal);
+        if (prevDigits) prevDigits.textContent = `•••• ${last4 || '1234'}`;
     },
 
     toggleMaskBalances() {
@@ -146,7 +165,7 @@ Object.assign(app, {
         const type = document.getElementById('acc-type-select').value;
         const totalBalance = parseFloat(document.getElementById('acc-balance-input').value) || 0;
         const cycleDate = document.getElementById('acc-date-input').value;
-        const last4 = document.getElementById('acc-digits-input').value.trim();
+        const last4 = document.getElementById('acc-digits-input')?.value.trim() || '';
 
         if (!name) {
             this.showToast("⚠️ Please enter an account name.");
