@@ -1800,65 +1800,121 @@ confirmEditAllowance() {
     this.showToast("Allowance cycle set successfully!");
 },
 
-openAddDepositModal() {
-    const selectEl = document.getElementById('deposit-account-select');
-    if (selectEl) {
-        selectEl.innerHTML = '';
-        if (!this.state.accounts || this.state.accounts.length === 0) {
-            selectEl.insertAdjacentHTML('beforeend', `<option value="+new">+ Create New Account</option>`);
-        } else {
-            (this.state.accounts || []).forEach(acc => {
-                selectEl.insertAdjacentHTML('beforeend', `
-                    <option value="${acc.id}">${acc.name} (${this.formatPeso(acc.balance)})</option>
-                `);
-            });
+setDepositSplitPct(pct, btnEl) {
+        this.state.currentDepositSplitPct = pct;
+        document.querySelectorAll('#modal-add-deposit .preset-chip').forEach(c => c.classList.remove('selected'));
+        if (btnEl) btnEl.classList.add('selected');
+        this.updateDepositSplitPreview();
+    },
+
+    updateDepositSplitPreview() {
+        const amt = parseFloat(document.getElementById('deposit-amount')?.value) || 0;
+        const pct = this.state.currentDepositSplitPct || 0;
+        const savings = Math.round(amt * (pct / 100));
+        const spendable = amt - savings;
+
+        const previewEl = document.getElementById('deposit-split-preview');
+        if (previewEl) {
+            if (pct > 0 && amt > 0) {
+                previewEl.textContent = `🎯 ${this.formatPeso(savings)} to Goal • 🟢 ${this.formatPeso(spendable)} Spendable`;
+            } else {
+                previewEl.textContent = `₱0 to savings`;
+            }
         }
-    }
-    document.getElementById('deposit-amount').value = '';
-    document.getElementById('deposit-note').value = '';
-    const dateInput = document.getElementById('deposit-date');
-    if (dateInput) dateInput.value = formatLocalDateKey(new Date());
-    this.openModal('modal-add-deposit');
-},
+    },
 
-confirmAddDeposit() {
-    const selectedAccId = document.getElementById('deposit-account-select')?.value;
+    openAddDepositModal() {
+        // Reset split percentage to 0% default
+        this.state.currentDepositSplitPct = 0;
+        document.querySelectorAll('#modal-add-deposit .preset-chip').forEach((c, idx) => {
+            if (idx === 0) c.classList.add('selected');
+            else c.classList.remove('selected');
+        });
 
-    if (!selectedAccId || selectedAccId === '+new') {
+        const selectEl = document.getElementById('deposit-account-select');
+        if (selectEl) {
+            selectEl.innerHTML = '';
+            if (!this.state.accounts || this.state.accounts.length === 0) {
+                selectEl.insertAdjacentHTML('beforeend', `<option value="+new">+ Create New Account</option>`);
+            } else {
+                (this.state.accounts || []).forEach(acc => {
+                    selectEl.insertAdjacentHTML('beforeend', `
+                        <option value="${acc.id}">${acc.name} (${this.formatPeso(acc.balance)})</option>
+                    `);
+                });
+            }
+        }
+        document.getElementById('deposit-amount').value = '';
+        document.getElementById('deposit-note').value = '';
+        const dateInput = document.getElementById('deposit-date');
+        if (dateInput) dateInput.value = formatLocalDateKey(new Date());
+
+        this.updateDepositSplitPreview();
+        this.openModal('modal-add-deposit');
+    },
+
+    confirmAddDeposit() {
+        const selectedAccId = document.getElementById('deposit-account-select')?.value;
+
+        if (!selectedAccId || selectedAccId === '+new') {
+            this.closeModal('modal-add-deposit');
+            this.openAddAccountModal();
+            this.showToast("Please create an account first!");
+            return;
+        }
+
+        const totalAmt = parseFloat(document.getElementById('deposit-amount').value);
+        const depositDate = document.getElementById('deposit-date')?.value;
+
+        if (!depositDate) {
+            alert("Please select a date for this cash-in deposit.");
+            document.getElementById('deposit-date')?.focus();
+            return;
+        }
+
+        if (isNaN(totalAmt) || totalAmt <= 0) {
+            alert("Please enter a valid deposit amount.");
+            return;
+        }
+
+        // 1. Calculate split amounts
+        const pct = this.state.currentDepositSplitPct || 0;
+        const savingsAmt = Math.round(totalAmt * (pct / 100));
+        const spendableAmt = totalAmt - savingsAmt;
+
+        // 2. Add spendable portion to target account
+        const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
+        if (targetAccount) {
+            targetAccount.balance = safeAdd(targetAccount.balance, spendableAmt);
+        }
+        this.state.balance = this.getCalculatedTotalBalance();
+
+        // 3. Route savings portion directly to active savings goal
+        if (savingsAmt > 0) {
+            let activeGoal = (this.state.goals || [])[0];
+            if (activeGoal) {
+                activeGoal.current = safeAdd(activeGoal.current, savingsAmt);
+            } else {
+                if (!this.state.goals) this.state.goals = [];
+                activeGoal = { id: Date.now(), name: "General Savings", target: 5000, current: savingsAmt };
+                this.state.goals.push(activeGoal);
+            }
+        }
+
+        // 4. Reset split selection & refresh app state
+        this.state.currentDepositSplitPct = 0;
+        this.recalculateDailyLimit();
+        this.saveState();
+        this.updateHomeUI();
+        this.renderAccountsUI();
+        this.updateGoalsUI();
         this.closeModal('modal-add-deposit');
-        this.openAddAccountModal();
-        this.showToast("Please create an account first!");
-        return;
-    }
 
-    const amt = parseFloat(document.getElementById('deposit-amount').value);
-    const depositDate = document.getElementById('deposit-date')?.value;
-
-    if (!depositDate) {
-        alert("Please select a date for this cash-in deposit.");
-        document.getElementById('deposit-date')?.focus();
-        return;
-    }
-
-    if (isNaN(amt) || amt <= 0) {
-        alert("Please enter a valid deposit amount.");
-        return;
-    }
-
-    const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
-    if (targetAccount) {
-        targetAccount.balance = safeAdd(targetAccount.balance, amt);
-    }
-
-    this.state.balance = this.getCalculatedTotalBalance();
-
-    this.recalculateDailyLimit();
-    this.saveState();
-    this.updateHomeUI();
-    this.renderAccountsUI();
-    this.closeModal('modal-add-deposit');
-    this.showToast(`Deposited ${this.formatPeso(amt)} to ${targetAccount ? targetAccount.name : 'account'}!`);
-},
+        const msg = savingsAmt > 0 
+            ? `Added ${this.formatPeso(spendableAmt)} to account & ${this.formatPeso(savingsAmt)} to ${this.state.goals[0].name}!`
+            : `Deposited ${this.formatPeso(totalAmt)} to ${targetAccount ? targetAccount.name : 'account'}!`;
+        this.showToast(msg);
+    },
 
 toggleNotifications() {
     this.state.notificationsEnabled = !this.state.notificationsEnabled;

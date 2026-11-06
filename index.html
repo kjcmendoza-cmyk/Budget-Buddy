@@ -1062,12 +1062,28 @@
         </select>
 
         <label class="text-xs text-gray" style="font-weight:700;">Amount Received (₱)</label>
-        <input type="number" id="deposit-amount" class="generic-input" placeholder="e.g. 500" inputmode="decimal">
+        <input type="number" id="deposit-amount" class="generic-input" placeholder="e.g. 500" inputmode="decimal" oninput="app.updateDepositSplitPreview()">
         
+        <!-- Savings Split Selector (Optional) -->
+        <div style="margin-bottom: 10px;">
+            <div class="flex justify-between items-center mb-1">
+                <label class="text-xs text-gray" style="font-weight:700;">Split to Savings (Optional)</label>
+                <span id="deposit-split-preview" class="text-xs text-green" style="font-weight:700;">₱0 to savings</span>
+            </div>
+            <div class="preset-grid" style="grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 4px;">
+                <button type="button" class="preset-chip selected" onclick="app.setDepositSplitPct(0, this)">0%</button>
+                <button type="button" class="preset-chip" onclick="app.setDepositSplitPct(10, this)">10%</button>
+                <button type="button" class="preset-chip" onclick="app.setDepositSplitPct(20, this)">20%</button>
+                <button type="button" class="preset-chip" onclick="app.setDepositSplitPct(30, this)">30%</button>
+            </div>
+        </div>
+
         <label class="text-xs text-gray" style="font-weight:700;">Note / Source (Optional)</label>
         <input type="text" id="deposit-note" class="generic-input" placeholder="e.g. Gift from Aunt, Weekly Top-Up">
-<label class="text-xs text-gray" style="font-weight:700; margin-top: 5px; display: block;">Deposit Date <span style="color:var(--danger-red);">* Required</span></label>
+
+        <label class="text-xs text-gray" style="font-weight:700; margin-top: 5px; display: block;">Deposit Date <span style="color:var(--danger-red);">* Required</span></label>
         <input type="date" id="deposit-date" class="generic-input" required>
+        
         <div class="modal-actions">
             <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-add-deposit')">Cancel</button>
             <button class="modal-btn btn-confirm" onclick="app.confirmAddDeposit()">Add Deposit</button>
