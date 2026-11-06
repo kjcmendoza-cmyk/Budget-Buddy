@@ -573,7 +573,7 @@ async handleAuthSubmit() {
     }
 
     if (this.state.authTab === 'signin') {
-        if (isFirebaseActive && auth) {
+        if (typeof isFirebaseActive !== 'undefined' && isFirebaseActive && typeof auth !== 'undefined' && auth) {
             try {
                 const res = await auth.signInWithEmailAndPassword(email, pass);
                 this.state.userEmail = res.user.email;
@@ -607,7 +607,7 @@ async handleAuthSubmit() {
         this.state.userPassword = pass;
         this.state.userPin = pin;
 
-        if (isFirebaseActive && auth) {
+        if (typeof isFirebaseActive !== 'undefined' && isFirebaseActive && typeof auth !== 'undefined' && auth) {
             try {
                 const res = await auth.createUserWithEmailAndPassword(email, pass);
                 await res.user.updateProfile({ displayName: name });
@@ -628,7 +628,7 @@ async handleAuthSubmit() {
 },
 
 async logout() {
-    if (isFirebaseActive && auth) {
+    if (typeof isFirebaseActive !== 'undefined' && isFirebaseActive && typeof auth !== 'undefined' && auth) {
         try { await auth.signOut(); } catch (e) { console.error(e); }
     }
     this.state.enteredPin = '';
@@ -662,10 +662,11 @@ calculateMonthlyEquivalent(amount, frequency) {
     }
 },
 
+// Replace saveState() with this safe version:
 saveState() {
     try {
         localStorage.setItem('budget_app_state', JSON.stringify(this.state));
-        if (isFirebaseActive && db && auth && auth.currentUser) {
+        if (typeof isFirebaseActive !== 'undefined' && isFirebaseActive && typeof db !== 'undefined' && db && typeof auth !== 'undefined' && auth && auth.currentUser) {
             db.collection('users').doc(auth.currentUser.uid).set(this.state, { merge: true })
               .catch(err => console.error("Firebase Firestore sync error:", err));
         }
@@ -692,7 +693,7 @@ loadState() {
 },
 
 async fetchFirestoreData(uid) {
-    if (!db) return;
+    if (typeof db === 'undefined' || !db) return;
     try {
         db.collection('users').doc(uid).onSnapshot((doc) => {
             if (doc.exists) {
@@ -1747,7 +1748,12 @@ confirmAddGoal() {
     this.updateGoalsUI();
     this.showToast("Goal created!");
 },
-
+deleteGoal(id) {
+    this.state.goals = (this.state.goals || []).filter(g => g.id !== id);
+    this.saveState();
+    this.updateGoalsUI();
+    this.showToast("Goal deleted.");
+},
 openAddFundsModal(id) {
         this.state.activeGoalId = id;
         const targetGoal = (this.state.goals || []).find(g => g.id === id);
