@@ -2276,3 +2276,6 @@ body {
     font-size: 0.85rem !important;
     border-radius: 10px !important;
 }
+#floating-health-widget {
+    display: none; /* Hide by default until home screen activates */
+}

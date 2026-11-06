@@ -88,10 +88,16 @@ updateHealthScoreUI() {
     const floatWidget = document.getElementById('floating-health-widget');
     const floatScoreEl = document.getElementById('floating-health-score');
     const floatIconEl = document.getElementById('floating-health-icon');
-    
+
     if (floatScoreEl) floatScoreEl.textContent = data.score;
     if (floatIconEl) floatIconEl.style.color = data.color;
     if (floatWidget) floatWidget.style.borderColor = data.color;
+
+    // Enforce display check so widget stays hidden on lock/auth screens
+    const activeScreenId = document.querySelector('.screen.active')?.id;
+    if (floatWidget) {
+        floatWidget.style.display = (activeScreenId === 'home-screen') ? 'flex' : 'none';
+    }
 
     // Optional Home Dashboard Health Status elements (if present)
     const scoreEl = document.getElementById('home-health-score');

@@ -1,4 +1,26 @@
 Object.assign(app, {
+    openEditNameModal() {
+    const input = document.getElementById('edit-name-input');
+    if (input) input.value = this.state.userName || '';
+    this.openModal('modal-edit-name');
+},
+
+confirmEditName() {
+    const name = document.getElementById('edit-name-input')?.value.trim();
+    if (!name) {
+        this.showToast("⚠️ Please enter a valid name.");
+        return;
+    }
+    this.state.userName = name;
+    this.saveState();
+    this.closeModal('modal-edit-name');
+    
+    const nameDisp = document.getElementById('profile-name-display');
+    const lockName = document.getElementById('lock-user-name');
+    if (nameDisp) nameDisp.textContent = name;
+    if (lockName) lockName.textContent = name;
+    this.showToast("Profile name updated!");
+},
 checkCycleReset() {
     if (!this.state.targetAllowanceDate || !this.state.allowanceStartDate) return;
 
@@ -164,7 +186,7 @@ showScreen(screenId) {
     if (screenId === 'accounts-screen') this.renderAccountsUI();
     if (screenId === 'quick-add-screen') {
         this.populateAccountDropdown();
-        this.renderCategoryCapBadgesOnGrid(); // <-- Add this line
+        this.renderCategoryCapBadgesOnGrid();
     }
 
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -436,11 +458,11 @@ confirmResetPin() {
     const newPin = document.getElementById('forgot-new-pin').value.trim();
 
     if (pass !== this.state.userPassword) {
-        alert("Incorrect account password.");
+        this.showToast("⚠️ Incorrect account password.");
         return;
     }
     if (!newPin || newPin.length !== 4 || isNaN(newPin)) {
-        alert("Please enter a valid 4-digit PIN.");
+        this.showToast("⚠️ Please enter a valid 4-digit PIN.");
         return;
     }
 
@@ -470,7 +492,7 @@ async handleAuthSubmit() {
     const pass = document.getElementById('auth-password').value;
 
     if (!email || !pass) {
-        alert("Please enter both email and password.");
+        this.showToast("⚠️ Please enter both email and password.");
         return;
     }
 
@@ -485,7 +507,7 @@ async handleAuthSubmit() {
                 this.showScreen('lock-screen');
                 this.showToast(`Welcome back, ${this.state.userName}! Please enter your PIN.`);
             } catch (err) {
-                alert("Firebase Sign In Error: " + err.message);
+                this.showToast("⚠️ Sign In Error: " + err.message);
             }
         } else {
             if (email.toLowerCase() === this.state.userEmail.toLowerCase() && pass === this.state.userPassword) {
@@ -494,15 +516,15 @@ async handleAuthSubmit() {
                 this.showScreen('lock-screen');
                 this.showToast(`Welcome back, ${this.state.userName}! Please enter your PIN.`);
             } else {
-                alert("Invalid email or password.");
+                this.showToast("⚠️ Invalid email or password.");
             }
         }
     } else {
         const name = document.getElementById('auth-name').value.trim();
         const pin = document.getElementById('auth-pin').value.trim();
 
-        if (!name) return alert("Please enter your name.");
-        if (!pin || pin.length !== 4 || isNaN(pin)) return alert("Please set a valid 4-digit PIN.");
+        if (!name) return this.showToast("⚠️ Please enter your name.");
+        if (!pin || pin.length !== 4 || isNaN(pin)) return this.showToast("⚠️ Please set a valid 4-digit PIN.");
 
         this.state.userName = name;
         this.state.userEmail = email;
@@ -518,7 +540,7 @@ async handleAuthSubmit() {
                 this.showScreen('lock-screen');
                 this.showToast("Account registered! Please enter your PIN to continue.");
             } catch (err) {
-                alert("Firebase Sign Up Error: " + err.message);
+                this.showToast("⚠️ Sign Up Error: " + err.message);
             }
         } else {
             this.state.isLoggedIn = true;
@@ -808,23 +830,27 @@ confirmManualExpense(id, amount) {
 editManualExpense(id) {
     const exp = this.state.upcomingExpenses.find(e => e.id === id);
     if (exp) {
-        const newAmt = prompt(`Update amount for ${exp.name} (Current: ${exp.amount}):`, exp.amount);
-        if (newAmt !== null && !isNaN(newAmt) && parseFloat(newAmt) > 0) {
-            exp.amount = parseFloat(newAmt);
-            this.saveState();
-            this.recalculateDailyLimit();
-            this.updateHomeUI();
-            this.updateUpcomingUI();
-            this.showToast("Amount updated!");
-        }
+        const nameEl = document.getElementById('sched-name');
+        const dateEl = document.getElementById('sched-date');
+        const amtEl = document.getElementById('sched-amount');
+        const cycleEl = document.getElementById('sched-cycle');
+        const modeEl = document.getElementById('sched-mode');
+        
+        if (nameEl) nameEl.value = exp.name;
+        if (dateEl) dateEl.value = exp.date;
+        if (amtEl) amtEl.value = exp.amount;
+        if (cycleEl) cycleEl.value = exp.cycle || 'monthly';
+        if (modeEl) modeEl.value = exp.mode || 'auto';
+
+        this.deleteUpcomingExpense(id);
+        this.showScreen('upcoming-screen');
+        this.showToast(`Loaded ${exp.name} for editing.`);
     }
 },
 
 dismissManualExpense(id) {
-    if (confirm("Dismiss this overdue / pending bill reminder?")) {
-        this.deleteUpcomingExpense(id);
-        this.showToast("Reminder dismissed.");
-    }
+    this.deleteUpcomingExpense(id);
+    this.showToast("Reminder dismissed.");
 },
 
 renderActionableNotifications() {
@@ -995,7 +1021,6 @@ applyCalendarCollapseState() {
     const body = document.getElementById('calendar-body');
     const icon = document.getElementById('cal-collapse-icon');
     
-    // Default to true (collapsed) if not explicitly set to false
     const isCollapsed = this.state.isCalendarCollapsed !== false;
 
     if (body) {
@@ -1016,7 +1041,6 @@ renderCalendar() {
 
     if (!monthTitle || !grid) return;
 
-    // Apply current collapse state
     this.applyCalendarCollapseState();
 
     const year = this.state.calYear;
@@ -1161,35 +1185,32 @@ updateHomeUI() {
     }
     this.renderActionableNotifications();
 
-    // Inside updateHomeUI() in app.js
-const todayKey = formatLocalDateKey(new Date());
+    const todayKey = formatLocalDateKey(new Date());
 
-const spentToday = (this.state.recentExpenses || [])
-    .filter(exp => exp.rawDate === todayKey || exp.date === new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
-    .reduce((sum, exp) => sum + exp.amount, 0);
+    const spentToday = (this.state.recentExpenses || [])
+        .filter(exp => exp.rawDate === todayKey || exp.date === new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
+        .reduce((sum, exp) => sum + exp.amount, 0);
 
-const startOfDayLimit = this.state.startOfDayLimit || this.state.dailyLimit || 0;
-const dailyLimitVal = this.state.dailyLimit || 0;
-const remainingSafeToday = startOfDayLimit - spentToday; // Start-of-day target - Actual spent
+    const startOfDayLimit = this.state.startOfDayLimit || this.state.dailyLimit || 0;
+    const dailyLimitVal = this.state.dailyLimit || 0;
+    const remainingSafeToday = startOfDayLimit - spentToday;
 
-const balEl = document.getElementById('home-balance');
-if (balEl) balEl.textContent = this.formatPeso(this.state.balance);
+    const balEl = document.getElementById('home-balance');
+    if (balEl) balEl.textContent = this.formatPeso(this.state.balance);
 
-// Main Display: Displays updated dynamic safe limit
-const limitEl = document.getElementById('home-daily-limit');
-if (limitEl) {
-    limitEl.textContent = this.formatPeso(dailyLimitVal);
-}
-
-// Subtitle Text: Displays variance against start-of-day target
-const safeRemEl = document.getElementById('home-safe-remaining');
-if (safeRemEl) {
-    if (remainingSafeToday < 0) {
-        safeRemEl.innerHTML = `<span style="color: var(--danger-red); font-weight: 700;">Over by ${this.formatPeso(Math.abs(remainingSafeToday))}</span> <span class="spent-subtext">(Target: ${this.formatPeso(startOfDayLimit)}/day)</span>`;
-    } else {
-        safeRemEl.innerHTML = `<span style="color: var(--primary-green-dark); font-weight: 700;">${this.formatPeso(remainingSafeToday)} left today</span> <span class="spent-subtext">(Target: ${this.formatPeso(startOfDayLimit)}/day)</span>`;
+    const limitEl = document.getElementById('home-daily-limit');
+    if (limitEl) {
+        limitEl.textContent = this.formatPeso(dailyLimitVal);
     }
-}
+
+    const safeRemEl = document.getElementById('home-safe-remaining');
+    if (safeRemEl) {
+        if (remainingSafeToday < 0) {
+            safeRemEl.innerHTML = `<span style="color: var(--danger-red); font-weight: 700;">Over by ${this.formatPeso(Math.abs(remainingSafeToday))}</span> <span class="spent-subtext">(Target: ${this.formatPeso(startOfDayLimit)}/day)</span>`;
+        } else {
+            safeRemEl.innerHTML = `<span style="color: var(--primary-green-dark); font-weight: 700;">${this.formatPeso(remainingSafeToday)} left today</span> <span class="spent-subtext">(Target: ${this.formatPeso(startOfDayLimit)}/day)</span>`;
+        }
+    }
 
     const targetDateEl = document.getElementById('home-target-date');
     if (targetDateEl) targetDateEl.textContent = this.getAllowanceTargetDate();
@@ -1200,7 +1221,6 @@ if (safeRemEl) {
         daysLeftEl.textContent = `${days} day${days === 1 ? '' : 's'} left`;
     }
 
-    // Ensure streak badge UI updates on home render
     this.evaluateStreak();
     this.updateHealthScoreUI();
     this.generateTip();
@@ -1247,7 +1267,7 @@ saveExpense() {
     const amount = parseFloat(amtInput.value);
 
     if (isNaN(amount) || amount <= 0) {
-        this.showToast("Please enter a valid amount.");
+        this.showToast("⚠️ Please enter a valid amount.");
         return;
     }
 
@@ -1283,7 +1303,6 @@ saveExpense() {
     if (!this.state.recentExpenses) this.state.recentExpenses = [];
     this.state.recentExpenses.unshift(newTx);
 
-    // Update account balances
     const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
     if (targetAccount) {
         targetAccount.balance = Math.max(0, safeSub(targetAccount.balance, amount));
@@ -1300,11 +1319,9 @@ saveExpense() {
     this.recalculateDailyLimit();
     this.updateHomeUI();
 
-    // Clear input fields
     amtInput.value = '';
     noteInput.value = '';
 
-    // Show Post-Action Impact Feedback Modal instead of generic redirection
     this.showPostActionImpactSheet(expenseName, amount, oldDailyLimit);
 },
 
@@ -1633,7 +1650,7 @@ confirmAddGoal() {
     const target = parseFloat(document.getElementById('new-goal-target').value);
 
     if (!name || isNaN(target) || target <= 0) {
-        alert("Please enter a valid goal name and target amount.");
+        this.showToast("⚠️ Please enter a valid goal name and target amount.");
         return;
     }
 
@@ -1667,14 +1684,12 @@ openAddFundsModal(id) {
         if (sourceSelect) {
             sourceSelect.innerHTML = '';
             
-            // Group 1: Wallet / Card Balances
             (this.state.accounts || []).forEach(acc => {
                 sourceSelect.insertAdjacentHTML('beforeend', `
                     <option value="acc_${acc.id}">Wallet: ${acc.name} (${this.formatPeso(acc.balance)})</option>
                 `);
             });
 
-            // Group 2: Other Active Savings Goals
             (this.state.goals || []).forEach(g => {
                 if (g.id !== id && g.current > 0) {
                     sourceSelect.insertAdjacentHTML('beforeend', `
@@ -1687,60 +1702,56 @@ openAddFundsModal(id) {
         this.openModal('modal-add-funds');
     },
 
-    confirmAddFunds() {
-        const amt = parseFloat(document.getElementById('add-funds-amount').value);
-        if (isNaN(amt) || amt <= 0) return alert("Please enter a valid amount.");
+confirmAddFunds() {
+    const amt = parseFloat(document.getElementById('add-funds-amount').value);
+    if (isNaN(amt) || amt <= 0) return this.showToast("⚠️ Please enter a valid amount.");
 
-        const targetGoal = (this.state.goals || []).find(g => g.id === this.state.activeGoalId);
-        if (!targetGoal) return;
+    const targetGoal = (this.state.goals || []).find(g => g.id === this.state.activeGoalId);
+    if (!targetGoal) return;
 
-        const sourceVal = document.getElementById('add-funds-source-select')?.value;
-        if (!sourceVal) return alert("Please select a valid funding source.");
+    const sourceVal = document.getElementById('add-funds-source-select')?.value;
+    if (!sourceVal) return this.showToast("⚠️ Please select a valid funding source.");
 
-        // Deduct from a wallet / card account
-        if (sourceVal.startsWith('acc_')) {
-            const accId = sourceVal.replace('acc_', '');
-            const sourceAcc = (this.state.accounts || []).find(a => a.id === accId);
-            if (!sourceAcc || sourceAcc.balance < amt) {
-                alert(`Insufficient balance in ${sourceAcc ? sourceAcc.name : 'selected account'}!`);
-                return;
-            }
-            sourceAcc.balance = safeSub(sourceAcc.balance, amt);
-            targetGoal.current = safeAdd(targetGoal.current, amt);
-            this.state.balance = this.getCalculatedTotalBalance();
-        } 
-        // Re-allocate from another existing savings goal
-        else if (sourceVal.startsWith('goal_')) {
-            const sourceGoalId = parseFloat(sourceVal.replace('goal_', ''));
-            const sourceGoal = (this.state.goals || []).find(g => g.id === sourceGoalId);
-            if (!sourceGoal || sourceGoal.current < amt) {
-                alert(`Insufficient savings in ${sourceGoal ? sourceGoal.name : 'selected goal'}!`);
-                return;
-            }
-            sourceGoal.current = safeSub(sourceGoal.current, amt);
-            targetGoal.current = safeAdd(targetGoal.current, amt);
+    if (sourceVal.startsWith('acc_')) {
+        const accId = sourceVal.replace('acc_', '');
+        const sourceAcc = (this.state.accounts || []).find(a => a.id === accId);
+        if (!sourceAcc || sourceAcc.balance < amt) {
+            this.showToast(`⚠️ Insufficient balance in ${sourceAcc ? sourceAcc.name : 'selected account'}!`);
+            return;
         }
+        sourceAcc.balance = safeSub(sourceAcc.balance, amt);
+        targetGoal.current = safeAdd(targetGoal.current, amt);
+        this.state.balance = this.getCalculatedTotalBalance();
+    } 
+    else if (sourceVal.startsWith('goal_')) {
+        const sourceGoalId = parseFloat(sourceVal.replace('goal_', ''));
+        const sourceGoal = (this.state.goals || []).find(g => g.id === sourceGoalId);
+        if (!sourceGoal || sourceGoal.current < amt) {
+            this.showToast(`⚠️ Insufficient savings in ${sourceGoal ? sourceGoal.name : 'selected goal'}!`);
+            return;
+        }
+        sourceGoal.current = safeSub(sourceGoal.current, amt);
+        targetGoal.current = safeAdd(targetGoal.current, amt);
+    }
 
-        this.recalculateDailyLimit();
-        this.saveState();
-        this.closeModal('modal-add-funds');
-        this.updateGoalsUI();
-        this.updateHomeUI();
-        this.renderAccountsUI();
-        this.showToast(`Transferred ${this.formatPeso(amt)} to ${targetGoal.name}!`);
-    },
+    this.recalculateDailyLimit();
+    this.saveState();
+    this.closeModal('modal-add-funds');
+    this.updateGoalsUI();
+    this.updateHomeUI();
+    this.renderAccountsUI();
+    this.showToast(`Transferred ${this.formatPeso(amt)} to ${targetGoal.name}!`);
+},
 
 openEditAllowanceModal() {
         this.resetSplitState('allowance');
 
-        // 1. If 0 accounts exist, bypass this modal directly to Add Account / Card
         if (!this.state.accounts || this.state.accounts.length === 0) {
             this.showToast("Please add your first card to start your budget!");
             this.openAddAccountModal();
             return;
         }
 
-        // 2. Populate account dropdown with existing cards
         const selectEl = document.getElementById('edit-allowance-account-select');
         if (selectEl) {
             selectEl.innerHTML = '';
@@ -1754,7 +1765,6 @@ openEditAllowanceModal() {
             `);
         }
 
-        // 3. Pre-fill the allowance amount with the selected card's current balance
         const firstAcc = this.state.accounts[0];
         if (firstAcc) {
             document.getElementById('edit-allowance-amount').value = firstAcc.balance;
@@ -1765,88 +1775,83 @@ openEditAllowanceModal() {
         this.openModal('modal-edit-allowance');
     },
 
-    // Helper: Auto-fill balance when switching cards in the dropdown
-    onAllowanceAccountChange(accId) {
-        if (accId === '+new') {
-            this.closeModal('modal-edit-allowance');
-            this.openAddAccountModal();
-            return;
-        }
-        const targetAccount = (this.state.accounts || []).find(a => a.id === accId);
-        if (targetAccount) {
-            const amtInput = document.getElementById('edit-allowance-amount');
-            if (amtInput) amtInput.value = targetAccount.balance;
-            this.updateSplitPreview('allowance');
-        }
-    },
-
-    confirmEditAllowance() {
-        const selectedAccId = document.getElementById('edit-allowance-account-select')?.value;
-
-        if (!selectedAccId || selectedAccId === '+new') {
-            this.closeModal('modal-edit-allowance');
-            this.openAddAccountModal();
-            this.showToast("Please create an account first!");
-            return;
-        }
-
-        const totalAmt = parseFloat(document.getElementById('edit-allowance-amount').value);
-        const dateVal = document.getElementById('edit-allowance-date').value;
-
-        if (!dateVal) {
-            alert("Next Allowance Date is required so BudgetBuddy can calculate your daily budget limit!");
-            document.getElementById('edit-allowance-date').focus();
-            return;
-        }
-
-        const selectedDate = parseLocalDate(dateVal);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (selectedDate <= today) {
-            alert("The Next Allowance Date must be a future date!");
-            document.getElementById('edit-allowance-date').focus();
-            return;
-        }
-
-        if (isNaN(totalAmt) || totalAmt < 0) {
-            alert("Please enter a valid allowance amount.");
-            return;
-        }
-
-        // 1. Calculate split using shared helper
-        const { savingsAmt, spendableAmt } = this.getSplitAmounts(totalAmt, 'allowance');
-
-        // 2. Set spendable balance on target account
-        const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
-        if (targetAccount) {
-            targetAccount.balance = spendableAmt;
-        }
-
-        // 3. Route savings portion to active goal
-        this.routeSavingsToGoal(savingsAmt);
-
-        // 4. Update state & refresh UI
-        this.state.balance = this.getCalculatedTotalBalance();
-        this.state.initialAllowance = this.state.balance;
-        this.state.allowanceStartDate = formatLocalDateKey(new Date());
-        this.state.targetAllowanceDate = dateVal;
-
-        this.resetSplitState('allowance');
-        this.recalculateDailyLimit();
-        this.saveState();
-        this.updateHomeUI();
-        this.renderAccountsUI();
-        this.updateGoalsUI();
+onAllowanceAccountChange(accId) {
+    if (accId === '+new') {
         this.closeModal('modal-edit-allowance');
+        this.openAddAccountModal();
+        return;
+    }
+    const targetAccount = (this.state.accounts || []).find(a => a.id === accId);
+    if (targetAccount) {
+        const amtInput = document.getElementById('edit-allowance-amount');
+        if (amtInput) amtInput.value = targetAccount.balance;
+        this.updateSplitPreview('allowance');
+    }
+},
 
-        const msg = savingsAmt > 0 
-            ? `Allowance set! ${this.formatPeso(spendableAmt)} spendable & ${this.formatPeso(savingsAmt)} saved!`
-            : "Allowance cycle set successfully!";
-        this.showToast(msg);
-    },
+confirmEditAllowance() {
+    const selectedAccId = document.getElementById('edit-allowance-account-select')?.value;
 
-    openAddDepositModal() {
+    if (!selectedAccId || selectedAccId === '+new') {
+        this.closeModal('modal-edit-allowance');
+        this.openAddAccountModal();
+        this.showToast("Please create an account first!");
+        return;
+    }
+
+    const totalAmt = parseFloat(document.getElementById('edit-allowance-amount').value);
+    const dateVal = document.getElementById('edit-allowance-date').value;
+
+    if (!dateVal) {
+        this.showToast("⚠️ Next Allowance Date is required!");
+        document.getElementById('edit-allowance-date').focus();
+        return;
+    }
+
+    const selectedDate = parseLocalDate(dateVal);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedDate <= today) {
+        this.showToast("⚠️ Next Allowance Date must be in the future!");
+        document.getElementById('edit-allowance-date').focus();
+        return;
+    }
+
+    if (isNaN(totalAmt) || totalAmt < 0) {
+        this.showToast("⚠️ Please enter a valid allowance amount.");
+        return;
+    }
+
+    const { savingsAmt, spendableAmt } = this.getSplitAmounts(totalAmt, 'allowance');
+
+    const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
+    if (targetAccount) {
+        targetAccount.balance = spendableAmt;
+    }
+
+    this.routeSavingsToGoal(savingsAmt);
+
+    this.state.balance = this.getCalculatedTotalBalance();
+    this.state.initialAllowance = this.state.balance;
+    this.state.allowanceStartDate = formatLocalDateKey(new Date());
+    this.state.targetAllowanceDate = dateVal;
+
+    this.resetSplitState('allowance');
+    this.recalculateDailyLimit();
+    this.saveState();
+    this.updateHomeUI();
+    this.renderAccountsUI();
+    this.updateGoalsUI();
+    this.closeModal('modal-edit-allowance');
+
+    const msg = savingsAmt > 0 
+        ? `Allowance set! ${this.formatPeso(spendableAmt)} spendable & ${this.formatPeso(savingsAmt)} saved!`
+        : "Allowance cycle set successfully!";
+    this.showToast(msg);
+},
+
+openAddDepositModal() {
         this.resetSplitState('deposit');
 
         const selectEl = document.getElementById('deposit-account-select');
@@ -1871,57 +1876,54 @@ openEditAllowanceModal() {
         this.openModal('modal-add-deposit');
     },
 
-    confirmAddDeposit() {
-        const selectedAccId = document.getElementById('deposit-account-select')?.value;
+confirmAddDeposit() {
+    const selectedAccId = document.getElementById('deposit-account-select')?.value;
 
-        if (!selectedAccId || selectedAccId === '+new') {
-            this.closeModal('modal-add-deposit');
-            this.openAddAccountModal();
-            this.showToast("Please create an account first!");
-            return;
-        }
-
-        const totalAmt = parseFloat(document.getElementById('deposit-amount').value);
-        const depositDate = document.getElementById('deposit-date')?.value;
-
-        if (!depositDate) {
-            alert("Please select a date for this cash-in deposit.");
-            document.getElementById('deposit-date')?.focus();
-            return;
-        }
-
-        if (isNaN(totalAmt) || totalAmt <= 0) {
-            alert("Please enter a valid deposit amount.");
-            return;
-        }
-
-        // 1. Calculate split amounts using shared helper
-        const { savingsAmt, spendableAmt } = this.getSplitAmounts(totalAmt, 'deposit');
-
-        // 2. Add spendable portion to target account
-        const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
-        if (targetAccount) {
-            targetAccount.balance = safeAdd(targetAccount.balance, spendableAmt);
-        }
-        this.state.balance = this.getCalculatedTotalBalance();
-
-        // 3. Route savings portion directly to active savings goal
-        this.routeSavingsToGoal(savingsAmt);
-
-        // 4. Reset split selection & refresh app state
-        this.resetSplitState('deposit');
-        this.recalculateDailyLimit();
-        this.saveState();
-        this.updateHomeUI();
-        this.renderAccountsUI();
-        this.updateGoalsUI();
+    if (!selectedAccId || selectedAccId === '+new') {
         this.closeModal('modal-add-deposit');
+        this.openAddAccountModal();
+        this.showToast("Please create an account first!");
+        return;
+    }
 
-        const msg = savingsAmt > 0 
-            ? `Added ${this.formatPeso(spendableAmt)} to account & ${this.formatPeso(savingsAmt)} to ${this.state.goals[0].name}!`
-            : `Deposited ${this.formatPeso(totalAmt)} to ${targetAccount ? targetAccount.name : 'account'}!`;
-        this.showToast(msg);
-    },
+    const totalAmt = parseFloat(document.getElementById('deposit-amount').value);
+    const depositDate = document.getElementById('deposit-date')?.value;
+
+    if (!depositDate) {
+        this.showToast("⚠️ Please select a date for this deposit.");
+        document.getElementById('deposit-date')?.focus();
+        return;
+    }
+
+    if (isNaN(totalAmt) || totalAmt <= 0) {
+        this.showToast("⚠️ Please enter a valid deposit amount.");
+        return;
+    }
+
+    const { savingsAmt, spendableAmt } = this.getSplitAmounts(totalAmt, 'deposit');
+
+    const targetAccount = (this.state.accounts || []).find(a => a.id === selectedAccId);
+    if (targetAccount) {
+        targetAccount.balance = safeAdd(targetAccount.balance, spendableAmt);
+    }
+    this.state.balance = this.getCalculatedTotalBalance();
+
+    this.routeSavingsToGoal(savingsAmt);
+
+    this.resetSplitState('deposit');
+    this.recalculateDailyLimit();
+    this.saveState();
+    this.updateHomeUI();
+    this.renderAccountsUI();
+    this.updateGoalsUI();
+    this.closeModal('modal-add-deposit');
+
+    const msg = savingsAmt > 0 
+        ? `Added ${this.formatPeso(spendableAmt)} to account & ${this.formatPeso(savingsAmt)} to ${this.state.goals[0].name}!`
+        : `Deposited ${this.formatPeso(totalAmt)} to ${targetAccount ? targetAccount.name : 'account'}!`;
+    this.showToast(msg);
+},
+
 setSplitPct(pctVal, prefix, btnEl) {
         if (!this.state.splitPcts) this.state.splitPcts = {};
         this.state.splitPcts[prefix] = pctVal;
@@ -1945,83 +1947,84 @@ setSplitPct(pctVal, prefix, btnEl) {
         this.updateSplitPreview(prefix);
     },
 
-    updateSplitPreview(prefix) {
-        let amtInputId = '';
-        if (prefix === 'deposit') amtInputId = 'deposit-amount';
-        else if (prefix === 'allowance') amtInputId = 'edit-allowance-amount';
-        else if (prefix === 'account') amtInputId = 'acc-balance-input';
+updateSplitPreview(prefix) {
+    let amtInputId = '';
+    if (prefix === 'deposit') amtInputId = 'deposit-amount';
+    else if (prefix === 'allowance') amtInputId = 'edit-allowance-amount';
+    else if (prefix === 'account') amtInputId = 'acc-balance-input';
 
-        const totalAmt = parseFloat(document.getElementById(amtInputId)?.value) || 0;
-        const selectedPct = (this.state.splitPcts && this.state.splitPcts[prefix]) || '0';
-        
-        let savingsAmt = 0;
-        if (selectedPct === 'custom') {
-            const customVal = parseFloat(document.getElementById(`${prefix}-custom-savings`)?.value) || 0;
-            savingsAmt = Math.min(totalAmt, customVal);
+    const totalAmt = parseFloat(document.getElementById(amtInputId)?.value) || 0;
+    const selectedPct = (this.state.splitPcts && this.state.splitPcts[prefix]) || '0';
+    
+    let savingsAmt = 0;
+    if (selectedPct === 'custom') {
+        const customVal = parseFloat(document.getElementById(`${prefix}-custom-savings`)?.value) || 0;
+        savingsAmt = Math.min(totalAmt, customVal);
+    } else {
+        const pctNum = parseFloat(selectedPct) || 0;
+        savingsAmt = Math.round(totalAmt * (pctNum / 100));
+    }
+
+    const spendableAmt = Math.max(0, totalAmt - savingsAmt);
+    const previewEl = document.getElementById(`${prefix}-split-preview`);
+
+    if (previewEl) {
+        if (savingsAmt > 0 && totalAmt > 0) {
+            previewEl.textContent = `🎯 ${this.formatPeso(savingsAmt)} to Goal • 🟢 ${this.formatPeso(spendableAmt)} Spendable`;
         } else {
-            const pctNum = parseFloat(selectedPct) || 0;
-            savingsAmt = Math.round(totalAmt * (pctNum / 100));
+            previewEl.textContent = `₱0 to savings`;
         }
+    }
+},
 
-        const spendableAmt = Math.max(0, totalAmt - savingsAmt);
-        const previewEl = document.getElementById(`${prefix}-split-preview`);
+getSplitAmounts(totalAmt, prefix) {
+    const selectedPct = (this.state.splitPcts && this.state.splitPcts[prefix]) || '0';
+    let savingsAmt = 0;
+    if (selectedPct === 'custom') {
+        const customVal = parseFloat(document.getElementById(`${prefix}-custom-savings`)?.value) || 0;
+        savingsAmt = Math.min(totalAmt, customVal);
+    } else {
+        const pctNum = parseFloat(selectedPct) || 0;
+        savingsAmt = Math.round(totalAmt * (pctNum / 100));
+    }
+    const spendableAmt = Math.max(0, totalAmt - savingsAmt);
+    return { savingsAmt, spendableAmt };
+},
 
-        if (previewEl) {
-            if (savingsAmt > 0 && totalAmt > 0) {
-                previewEl.textContent = `🎯 ${this.formatPeso(savingsAmt)} to Goal • 🟢 ${this.formatPeso(spendableAmt)} Spendable`;
-            } else {
-                previewEl.textContent = `₱0 to savings`;
-            }
-        }
-    },
+routeSavingsToGoal(savingsAmt) {
+    if (savingsAmt <= 0) return;
+    let activeGoal = (this.state.goals || [])[0];
+    if (activeGoal) {
+        activeGoal.current = safeAdd(activeGoal.current, savingsAmt);
+    } else {
+        if (!this.state.goals) this.state.goals = [];
+        activeGoal = { id: Date.now(), name: "General Savings", target: 5000, current: savingsAmt };
+        this.state.goals.push(activeGoal);
+    }
+},
 
-    getSplitAmounts(totalAmt, prefix) {
-        const selectedPct = (this.state.splitPcts && this.state.splitPcts[prefix]) || '0';
-        let savingsAmt = 0;
-        if (selectedPct === 'custom') {
-            const customVal = parseFloat(document.getElementById(`${prefix}-custom-savings`)?.value) || 0;
-            savingsAmt = Math.min(totalAmt, customVal);
-        } else {
-            const pctNum = parseFloat(selectedPct) || 0;
-            savingsAmt = Math.round(totalAmt * (pctNum / 100));
-        }
-        const spendableAmt = Math.max(0, totalAmt - savingsAmt);
-        return { savingsAmt, spendableAmt };
-    },
+resetSplitState(prefix) {
+    if (!this.state.splitPcts) this.state.splitPcts = {};
+    this.state.splitPcts[prefix] = '0';
 
-    routeSavingsToGoal(savingsAmt) {
-        if (savingsAmt <= 0) return;
-        let activeGoal = (this.state.goals || [])[0];
-        if (activeGoal) {
-            activeGoal.current = safeAdd(activeGoal.current, savingsAmt);
-        } else {
-            if (!this.state.goals) this.state.goals = [];
-            activeGoal = { id: Date.now(), name: "General Savings", target: 5000, current: savingsAmt };
-            this.state.goals.push(activeGoal);
-        }
-    },
+    const customWrap = document.getElementById(`${prefix}-custom-input-wrap`);
+    if (customWrap) customWrap.style.display = 'none';
 
-    resetSplitState(prefix) {
-        if (!this.state.splitPcts) this.state.splitPcts = {};
-        this.state.splitPcts[prefix] = '0';
+    const customInput = document.getElementById(`${prefix}-custom-savings`);
+    if (customInput) customInput.value = '';
 
-        const customWrap = document.getElementById(`${prefix}-custom-input-wrap`);
-        if (customWrap) customWrap.style.display = 'none';
+    const modalId = prefix === 'account' ? 'modal-add-account' : (prefix === 'allowance' ? 'modal-edit-allowance' : 'modal-add-deposit');
+    const container = document.querySelector(`#${modalId} .preset-grid`);
+    if (container) {
+        container.querySelectorAll('.preset-chip').forEach((c, idx) => {
+            if (idx === 0) c.classList.add('selected');
+            else c.classList.remove('selected');
+        });
+    }
 
-        const customInput = document.getElementById(`${prefix}-custom-savings`);
-        if (customInput) customInput.value = '';
+    this.updateSplitPreview(prefix);
+},
 
-        const modalId = prefix === 'account' ? 'modal-add-account' : (prefix === 'allowance' ? 'modal-edit-allowance' : 'modal-add-deposit');
-        const container = document.querySelector(`#${modalId} .preset-grid`);
-        if (container) {
-            container.querySelectorAll('.preset-chip').forEach((c, idx) => {
-                if (idx === 0) c.classList.add('selected');
-                else c.classList.remove('selected');
-            });
-        }
-
-        this.updateSplitPreview(prefix);
-    },
 toggleNotifications() {
     this.state.notificationsEnabled = !this.state.notificationsEnabled;
     document.getElementById('notif-toggle')?.classList.toggle('active', this.state.notificationsEnabled);

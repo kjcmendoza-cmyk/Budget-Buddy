@@ -1,103 +1,120 @@
-// js/state.js - Firebase initialization, app state, & reset logic
-
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
-
-let db = null;
-let auth = null;
-let isFirebaseActive = false;
-
-if (typeof firebase !== 'undefined' && firebaseConfig.apiKey !== "YOUR_API_KEY") {
-    try {
-        firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        db = firebase.firestore();
-        isFirebaseActive = true;
-        console.log("Firebase initialized successfully!");
-    } catch (err) {
-        console.warn("Firebase config incomplete, operating in localStorage mode.", err);
-    }
+function safeAdd(a, b) {
+    return Math.round(((Number(a) || 0) + (Number(b) || 0) + Number.EPSILON) * 100) / 100;
 }
 
-const app = {
-    state: {
-        isCalendarCollapsed: true,
-        categoryCaps: {},
-        isMasked: false,
-        selectedAccountFilter: 'All',
-        accounts: [],
-        badgesCollapsed: true,
-        isRecurring: false,
-        subscriptions: [],
-        lastResetTimestamp: null,
-        burnRateView: '31days',
-        isLoggedIn: false,
-        userName: '',
-        userEmail: '',
-        userPassword: '',
-        userPin: '',
-        enteredPin: '',
-        authTab: 'signin',
-        balance: 0,
-        remainingDays: 0,
-        dailyLimit: 0,
-        streakDays: 0,
-        targetAllowanceDate: "",
-        allowanceStartDate: "",
-        initialAllowance: 0,
-        notificationsEnabled: true,
-        darkMode: false,
-        recentExpenses: [],
-        goals: [],
-        upcomingExpenses: [],
-        affordChecksCount: 0,
-        nightlyWrapCount: 0,
-        lastNightlyCheckDate: "",
-        wasOverspentYesterday: false,
-        badges: [
-            { id: 1, name: 'Goal Getter', icon: '🎯', unlocked: false, desc: 'Set first savings goal' },
-            { id: 2, name: 'Streak Master', icon: '🔥', unlocked: false, desc: '5-Day budget streak' },
-            { id: 3, name: 'Nightly Wrap', icon: '🌙', unlocked: false, desc: 'Check app after 8 PM (3x)' },
-            { id: 4, name: 'Second Thought', icon: '🛒', unlocked: false, desc: 'Check "Can I Afford It?" 3x' },
-            { id: 5, name: 'Phoenix Spender', icon: '🦅', unlocked: false, desc: 'Bounce back after overspending' },
-            { id: 6, name: 'Super Saver', icon: '💰', unlocked: false, desc: 'Save ₱1,000 extra' },
-            { id: 7, name: 'Future Proof', icon: '📅', unlocked: false, desc: 'Schedule 3 upcoming bills' },
-            { id: 8, name: 'Health Pioneer', icon: '❤️', unlocked: false, desc: 'Reach Health Score of 80+' }
-        ],
-        selectedCategory: 'Food',
-        selectedIcon: 'fa-burger',
-        selectedColor: 'var(--primary-green)',
-        activeGoalId: null,
-        calYear: new Date().getFullYear(),
-        calMonth: new Date().getMonth(),
-        calSelectedDate: null
+function safeSub(a, b) {
+    return Math.round(((Number(a) || 0) - (Number(b) || 0) + Number.EPSILON) * 100) / 100;
+}
+
+function parseLocalDate(dateStr) {
+    if (!dateStr) return new Date();
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+    return new Date(dateStr);
+}
+
+function formatLocalDateKey(d) {
+    const date = d || new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function getDaysLeft(targetDateStr) {
+    if (!targetDateStr) return 1;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const target = parseLocalDate(targetDateStr);
+    target.setHours(0, 0, 0, 0);
+
+    const diffTime = target - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(1, diffDays);
+}
+
+function getNextCycleDate(currentDateStr, cycle) {
+    const d = parseLocalDate(currentDateStr);
+    if (cycle === 'daily') d.setDate(d.getDate() + 1);
+    else if (cycle === 'weekly') d.setDate(d.getDate() + 7);
+    else if (cycle === 'monthly') d.setMonth(d.getMonth() + 1);
+    else if (cycle === 'yearly') d.setFullYear(d.getFullYear() + 1);
+    else return null;
+    return formatLocalDateKey(d);
+}
+
+const defaultState = {
+    isLoggedIn: false,
+    userName: '',
+    userEmail: '',
+    userPassword: '',
+    userPin: '1234',
+    enteredPin: '',
+    authTab: 'signin',
+    darkMode: false,
+    notificationsEnabled: true,
+    selectedCategory: 'Food',
+    balance: 0,
+    initialAllowance: 0,
+    allowanceStartDate: '',
+    targetAllowanceDate: '',
+    dailyLimit: 0,
+    startOfDayLimit: 0,
+    remainingDays: 1,
+    streakDays: 0,
+    affordChecksCount: 0,
+    nightlyWrapCount: 0,
+    wasOverspentYesterday: false,
+    accounts: [],
+    recentExpenses: [],
+    upcomingExpenses: [],
+    goals: [],
+    categoryCaps: {},
+    badgesCollapsed: true,
+    calYear: new Date().getFullYear(),
+    calMonth: new Date().getMonth(),
+    calSelectedDate: null,
+    isCalendarCollapsed: true,
+    badges: [
+        { id: 1, name: "First Goal", desc: "Created your first goal", icon: "🎯", unlocked: false },
+        { id: 2, name: "Streak Master", desc: "Under limit 5 days in a row", icon: "🔥", unlocked: false },
+        { id: 3, name: "Nightly Wrap", desc: "Logged 3 evening check-ins", icon: "🌙", unlocked: false },
+        { id: 4, name: "Affordability Pro", desc: "Checked 3 items before buying", icon: "🛍️", unlocked: false },
+        { id: 5, name: "Comeback Spender", desc: "Stayed under limit after overspending", icon: "⚡", unlocked: false },
+        { id: 6, name: "Savings Champ", desc: "Saved over ₱1,000 total", icon: "🏆", unlocked: false },
+        { id: 7, name: "Planner", desc: "Scheduled 3 upcoming bills", icon: "📅", unlocked: false },
+        { id: 8, name: "Financial Health Guru", desc: "Reached 80+ health score", icon: "💚", unlocked: false }
+    ]
+};
+
+Object.assign(app, {
+    state: { ...defaultState },
+
+    getCalculatedTotalBalance() {
+        if (this.state.accounts && this.state.accounts.length > 0) {
+            return this.state.accounts.reduce((sum, acc) => safeAdd(sum, acc.balance || 0), 0);
+        }
+        return this.state.balance || 0;
     },
 
-    charts: {},
-
     async nukeAndResetSystem() {
-        if (!confirm("Are you sure? This will permanently wipe local storage, Firebase database records, and log you out!")) {
-            return;
-        }
-
         try {
-            if (isFirebaseActive && db && auth && auth.currentUser) {
+            if (typeof isFirebaseActive !== 'undefined' && isFirebaseActive && typeof db !== 'undefined' && db && typeof auth !== 'undefined' && auth && auth.currentUser) {
                 await db.collection('users').doc(auth.currentUser.uid).delete();
             }
-            if (isFirebaseActive && auth) {
+            if (typeof isFirebaseActive !== 'undefined' && isFirebaseActive && typeof auth !== 'undefined' && auth) {
                 await auth.signOut();
             }
             localStorage.clear();
             window.location.reload();
         } catch (err) {
             console.error("Reset Error:", err);
-            alert("Error resetting system: " + err.message);
+            if (typeof this.showToast === 'function') {
+                this.showToast("⚠️ Error resetting system: " + err.message);
+            }
         }
     }
-};
+});
