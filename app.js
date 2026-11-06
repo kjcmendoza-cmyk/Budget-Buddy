@@ -1671,13 +1671,25 @@ confirmAddFunds() {
 
     const goal = this.state.goals.find(g => g.id === this.state.activeGoalId);
     if (goal) {
+        // 1. Determine available balance in the active funding source
+        const availableBalance = (this.state.accounts && this.state.accounts.length > 0)
+            ? (this.state.accounts[0].balance || 0)
+            : (this.state.balance || 0);
+
+        // 2. Prevent adding more money to goals than what is available
+        if (amt > availableBalance) {
+            alert(`Insufficient funds! You only have ${this.formatPeso(availableBalance)} available to move to goals.`);
+            return;
+        }
+
+        // 3. Process savings transfer safely
         goal.current = safeAdd(goal.current, amt);
 
         if (this.state.accounts && this.state.accounts.length > 0) {
-            this.state.accounts[0].balance = Math.max(0, safeSub(this.state.accounts[0].balance, amt));
+            this.state.accounts[0].balance = safeSub(this.state.accounts[0].balance, amt);
             this.state.balance = this.getCalculatedTotalBalance();
         } else {
-            this.state.balance = Math.max(0, safeSub(this.state.balance, amt));
+            this.state.balance = safeSub(this.state.balance, amt);
         }
 
         this.saveState();
@@ -1686,31 +1698,6 @@ confirmAddFunds() {
         this.updateGoalsUI();
         this.updateHomeUI();
         this.showToast(`Added ${this.formatPeso(amt)} to ${goal.name}!`);
-    }
-},
-
-deleteGoal(id) {
-    if (confirm("Delete this savings goal?")) {
-        this.state.goals = this.state.goals.filter(g => g.id !== id);
-        this.saveState();
-        this.updateGoalsUI();
-        this.showToast("Goal deleted.");
-    }
-},
-
-openEditNameModal() {
-    document.getElementById('edit-name-input').value = this.state.userName || '';
-    this.openModal('modal-edit-name');
-},
-
-confirmEditName() {
-    const newName = document.getElementById('edit-name-input').value.trim();
-    if (newName) {
-        this.state.userName = newName;
-        this.saveState();
-        this.closeModal('modal-edit-name');
-        this.showScreen('profile-screen');
-        this.showToast("Name updated!");
     }
 },
 
