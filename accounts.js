@@ -153,29 +153,31 @@ selectCardColor(gradientClass, el) {
 },
 
 openAddAccountModal() {
-    document.getElementById('acc-name-input').value = '';
-    document.getElementById('acc-balance-input').value = '';
-    document.getElementById('acc-digits-input').value = '';
-    document.getElementById('acc-date-input').value = this.state.targetAllowanceDate || '';
-    document.querySelectorAll('.preset-chip').forEach(chip => chip.classList.remove('selected'));
+        this.resetSplitState('account');
 
-    // Real-time preview listeners
-    ['acc-name-input', 'acc-balance-input', 'acc-digits-input'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.oninput = () => this.updateCardPreview();
-    });
+        document.getElementById('acc-name-input').value = '';
+        document.getElementById('acc-balance-input').value = '';
+        document.getElementById('acc-digits-input').value = '';
+        document.getElementById('acc-date-input').value = this.state.targetAllowanceDate || '';
 
-    const typeSelect = document.getElementById('acc-type-select');
-    if (typeSelect) typeSelect.onchange = () => this.updateCardPreview();
+        // Real-time preview listeners
+        ['acc-name-input', 'acc-balance-input', 'acc-digits-input'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.oninput = () => this.updateCardPreview();
+        });
 
-    this.updateCardPreview();
-    this.openModal('modal-add-account');
-},
+        const typeSelect = document.getElementById('acc-type-select');
+        if (typeSelect) typeSelect.onchange = () => this.updateCardPreview();
+
+        this.updateCardPreview();
+        this.updateSplitPreview('account');
+        this.openModal('modal-add-account');
+    },
 
     saveAccount() {
         const name = document.getElementById('acc-name-input').value.trim();
         const type = document.getElementById('acc-type-select').value;
-        const balance = parseFloat(document.getElementById('acc-balance-input').value) || 0;
+        const totalBalance = parseFloat(document.getElementById('acc-balance-input').value) || 0;
         const cycleDate = document.getElementById('acc-date-input').value;
         const last4 = document.getElementById('acc-digits-input').value.trim();
 
@@ -189,6 +191,9 @@ openAddAccountModal() {
             alert("Next Allowance Date is required so BudgetBuddy can calculate your daily budget limit!");
             return;
         }
+
+        // 1. Calculate savings split using shared helper
+        const { savingsAmt, spendableAmt } = this.getSplitAmounts(totalBalance, 'account');
 
         const typeGradients = {
             digital: 'card-gradient-gcash',
@@ -208,30 +213,41 @@ openAddAccountModal() {
             id: 'acc_' + Date.now(),
             name,
             type,
-            balance,
+            balance: spendableAmt,
             last4,
             gradient: this.state.selectedCardGradient || typeGradients[type],
             icon: typeIcons[type]
         };
 
+        if (!this.state.accounts) this.state.accounts = [];
         this.state.accounts.push(newAcc);
+
+        // 2. Route savings portion directly to active savings goal
+        this.routeSavingsToGoal(savingsAmt);
+
         this.state.balance = this.getCalculatedTotalBalance();
         this.state.initialAllowance = this.state.balance;
 
         // Establish allowance cycle dates
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = formatLocalDateKey(new Date());
         if (!this.state.allowanceStartDate) {
             this.state.allowanceStartDate = todayStr;
         }
         this.state.targetAllowanceDate = cycleDate;
 
-        // Save & recalculate daily budget immediately
+        // 3. Reset split selection & refresh app state
+        this.resetSplitState('account');
         this.recalculateDailyLimit();
         this.saveState();
         this.closeModal('modal-add-account');
         this.renderAccountsUI();
         this.updateHomeUI();
-        this.showToast("Account added & cycle set successfully!");
+        this.updateGoalsUI();
+
+        const msg = savingsAmt > 0
+            ? `Account added! ${this.formatPeso(spendableAmt)} balance & ${this.formatPeso(savingsAmt)} saved!`
+            : "Account added & cycle set successfully!";
+        this.showToast(msg);
     },
 
 deleteAccount(id) {

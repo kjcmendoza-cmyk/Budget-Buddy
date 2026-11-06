@@ -139,10 +139,10 @@
 </header>
 
             <!-- 1. Available Money Card -->
-            <div class="available-money-card" onclick="app.showScreen('accounts-screen')" title="View Cards & Accounts">
-                <div class="card-add-badge" onclick="event.stopPropagation(); app.openEditAllowanceModal();" title="Set Allowance Cycle">
-                    <i class="fa-solid fa-plus"></i>
-                </div>
+<div class="available-money-card" style="position: relative;" onclick="app.showScreen('accounts-screen')" title="View Cards & Accounts">
+    <div class="card-add-badge" style="position: absolute; top: 12px; right: 12px; z-index: 10; cursor: pointer; pointer-events: auto;" onclick="event.stopPropagation(); app.openEditAllowanceModal();" title="Set Allowance Cycle">
+        <i class="fa-solid fa-plus" style="pointer-events: none;"></i>
+    </div>  
                 <div class="am-left">
                     <div class="label">
                         <i class="fa-solid fa-wallet"></i> AVAILABLE MONEY
@@ -1002,8 +1002,16 @@
         <div id="modal-add-funds" class="modal-overlay">
             <div class="modal-card">
                 <h3 class="modal-title">Add Funds to Goal</h3>
-                <p id="funds-target-name" class="text-sm text-gray mb-4" style="margin-top:-10px;"></p>
+                <p id="funds-target-name" class="text-sm text-gray mb-3" style="margin-top:-10px;"></p>
+
+                <label class="text-xs text-gray" style="font-weight:700;">Fund Source</label>
+                <select id="add-funds-source-select" class="generic-input">
+                    <!-- Dynamically populated from JS -->
+                </select>
+
+                <label class="text-xs text-gray" style="font-weight:700;">Amount to Add (₱)</label>
                 <input type="number" id="add-funds-amount" class="generic-input" placeholder="Amount to add (₱)" inputmode="decimal">
+
                 <div class="modal-actions">
                     <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-add-funds')">Cancel</button>
                     <button class="modal-btn btn-confirm" onclick="app.confirmAddFunds()">Add Funds</button>
@@ -1032,14 +1040,31 @@
             <button type="button" onclick="app.closeModal('modal-edit-allowance'); app.openAddAccountModal();" style="background:none; border:none; color:var(--primary-green); font-size:0.75rem; font-weight:700; cursor:pointer;">+ Add Card</button>
         </div>
         
-        <!-- Updated onchange event below -->
         <select id="edit-allowance-account-select" class="generic-input" onchange="app.onAllowanceAccountChange(this.value)">
             <!-- Dynamically populated from JavaScript -->
         </select>
 
         <label class="text-xs text-gray" style="font-weight:700;">Starting Allowance Amount (₱)</label>
-        <input type="number" id="edit-allowance-amount" class="generic-input" placeholder="e.g. 5000" inputmode="decimal">
-        
+        <input type="number" id="edit-allowance-amount" class="generic-input" placeholder="e.g. 5000" inputmode="decimal" oninput="app.updateSplitPreview('allowance')">
+
+        <!-- Split to Savings for Allowance Cycle -->
+        <div style="margin-bottom: 10px;">
+            <div class="flex justify-between items-center mb-1">
+                <label class="text-xs text-gray" style="font-weight:700;">Split to Savings (Optional)</label>
+                <span id="allowance-split-preview" class="text-xs text-green" style="font-weight:700;">₱0 to savings</span>
+            </div>
+            <div class="preset-grid" style="grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 4px;">
+                <button type="button" class="preset-chip selected" onclick="app.setSplitPct('0', 'allowance', this)">0%</button>
+                <button type="button" class="preset-chip" onclick="app.setSplitPct('10', 'allowance', this)">10%</button>
+                <button type="button" class="preset-chip" onclick="app.setSplitPct('20', 'allowance', this)">20%</button>
+                <button type="button" class="preset-chip" onclick="app.setSplitPct('30', 'allowance', this)">30%</button>
+                <button type="button" class="preset-chip" onclick="app.setSplitPct('custom', 'allowance', this)">Custom</button>
+            </div>
+            <div id="allowance-custom-input-wrap" style="display:none; margin-top: 6px;">
+                <input type="number" id="allowance-custom-savings" class="generic-input" style="margin-bottom:0; padding:6px 10px; font-size:0.8rem;" placeholder="Custom Savings Amount (₱)" inputmode="decimal" oninput="app.updateSplitPreview('allowance')">
+            </div>
+        </div>
+
         <label class="text-xs text-gray" style="font-weight:700; margin-top: 5px; display: block;">Next Allowance Date <span style="color:var(--danger-red);">* Required</span></label>
         <input type="date" id="edit-allowance-date" class="generic-input" required>
         
@@ -1062,21 +1087,25 @@
         </select>
 
         <label class="text-xs text-gray" style="font-weight:700;">Amount Received (₱)</label>
-        <input type="number" id="deposit-amount" class="generic-input" placeholder="e.g. 500" inputmode="decimal" oninput="app.updateDepositSplitPreview()">
-        
-        <!-- Savings Split Selector (Optional) -->
-        <div style="margin-bottom: 10px;">
-            <div class="flex justify-between items-center mb-1">
-                <label class="text-xs text-gray" style="font-weight:700;">Split to Savings (Optional)</label>
-                <span id="deposit-split-preview" class="text-xs text-green" style="font-weight:700;">₱0 to savings</span>
-            </div>
-            <div class="preset-grid" style="grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 4px;">
-                <button type="button" class="preset-chip selected" onclick="app.setDepositSplitPct(0, this)">0%</button>
-                <button type="button" class="preset-chip" onclick="app.setDepositSplitPct(10, this)">10%</button>
-                <button type="button" class="preset-chip" onclick="app.setDepositSplitPct(20, this)">20%</button>
-                <button type="button" class="preset-chip" onclick="app.setDepositSplitPct(30, this)">30%</button>
-            </div>
-        </div>
+<input type="number" id="deposit-amount" class="generic-input" placeholder="e.g. 500" inputmode="decimal" oninput="app.updateSplitPreview('deposit')">
+
+<!-- Split to Savings (with Custom) -->
+<div style="margin-bottom: 10px;">
+    <div class="flex justify-between items-center mb-1">
+        <label class="text-xs text-gray" style="font-weight:700;">Split to Savings (Optional)</label>
+        <span id="deposit-split-preview" class="text-xs text-green" style="font-weight:700;">₱0 to savings</span>
+    </div>
+    <div class="preset-grid" style="grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 4px;">
+        <button type="button" class="preset-chip selected" onclick="app.setSplitPct('0', 'deposit', this)">0%</button>
+        <button type="button" class="preset-chip" onclick="app.setSplitPct('10', 'deposit', this)">10%</button>
+        <button type="button" class="preset-chip" onclick="app.setSplitPct('20', 'deposit', this)">20%</button>
+        <button type="button" class="preset-chip" onclick="app.setSplitPct('30', 'deposit', this)">30%</button>
+        <button type="button" class="preset-chip" onclick="app.setSplitPct('custom', 'deposit', this)">Custom</button>
+    </div>
+    <div id="deposit-custom-input-wrap" style="display:none; margin-top: 6px;">
+        <input type="number" id="deposit-custom-savings" class="generic-input" style="margin-bottom:0; padding:6px 10px; font-size:0.8rem;" placeholder="Custom Savings Amount (₱)" inputmode="decimal" oninput="app.updateSplitPreview('deposit')">
+    </div>
+</div>
 
         <label class="text-xs text-gray" style="font-weight:700;">Note / Source (Optional)</label>
         <input type="text" id="deposit-note" class="generic-input" placeholder="e.g. Gift from Aunt, Weekly Top-Up">
@@ -1166,7 +1195,24 @@
             </div>
             <div>
                 <label class="text-xs text-gray" style="font-weight:700;">Starting Balance (₱)</label>
-                <input type="number" id="acc-balance-input" class="generic-input" placeholder="0.00" inputmode="decimal">
+                <input type="number" id="acc-balance-input" class="generic-input" placeholder="0.00" inputmode="decimal" oninput="app.updateCardPreview(); app.updateSplitPreview('account');">
+            </div>
+        </div>
+        <!-- Split to Savings for New Account -->
+        <div style="margin-top: 6px; margin-bottom: 10px;">
+            <div class="flex justify-between items-center mb-1">
+                <label class="text-xs text-gray" style="font-weight:700;">Split to Savings (Optional)</label>
+                <span id="account-split-preview" class="text-xs text-green" style="font-weight:700;">₱0 to savings</span>
+            </div>
+            <div class="preset-grid" style="grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 4px;">
+                <button type="button" class="preset-chip selected" onclick="app.setSplitPct('0', 'account', this)">0%</button>
+                <button type="button" class="preset-chip" onclick="app.setSplitPct('10', 'account', this)">10%</button>
+                <button type="button" class="preset-chip" onclick="app.setSplitPct('20', 'account', this)">20%</button>
+                <button type="button" class="preset-chip" onclick="app.setSplitPct('30', 'account', this)">30%</button>
+                <button type="button" class="preset-chip" onclick="app.setSplitPct('custom', 'account', this)">Custom</button>
+            </div>
+            <div id="account-custom-input-wrap" style="display:none; margin-top: 6px;">
+                <input type="number" id="account-custom-savings" class="generic-input" style="margin-bottom:0; padding:6px 10px; font-size:0.8rem;" placeholder="Custom Savings Amount (₱)" inputmode="decimal" oninput="app.updateSplitPreview('account')">
             </div>
         </div>
 
