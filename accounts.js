@@ -66,7 +66,7 @@ Object.assign(app, {
         </div>
     </div>
 `;
-document.getElementById('accounts-list').insertAdjacentHTML('beforeend', html);
+container.insertAdjacentHTML('beforeend', html);
 });
 },
     openAddAccountModal() {
