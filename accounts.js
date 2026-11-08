@@ -37,29 +37,38 @@ Object.assign(app, {
             const displayBal = isMasked ? '₱••••••' : this.formatPeso(acc.balance);
 
             const html = `
-                <div class="account-card ${gradientClass}">
-                    <div class="acc-card-top flex justify-between items-center">
-                        <span class="acc-card-name">${acc.name}</span>
-                        <i class="fa-solid ${iconClass} text-lg"></i>
-                    </div>
-                    <div class="acc-card-middle">
-                        <span class="acc-card-digits">${last4Text}</span>
-                    </div>
-                    <div class="acc-card-bottom flex justify-between items-center mt-3">
-                        <div>
-                            <div style="font-size: 0.65rem; opacity: 0.8; text-transform: uppercase;">Balance</div>
-                            <div class="acc-card-balance">${displayBal}</div>
-                        </div>
-                        <button class="acc-delete-btn" onclick="app.deleteAccount('${acc.id}')" title="Delete Account">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', html);
-        });
-    },
-
+    <div class="stacked-card ${gradientClass}" onclick="this.classList.toggle('expanded')">
+        <!-- Top Row: Brand & Last 4 Digits -->
+        <div class="card-top-row">
+            <span class="card-brand"><i class="fa-solid ${iconClass}"></i> ${acc.name}</span>
+            <span class="card-num">${last4Text}</span>
+        </div>
+        
+        <!-- Middle Row: Balance -->
+        <div style="margin-top: 1.5rem;">
+            <div class="card-balance-label">Current Balance</div>
+            <div class="card-balance-val">${displayBal}</div>
+        </div>
+        
+        <!-- Hidden Drawer: Expands when the card is tapped -->
+        <div class="card-details-drawer">
+            <div class="flex justify-between items-center">
+                <button onclick="event.stopPropagation(); app.openAddDepositModal();" 
+                        style="background: rgba(255, 255, 255, 0.2); color: white; border: none; padding: 6px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; gap: 6px; align-items: center; transition: background 0.2s;">
+                    <i class="fa-solid fa-plus"></i> Add Money
+                </button>
+                <button onclick="event.stopPropagation(); app.deleteAccount('${acc.id}')" 
+                        title="Delete Account" 
+                        style="background: transparent; color: white; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.8; transition: opacity 0.2s;">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+`;
+document.getElementById('accounts-list').insertAdjacentHTML('beforeend', html);
+});
+},
     openAddAccountModal() {
         this.resetSplitState('account');
         
