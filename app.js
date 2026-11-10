@@ -222,14 +222,7 @@ init() {
     
     // Evaluate screen first so we only render what the user actually sees
     this.evaluateLockRequirement();
-
-    // Lazy load non-visible screen initializations after first paint
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            document.body.classList.remove('preload');
-        });
-    });
-},
+    },
 
 bindEvents() {
     document.querySelectorAll('.cat-btn').forEach(btn => {
