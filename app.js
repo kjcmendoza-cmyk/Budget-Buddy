@@ -2012,16 +2012,40 @@ getSplitAmounts(totalAmt, prefix) {
     return { savingsAmt, spendableAmt };
 },
 
-routeSavingsToGoal(savingsAmt) {
-    if (savingsAmt <= 0) return;
-    let activeGoal = (this.state.goals || [])[0];
-    if (activeGoal) {
-        activeGoal.current = safeAdd(activeGoal.current, savingsAmt);
-    } else {
-        if (!this.state.goals) this.state.goals = [];
-        activeGoal = { id: Date.now(), name: "General Savings", target: 5000, current: savingsAmt };
-        this.state.goals.push(activeGoal);
+routeSavingsToGoal(savingsAmt, targetGoalId = null) {
+    if (savingsAmt <= 0) return null;
+    if (!this.state.goals) this.state.goals = [];
+
+    let targetGoal = null;
+    if (targetGoalId) {
+        targetGoal = this.state.goals.find(g => String(g.id) === String(targetGoalId));
     }
+    if (!targetGoal && this.state.goals.length > 0) {
+        targetGoal = this.state.goals[0];
+    }
+
+    if (targetGoal) {
+        targetGoal.current = safeAdd(targetGoal.current, savingsAmt);
+    } else {
+        targetGoal = { id: Date.now(), name: "General Savings", target: 5000, current: savingsAmt };
+        this.state.goals.push(targetGoal);
+    }
+    return targetGoal;
+},
+
+populateGoalDropdowns() {
+    ['allowance', 'deposit', 'account'].forEach(prefix => {
+        const selectEl = document.getElementById(`${prefix}-goal-select`);
+        if (!selectEl) return;
+        selectEl.innerHTML = '';
+        if (!this.state.goals || this.state.goals.length === 0) {
+            selectEl.insertAdjacentHTML('beforeend', `<option value="">General Savings (Auto-create)</option>`);
+        } else {
+            this.state.goals.forEach(g => {
+                selectEl.insertAdjacentHTML('beforeend', `<option value="${g.id}">${g.name} (${this.formatPeso(g.current)} / ${this.formatPeso(g.target)})</option>`);
+            });
+        }
+    });
 },
 
 resetSplitState(prefix) {
