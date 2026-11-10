@@ -2458,3 +2458,18 @@ body:not(.preload) #splash-screen {
     visibility: hidden;
     pointer-events: none;
 }
+/* Center and align the auth screen header */
+.auth-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Sizing and layout for the auth screen logo */
+.auth-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin: 0 auto 1rem auto;
+    display: block;
+    border-radius: 20px;
+}
