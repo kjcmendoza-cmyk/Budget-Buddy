@@ -289,25 +289,25 @@ formatPeso(num) {
     });
 },
 
-    showScreen(screenId) {
+showScreen(screenId) {
     // Automatically close any open modals when navigating screens
     document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
+
+    const target = document.getElementById(screenId);
+    if (target && !target.classList.contains('active')) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        target.classList.add('active');
+    }
 
     if (screenId === 'accounts-screen') this.renderAccountsUI();
     if (screenId === 'quick-add-screen') {
         this.populateAccountDropdown();
         this.renderCategoryCapBadgesOnGrid();
     }
-
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    const target = document.getElementById(screenId);
-    if (target) target.classList.add('active');
         
     const nav = document.querySelector('.bottom-nav');
     if (screenId === 'auth-screen') {
         if (nav) nav.style.display = 'none';
-        const lockName = document.getElementById('lock-user-name');
-        if (lockName) lockName.textContent = this.state.userName || 'User';
     } else {
         if (nav) nav.style.display = 'flex';
     }
