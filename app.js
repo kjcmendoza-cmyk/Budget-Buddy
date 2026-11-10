@@ -65,10 +65,13 @@ Object.assign(app, {
 },
 
 evaluateLockRequirement() {
-    if (!this.state.isLoggedIn) {
+    const rawState = localStorage.getItem('budget_app_state');
+    const isLoggedIn = rawState ? (JSON.parse(rawState).isLoggedIn ?? false) : false;
+
+    if (!isLoggedIn) {
+        document.getElementById('home-screen')?.classList.remove('active');
         this.showScreen('auth-screen');
     } else {
-        // If home-screen is already active in HTML, showScreen will bypass transition re-triggering
         this.showScreen('home-screen');
     }
 },
