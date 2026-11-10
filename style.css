@@ -318,6 +318,8 @@ body {
         .lock-logo {
     width: 60px;
     height: 60px;
+    min-width: 60px;
+    min-height: 60px;
     aspect-ratio: 1 / 1;
     flex-shrink: 0;
     margin: 0 auto 12px;
@@ -431,6 +433,8 @@ body {
         .header-logo-img {
     width: 42px;
     height: 42px;
+    min-width: 42px;
+    min-height: 42px;
     aspect-ratio: 1 / 1;
     border-radius: 12px;
     object-fit: cover;

@@ -68,6 +68,7 @@ evaluateLockRequirement() {
     if (!this.state.isLoggedIn) {
         this.showScreen('auth-screen');
     } else {
+        // If home-screen is already active in HTML, showScreen will bypass transition re-triggering
         this.showScreen('home-screen');
     }
 },
