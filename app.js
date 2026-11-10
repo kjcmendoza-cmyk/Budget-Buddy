@@ -1,4 +1,50 @@
 Object.assign(app, {
+    exportData() {
+        try {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.state, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `budget_buddy_backup_${formatLocalDateKey(new Date())}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            this.showToast("Backup downloaded!");
+        } catch (e) {
+            console.error("Export error:", e);
+            this.showToast("⚠️ Export failed.");
+        }
+    },
+
+    importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedState = JSON.parse(e.target.result);
+                if (importedState && typeof importedState === 'object') {
+                    this.state = { ...this.state, ...importedState };
+                    this.saveState();
+                    this.showToast("Data restored successfully!");
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    this.showToast("⚠️ Invalid backup file format.");
+                }
+            } catch (err) {
+                console.error("Import error:", err);
+                this.showToast("⚠️ Failed to read backup file.");
+            }
+        };
+        reader.readAsText(file);
+    },
+    requestPersistentStorage() {
+        if (navigator.storage && navigator.storage.persist) {
+            navigator.storage.persist().then(isPersisted => {
+                console.log(`Persistent storage granted: ${isPersisted}`);
+            });
+        }
+    },
     nukeAndResetSystem() {
     try {
         localStorage.removeItem('budget_app_state');
@@ -192,7 +238,7 @@ updateSettingsUI() {
 },
 init() {
     this.loadState();
-    
+    this.requestPersistentStorage();
     this.state.enteredPin = '';
     this.state.balance = this.getCalculatedTotalBalance();
     this.checkCycleReset();

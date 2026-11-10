@@ -754,7 +754,23 @@
                     </div>
                     <div id="dark-mode-toggle" class="toggle-switch"><div class="toggle-circle"></div></div>
                 </div>
+                <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.exportData()">
+                <div class="flex items-center gap-3">
+                    <div class="qa-icon-wrapper green" style="width: 40px; height: 40px;"><i class="fa-solid fa-download"></i></div>
+                    <span style="font-weight: 600;">Export Backup (JSON)</span>
+                </div>
+                <i class="fa-solid fa-chevron-right text-gray"></i>
+            </div>
 
+            <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="document.getElementById('import-file-input').click()">
+                <div class="flex items-center gap-3">
+                    <div class="qa-icon-wrapper purple" style="width: 40px; height: 40px;"><i class="fa-solid fa-upload"></i></div>
+                    <span style="font-weight: 600;">Import Backup (JSON)</span>
+                </div>
+                <i class="fa-solid fa-chevron-right text-gray"></i>
+            </div>
+            <!-- Hidden file input for restore -->
+            <input type="file" id="import-file-input" accept=".json" style="display: none;" onchange="app.importData(event)">
                 <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.openModal('modal-confirm-reset')">
                     <div class="flex items-center gap-3">
                         <div class="qa-icon-wrapper" style="width: 40px; height: 40px; background: var(--danger-red-light); color: var(--danger-red);">
