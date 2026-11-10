@@ -1,0 +1,16 @@
+{
+  "name": "Budget Buddy Quick Log",
+  "short_name": "Quick Log",
+  "id": "/Budget-Buddy/quick.html",
+  "start_url": "./quick.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "BUDGET-BUDDDY.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

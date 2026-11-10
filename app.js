@@ -2101,21 +2101,19 @@ resetSplitState(prefix) {
     this.state.splitPcts[prefix] = '0';
 
     const customWrap = document.getElementById(`${prefix}-custom-input-wrap`);
-    if (customWrap) {
-        customWrap.style.display = 'none';
-        
-        // Target the specific split preset grid directly preceding the custom input wrapper
-        const splitGrid = customWrap.previousElementSibling;
-        if (splitGrid && splitGrid.classList.contains('preset-grid')) {
-            splitGrid.querySelectorAll('.preset-chip').forEach((c, idx) => {
-                if (idx === 0) c.classList.add('selected');
-                else c.classList.remove('selected');
-            });
-        }
-    }
+    if (customWrap) customWrap.style.display = 'none';
 
     const customInput = document.getElementById(`${prefix}-custom-savings`);
     if (customInput) customInput.value = '';
+
+    const modalId = prefix === 'account' ? 'modal-add-account' : (prefix === 'allowance' ? 'modal-edit-allowance' : 'modal-add-deposit');
+    const container = document.querySelector(`#${modalId} .preset-grid`);
+    if (container) {
+        container.querySelectorAll('.preset-chip').forEach((c, idx) => {
+            if (idx === 0) c.classList.add('selected');
+            else c.classList.remove('selected');
+        });
+    }
 
     this.updateSplitPreview(prefix);
 },
