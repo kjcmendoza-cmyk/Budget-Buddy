@@ -216,7 +216,7 @@
         </div>
 
         <button class="btn-large btn-green" style="padding: 14px; margin-top: 1.25rem; border-radius: 18px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);" onclick="saveQuickExpense()">
-            Log & Done <i class="fa-solid fa-check"></i>
+            Log Expense <i class="fa-solid fa-plus"></i>
         </button>
     </div>
 
@@ -370,7 +370,10 @@
 
             recalculateMetrics();
             saveState();
-            closeQuickLog();
+            
+            // ✅ Clear inputs to stay on the screen for the next log
+            amtInput.value = '';
+            if (noteInput) noteInput.value = '';
         }
 
         function closeQuickLog() {
