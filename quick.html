@@ -72,9 +72,9 @@
                 <h2 style="font-size: 1.1rem; font-weight: 800;">Quick Log ⚡</h2>
                 <p class="text-xs text-gray" id="quick-date-subtitle">Today's Entry</p>
             </div>
-            <a href="index.html" class="back-btn" style="width: 32px; height: 32px; text-decoration: none;">
-                <i class="fa-solid fa-xmark"></i>
-            </a>
+            <button onclick="closeQuickLog()" class="back-btn" style="width: 32px; height: 32px; border: none; cursor: pointer;">
+    <i class="fa-solid fa-xmark"></i>
+</button>
         </div>
 
         <!-- Compact Live Info Bar -->
@@ -274,8 +274,7 @@
 
             recalculateMetrics();
             saveState();
-
-            window.location.href = 'index.html';
+            closeQuickLog();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -292,6 +291,15 @@
 
             recalculateMetrics();
         });
+        function closeQuickLog() {
+    // If opened as a standalone PWA icon, close the app window
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        window.close();
+        return; // Stops JS from running the redirect below
+    }
+    // Fallback for standard browser tabs
+    window.location.href = 'index.html';
+}
     </script>
 </body>
 </html>
