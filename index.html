@@ -7,11 +7,6 @@
 
     <link rel="stylesheet" href="style.css">
 
-    <!-- Preconnect to CDNs to speed up handshake -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-
     <!-- App Favicon & Home Screen Icons -->
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="BUDGET-BUDDDY.png">
@@ -21,40 +16,71 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Pre-paint Screen Router -->
-    <script>
-  (function() {
-    try {
-      const rawState = localStorage.getItem('budget_app_state');
-      const isLoggedIn = rawState ? (JSON.parse(rawState).isLoggedIn ?? false) : false;
-      document.documentElement.classList.add(isLoggedIn ? 'is-logged-in' : 'is-logged-out');
-    } catch (e) {}
-  })();
-</script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
 </head>
-<body class="preload">
-
-    <!-- Single Boot Splash Screen -->
-    <div id="splash-screen">
-        <img src="BUDGET-BUDDDY.png" alt="BudgetBuddy Logo" class="splash-logo">
-    </div>
+<body>
 
     <div id="app">
         <!-- Toast Notification -->
         <div id="toast">Action successful</div>
 
         <!-- ==============================
-             SCREEN 0B: SIGN IN / SIGN UP
+             SCREEN 0A: LOCK SCREEN (PIN)
              ============================== -->
-        <div id="auth-screen" class="screen p-4 flex flex-col justify-center">
-            <div class="auth-header">
-                <div class="auth-logo-wrapper">
-                    <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" width="64" height="64" class="auth-logo-img">
+        <div id="lock-screen" class="screen active p-4 flex-col justify-between items-center text-center">
+            <div class="lock-header mt-4" style="width:100%;">
+                <div class="lock-logo" style="background: transparent;">
+                    <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
                 </div>
                 <h2>BudgetBuddy</h2>
-                <p class="text-xs text-gray">Smart Spender Account Portal</p>
+                <p class="text-sm text-gray mt-2">Welcome back, <span id="lock-user-name" style="font-weight:700;">User</span></p>
             </div>
+
+            <div class="pin-display-container">
+                <p class="text-xs text-gray mb-2">Enter 4-Digit PIN</p>
+                <div class="pin-dots">
+                    <div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
+                </div>
+            </div>
+
+            <div class="numpad-grid mb-4">
+                <button class="numpad-btn" onclick="app.pressPin('1')">1</button>
+                <button class="numpad-btn" onclick="app.pressPin('2')">2</button>
+                <button class="numpad-btn" onclick="app.pressPin('3')">3</button>
+                <button class="numpad-btn" onclick="app.pressPin('4')">4</button>
+                <button class="numpad-btn" onclick="app.pressPin('5')">5</button>
+                <button class="numpad-btn" onclick="app.pressPin('6')">6</button>
+                <button class="numpad-btn" onclick="app.pressPin('7')">7</button>
+                <button class="numpad-btn" onclick="app.pressPin('8')">8</button>
+                <button class="numpad-btn" onclick="app.pressPin('9')">9</button>
+                <button class="numpad-btn action" onclick="app.logout()" title="Switch Account"><i class="fa-solid fa-right-from-bracket"></i></button>
+                <button class="numpad-btn" onclick="app.pressPin('0')">0</button>
+                <button class="numpad-btn action" onclick="app.clearPin()" title="Backspace"><i class="fa-solid fa-delete-left"></i></button>
+            </div>
+
+            <div class="lock-footer mb-4">
+                <a href="#" onclick="app.openForgotPinModal(); return false;" class="forgot-pin-link">Forgot PIN?</a>
+            </div>
+        </div>
+
+        <!-- ==============================
+             SCREEN 0B: SIGN IN / SIGN UP
+             ============================== -->
+        <div id="auth-screen" class="screen p-4">
+            <div class="flex-col justify-between" style="min-height: 90%; height: 100%;">
+                <div>
+                    <div class="text-center mt-4 mb-4">
+                        <div class="lock-logo" style="background: transparent;">
+                            <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
+                        </div>
+                        <h2>BudgetBuddy</h2>
+                        <p class="text-xs text-gray">Smart Spender Account Portal</p>
+                    </div>
 
                     <div class="auth-tabs mb-4">
                         <button id="tab-signin" class="auth-tab active" onclick="app.switchAuthTab('signin')">Sign In</button>
@@ -89,11 +115,11 @@
         <!-- ==============================
              SCREEN 1: HOME DASHBOARD
              ============================== -->
-             <div id="home-screen" class="screen p-4">
-    <header class="header-top">
-        <div class="flex items-center gap-3">
-            <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" width="42" height="42" class="header-logo-img" style="width: 42px; height: 42px; aspect-ratio: 1/1;">
-            <div class="greeting">
+        <div id="home-screen" class="screen active p-4">
+            <header class="header-top">
+                <div class="flex items-center gap-3">
+                    <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" class="header-logo-img">
+                    <div class="greeting">
                         <h1 id="home-greeting">Good morning 👋</h1>
                         <p>Let’s make today a smart spend!</p>
                     </div>
@@ -744,7 +770,7 @@
                 <i class="fa-solid fa-chevron-right text-gray"></i>
             </div>
             <!-- Hidden file input for restore -->
-            <input type="file" id="import-file-input" accept=".json" style="display: none;" onchange="app.importData(event)"> 
+            <input type="file" id="import-file-input" accept=".json" style="display: none;" onchange="app.importData(event)">
                 <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.openModal('modal-confirm-reset')">
                     <div class="flex items-center gap-3">
                         <div class="qa-icon-wrapper" style="width: 40px; height: 40px; background: var(--danger-red-light); color: var(--danger-red);">
@@ -761,7 +787,7 @@
                         </div>
                         <span style="font-weight: 600; color: var(--danger-red);">Log Out</span>
                     </div>
-                </div> 
+                </div>
             </div>
         </div>
 
@@ -933,6 +959,19 @@
 
                 <div class="modal-actions">
                     <button class="modal-btn btn-confirm" onclick="app.closeModal('modal-health-score')">Got it</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-forgot-pin" class="modal-overlay">
+            <div class="modal-card">
+                <h3 class="modal-title">Reset Your PIN</h3>
+                <p class="text-xs text-gray mb-3">Confirm your account password to set a new 4-digit PIN.</p>
+                <input type="password" id="forgot-pass-input" class="generic-input" placeholder="Account Password">
+                <input type="password" id="forgot-new-pin" class="generic-input" placeholder="New 4-Digit PIN" maxlength="4" inputmode="numeric">
+                <div class="modal-actions">
+                    <button class="modal-btn btn-cancel" onclick="app.closeModal('modal-forgot-pin')">Cancel</button>
+                    <button class="modal-btn btn-confirm" onclick="app.confirmResetPin()">Reset PIN</button>
                 </div>
             </div>
         </div>
@@ -1243,19 +1282,35 @@
     </div>
 </div> <!-- This is your current line 1271 -->
 
-    <!-- Firebase SDKs -->
-    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <!-- 1. Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-    <!-- App Libraries & Logic -->
-    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script defer src="state.js"></script>
-    <script defer src="calculations.js"></script>
-    <script defer src="accounts.js"></script>
-    <script defer src="healthscore.js"></script>
-    <script defer src="charts.js"></script>
-    <script defer src="app.js"></script>
+    <!-- 2. Your Firebase Config -->
+    <script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCRlksU0fope2AvXHi6XTlnEKZe-v1eTIc",
+    authDomain: "budget-buddy-75044.firebaseapp.com",
+    projectId: "budget-buddy-75044",
+    storageBucket: "budget-buddy-75044.firebasestorage.app",
+    messagingSenderId: "13838646881",
+    appId: "1:13838646881:web:27bf59c84ad28b34d37420",
+    measurementId: "G-X0XS31QNEB"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+</script>
+
+    <!-- 3. Your App Scripts (These are your current lines 1272-1278) -->
+    <script src="state.js"></script>
+    <script src="calculations.js"></script>
+    <script src="accounts.js"></script>
+    <script src="healthscore.js"></script>
+    <script src="charts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
