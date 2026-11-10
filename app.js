@@ -64,17 +64,20 @@ Object.assign(app, {
     // Intentionally left blank to disable the background lock check
 },
 
-// REPLACE evaluateLockRequirement in app.js
 evaluateLockRequirement() {
     const rawState = localStorage.getItem('budget_app_state');
     const isLoggedIn = rawState ? (JSON.parse(rawState).isLoggedIn ?? false) : false;
     const targetId = isLoggedIn ? 'home-screen' : 'auth-screen';
 
-    // Set screen directly without running showScreen animations on startup
+    // Keep html class in sync
+    document.documentElement.classList.toggle('is-logged-in', isLoggedIn);
+    document.documentElement.classList.toggle('is-logged-out', !isLoggedIn);
+
+    // Set screen active class without animation jumps
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(targetId)?.classList.add('active');
 
-    // Toggle bottom nav visibility silently
+    // Toggle bottom nav visibility
     const nav = document.querySelector('.bottom-nav');
     if (nav) nav.style.display = isLoggedIn ? 'flex' : 'none';
 },
@@ -575,10 +578,10 @@ async logout() {
         try { await auth.signOut(); } catch (e) { console.error(e); }
     }
 
-    // 3. Reset state & navigate
+    // 3. Reset state & sync router
     this.state.isLoggedIn = false;
     this.saveState();
-    this.showScreen('auth-screen');
+    this.evaluateLockRequirement();
     this.showToast("Logged out securely.");
 },
 

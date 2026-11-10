@@ -24,17 +24,14 @@
 
     <!-- Pre-paint Screen Router -->
     <script>
-      (function() {
-        try {
-          const rawState = localStorage.getItem('budget_app_state');
-          const isLoggedIn = rawState ? (JSON.parse(rawState).isLoggedIn ?? false) : false;
-          document.addEventListener('DOMContentLoaded', () => {
-            const targetId = isLoggedIn ? 'home-screen' : 'auth-screen';
-            document.getElementById(targetId)?.classList.add('active');
-          });
-        } catch (e) {}
-      })();
-    </script>
+  (function() {
+    try {
+      const rawState = localStorage.getItem('budget_app_state');
+      const isLoggedIn = rawState ? (JSON.parse(rawState).isLoggedIn ?? false) : false;
+      document.documentElement.classList.add(isLoggedIn ? 'is-logged-in' : 'is-logged-out');
+    } catch (e) {}
+  })();
+</script>
 </head>
 <body class="preload">
 
