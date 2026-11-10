@@ -11,47 +11,128 @@
     <link rel="manifest" href="quick_manifest.json">
 
     <style>
-        /* Transparent viewport container */
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.45);
+            --glass-shadow: 0 20px 50px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+            --card-inner-bg: rgba(255, 255, 255, 0.45);
+            --text-main: #0f172a;
+        }
+
+        body.dark-theme {
+            --glass-bg: rgba(15, 23, 42, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            --card-inner-bg: rgba(30, 41, 59, 0.55);
+            --text-main: #f8fafc;
+        }
+
+        /* Ambient glowing background wrapper to give glass backdrop-filter real depth */
         body.widget-view {
-            background: rgba(15, 23, 42, 0.4) !important;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            background-color: #0b1120 !important;
             display: flex;
             align-items: flex-end;
             justify-content: center;
             height: 100vh;
             margin: 0;
             overflow: hidden;
+            position: relative;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        /* Ambient colored lighting spheres for glass refraction */
+        .ambient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.6;
+            pointer-events: none;
+            animation: floatOrb 8s infinite alternate ease-in-out;
+        }
+        .orb-1 { width: 220px; height: 220px; background: #10b981; top: 15%; left: 10%; }
+        .orb-2 { width: 260px; height: 260px; background: #8b5cf6; bottom: 20%; right: 5%; }
+        .orb-3 { width: 180px; height: 180px; background: #3b82f6; bottom: 5%; left: 25%; }
+
+        @keyframes floatOrb {
+            0% { transform: translateY(0px) scale(1); }
+            100% { transform: translateY(-30px) scale(1.1); }
         }
 
         /* Floating Frosted Glass Card */
         .glass-widget-sheet {
             width: 100%;
             max-width: 414px;
-            background: rgba(255, 255, 255, 0.85) !important;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 28px 28px 0 0;
-            padding: 1.25rem 1.25rem 2rem 1.25rem;
-            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
-            animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(28px) saturate(190%);
+            -webkit-backdrop-filter: blur(28px) saturate(190%);
+            border: 1px solid var(--glass-border);
+            border-bottom: none;
+            border-radius: 32px 32px 0 0;
+            padding: 1rem 1.25rem 2rem 1.25rem;
+            box-shadow: var(--glass-shadow);
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             box-sizing: border-box;
-        }
-
-        /* Dark mode support for frosted glass */
-        body.dark-theme .glass-widget-sheet {
-            background: rgba(21, 30, 50, 0.85) !important;
-            border-color: rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 10;
+            touch-action: pan-y;
+            transition: transform 0.15s ease-out;
         }
 
         .sheet-drag-handle {
-            width: 36px;
-            height: 4px;
-            background: var(--text-light);
-            opacity: 0.5;
-            border-radius: 2px;
-            margin: 0 auto 12px auto;
+            width: 42px;
+            height: 5px;
+            background: rgba(148, 163, 184, 0.5);
+            border-radius: 3px;
+            margin: 0 auto 14px auto;
+            cursor: grab;
+        }
+
+        .glass-inner-card {
+            background: var(--card-inner-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 18px;
+            padding: 0.75rem 1rem;
+        }
+
+        /* Preset Chips */
+        .chip-grid {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+        .quick-chip {
+            background: var(--card-inner-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .quick-chip:active {
+            transform: scale(0.92);
+            background: var(--primary-green);
+            color: white;
+        }
+
+        /* Category Grid Glass Buttons */
+        .cat-btn {
+            background: var(--card-inner-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 8px;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .cat-btn.selected {
+            background: var(--primary-green-light) !important;
+            border-color: var(--primary-green) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(16, 185, 129, 0.25);
         }
 
         @keyframes slideUp {
@@ -62,43 +143,55 @@
 </head>
 <body class="widget-view">
 
+    <!-- Glowing background elements to give backdrop blur depth -->
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+
     <div class="glass-widget-sheet" id="quick-sheet">
         <!-- Visual Grab Handle -->
-        <div class="sheet-drag-handle"></div>
+        <div class="sheet-drag-handle" id="drag-handle"></div>
 
         <!-- Header -->
         <div class="flex justify-between items-center mb-2">
             <div>
-                <h2 style="font-size: 1.1rem; font-weight: 800;">Quick Log ⚡</h2>
+                <h2 style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.3px;">Quick Log ⚡</h2>
                 <p class="text-xs text-gray" id="quick-date-subtitle">Today's Entry</p>
             </div>
-            <button onclick="closeQuickLog()" class="back-btn" style="width: 32px; height: 32px; border: none; cursor: pointer;">
-    <i class="fa-solid fa-xmark"></i>
-</button>
+            <button onclick="closeQuickLog()" class="back-btn" style="width: 32px; height: 32px; border: none; cursor: pointer; background: var(--card-inner-bg); border: 1px solid var(--glass-border);">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
 
         <!-- Compact Live Info Bar -->
-        <div class="card p-2 flex justify-between items-center mb-3" style="background: rgba(255,255,255,0.5); border: 1px solid var(--border-color);">
+        <div class="glass-inner-card flex justify-between items-center mb-3">
             <div>
-                <div class="text-xs text-gray" style="font-weight: 800;">REMAINING TODAY</div>
-                <div id="quick-val-remaining" style="font-size: 1.1rem; font-weight: 800; color: var(--primary-green-dark);">₱0</div>
+                <div class="text-xs text-gray" style="font-weight: 800; letter-spacing: 0.5px;">REMAINING TODAY</div>
+                <div id="quick-val-remaining" style="font-size: 1.15rem; font-weight: 800; color: var(--primary-green-dark);">₱0</div>
             </div>
             <div style="text-align: right;">
-                <div class="text-xs text-gray" style="font-weight: 800;">SAFE / DAY</div>
-                <div id="quick-val-daily-limit" style="font-size: 1.1rem; font-weight: 800; color: var(--text-dark);">₱0</div>
+                <div class="text-xs text-gray" style="font-weight: 800; letter-spacing: 0.5px;">SAFE / DAY</div>
+                <div id="quick-val-daily-limit" style="font-size: 1.15rem; font-weight: 800;">₱0</div>
             </div>
         </div>
 
         <!-- Inputs -->
-        <div class="amount-input-area" style="margin: 0.75rem 0;">
+        <div class="amount-input-area" style="margin: 0.5rem 0;">
             <div class="amount-wrapper">
-                <span class="currency-symbol">₱</span>
-                <input type="number" id="quick-expense-amount" placeholder="0" inputmode="decimal" autofocus style="font-size: 2.2rem;">
+                <span class="currency-symbol" style="font-size: 2.2rem;">₱</span>
+                <input type="number" id="quick-expense-amount" placeholder="0" inputmode="decimal" autofocus style="font-size: 2.4rem; font-weight: 800;">
+            </div>
+            <!-- Quick Add Chips -->
+            <div class="chip-grid">
+                <button class="quick-chip" onclick="addAmount(50)">+₱50</button>
+                <button class="quick-chip" onclick="addAmount(100)">+₱100</button>
+                <button class="quick-chip" onclick="addAmount(200)">+₱200</button>
+                <button class="quick-chip" onclick="addAmount(500)">+₱500</button>
             </div>
         </div>
 
         <!-- Category Grid -->
-        <div class="category-grid" style="gap: 10px;">
+        <div class="category-grid" style="gap: 10px; margin-top: 0.85rem;">
             <button class="cat-btn selected" data-cat="Food" onclick="selectCategory(this, 'Food')">
                 <div class="cat-icon" style="width: 42px; height: 42px;"><i class="fa-solid fa-burger"></i></div>
                 <span class="cat-label">Food</span>
@@ -117,12 +210,12 @@
             </button>
         </div>
 
-        <!-- Custom Expense Input Box (Appears when 'Other' is tapped) -->
+        <!-- Custom Expense Input Box -->
         <div id="quick-note-wrap" style="display: none; margin-top: 12px;">
-            <input type="text" id="quick-expense-note" class="generic-input" placeholder="What is this expense? (e.g. Laundry, Books)" style="margin-bottom: 0; padding: 10px 14px; font-size: 0.85rem; border-radius: 12px;">
+            <input type="text" id="quick-expense-note" class="generic-input" placeholder="What is this expense? (e.g. Laundry, Books)" style="margin-bottom: 0; padding: 10px 14px; font-size: 0.85rem; border-radius: 14px; background: var(--card-inner-bg); border-color: var(--glass-border);">
         </div>
 
-        <button class="btn-large btn-green mt-3" style="padding: 12px; margin-top: 1rem;" onclick="saveQuickExpense()">
+        <button class="btn-large btn-green" style="padding: 14px; margin-top: 1.25rem; border-radius: 18px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);" onclick="saveQuickExpense()">
             Log & Done <i class="fa-solid fa-check"></i>
         </button>
     </div>
@@ -130,7 +223,6 @@
     <!-- Calculations Helper Script -->
     <script src="calculations.js"></script>
 
-    <!-- Embedded Quick Add Logic -->
     <script>
         let appState = {};
         let selectedCategory = 'Food';
@@ -141,6 +233,17 @@
             'Coffee': 'fa-mug-hot',
             'Other': 'fa-ellipsis'
         };
+
+        function triggerHaptic() {
+            if (navigator.vibrate) navigator.vibrate(12);
+        }
+
+        function addAmount(val) {
+            triggerHaptic();
+            const input = document.getElementById('quick-expense-amount');
+            const current = parseFloat(input.value) || 0;
+            input.value = current + val;
+        }
 
         function formatPeso(num) {
             if (isNaN(num) || num === null || num === undefined) return "₱0";
@@ -154,9 +257,7 @@
         function loadState() {
             try {
                 const saved = localStorage.getItem('budget_app_state');
-                if (saved) {
-                    appState = JSON.parse(saved);
-                }
+                if (saved) appState = JSON.parse(saved);
             } catch (e) {
                 console.error("Failed to load local state:", e);
             }
@@ -196,12 +297,7 @@
             const dynamicPace = Math.round(currentAvailable / daysLeft);
 
             appState.startOfDayLimit = startOfDayLimit;
-
-            if (spentToday > startOfDayLimit) {
-                appState.dailyLimit = dynamicPace;
-            } else {
-                appState.dailyLimit = startOfDayLimit;
-            }
+            appState.dailyLimit = spentToday > startOfDayLimit ? dynamicPace : startOfDayLimit;
 
             const remainingSafe = startOfDayLimit - spentToday;
 
@@ -216,6 +312,7 @@
         }
 
         function selectCategory(btnEl, catName) {
+            triggerHaptic();
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
             btnEl.classList.add('selected');
             selectedCategory = catName;
@@ -225,15 +322,14 @@
 
             if (catName === 'Other') {
                 if (noteWrap) noteWrap.style.display = 'block';
-                if (noteInput) {
-                    setTimeout(() => noteInput.focus(), 50);
-                }
+                if (noteInput) setTimeout(() => noteInput.focus(), 50);
             } else {
                 if (noteWrap) noteWrap.style.display = 'none';
             }
         }
 
         function saveQuickExpense() {
+            triggerHaptic();
             const amtInput = document.getElementById('quick-expense-amount');
             const noteInput = document.getElementById('quick-expense-note');
             const amount = parseFloat(amtInput.value);
@@ -277,29 +373,52 @@
             closeQuickLog();
         }
 
+        function closeQuickLog() {
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                window.close();
+                return;
+            }
+            window.location.href = 'index.html';
+        }
+
+        // Swipe Down Gesture to Dismiss Sheet
+        let startY = 0;
+        let currentY = 0;
+        const sheet = document.getElementById('quick-sheet');
+
+        sheet.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+
+        sheet.addEventListener('touchmove', (e) => {
+            currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+            if (diff > 0) {
+                sheet.style.transform = `translateY(${diff}px)`;
+            }
+        }, { passive: true });
+
+        sheet.addEventListener('touchend', () => {
+            const diff = currentY - startY;
+            if (diff > 120) {
+                closeQuickLog();
+            } else {
+                sheet.style.transform = 'translateY(0)';
+            }
+            startY = 0;
+            currentY = 0;
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
             loadState();
-
-            if (appState.darkMode) {
-                document.body.classList.add('dark-theme');
-            }
+            if (appState.darkMode) document.body.classList.add('dark-theme');
 
             const dateSub = document.getElementById('quick-date-subtitle');
             if (dateSub) {
                 dateSub.textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
             }
-
             recalculateMetrics();
         });
-        function closeQuickLog() {
-    // If opened as a standalone PWA icon, close the app window
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-        window.close();
-        return; // Stops JS from running the redirect below
-    }
-    // Fallback for standard browser tabs
-    window.location.href = 'index.html';
-}
     </script>
 </body>
 </html>
