@@ -19,20 +19,5 @@
       "type": "image/png",
       "purpose": "any"
     }
-  ],
-  "shortcuts": [
-    {
-      "name": "Quick Log Expense",
-      "short_name": "Quick Add",
-      "description": "Log an expense in seconds",
-      "url": "./quick.html",
-      "icons": [
-        {
-          "src": "BUDGET-BUDDDY.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    }
   ]
 }
