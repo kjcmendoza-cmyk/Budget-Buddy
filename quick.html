@@ -139,6 +139,15 @@
             from { transform: translateY(100%); }
             to { transform: translateY(0); }
         }
+
+        /* Remove browser default padding & spinners on number inputs */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+        }
+        input[type=number] {
+            appearance: textfield;
+        }
     </style>
 </head>
 <body class="widget-view">
@@ -177,9 +186,9 @@
 
         <!-- Inputs -->
         <div class="amount-input-area" style="margin: 0.5rem 0;">
-            <div class="amount-wrapper">
+            <div class="amount-wrapper" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
                 <span class="currency-symbol" style="font-size: 2.2rem;">₱</span>
-                <input type="number" id="quick-expense-amount" placeholder="0" inputmode="decimal" autofocus style="font-size: 2.4rem; font-weight: 800;">
+                <input type="number" id="quick-expense-amount" placeholder="0" inputmode="decimal" autofocus style="font-size: 2.4rem; font-weight: 800; text-align: left; width: 120px; outline: none; border: none; background: transparent;">
             </div>
             <!-- Quick Add Chips -->
             <div class="chip-grid">
