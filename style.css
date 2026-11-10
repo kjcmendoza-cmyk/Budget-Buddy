@@ -2432,3 +2432,29 @@ body {
         border-top: 1px solid #24344d;
     }
 }
+/* Splash Screen Overlay */
+#splash-screen {
+    position: fixed;
+    inset: 0;
+    background-color: var(--primary-green-dark, #059669);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+/* Splash Logo Sizing */
+.splash-logo {
+    width: 140px;
+    max-width: 50vw;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Automatically hide splash screen when app loads */
+body:not(.preload) #splash-screen {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
