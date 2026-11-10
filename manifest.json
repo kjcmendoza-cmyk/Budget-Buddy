@@ -2,7 +2,7 @@
   "name": "BudgetBuddy",
   "short_name": "BudgetBuddy",
   "start_url": "./index.html",
-  "scope": "./",
+  "scope": "./index.html",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#10b981",
