@@ -1,7 +1,7 @@
 {
+  "id": "./quick.html",
   "name": "Quick Log",
   "short_name": "Quick Log",
-  "id": "/Budget-Buddy/quick.html",
   "start_url": "./quick.html",
   "scope": "./quick.html",
   "display": "standalone",
