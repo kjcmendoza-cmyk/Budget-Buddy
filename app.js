@@ -64,51 +64,19 @@ Object.assign(app, {
     // Intentionally left blank to disable the background lock check
 },
 
+// REPLACE evaluateLockRequirement in app.js
 evaluateLockRequirement() {
     const rawState = localStorage.getItem('budget_app_state');
     const isLoggedIn = rawState ? (JSON.parse(rawState).isLoggedIn ?? false) : false;
+    const targetId = isLoggedIn ? 'home-screen' : 'auth-screen';
 
-    if (!isLoggedIn) {
-        document.getElementById('home-screen')?.classList.remove('active');
-        this.showScreen('auth-screen');
-    } else {
-        this.showScreen('home-screen');
-    }
-},
+    // Set screen directly without running showScreen animations on startup
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(targetId)?.classList.add('active');
 
-togglePinLock() {
-    this.state.pinEnabled = !this.state.pinEnabled;
-    const toggle = document.getElementById('pin-lock-toggle');
-    if (toggle) toggle.classList.toggle('active', this.state.pinEnabled);
-    this.saveState();
-    this.showToast(`PIN Lock ${this.state.pinEnabled ? 'Enabled' : 'Disabled'}`);
-},
-
-toggleBiometrics() {
-    if (!window.PublicKeyCredential) {
-        this.showToast("⚠️ Biometrics not supported on this browser/device.");
-        return;
-    }
-    this.state.biometricsEnabled = !this.state.biometricsEnabled;
-    const toggle = document.getElementById('biometrics-toggle');
-    if (toggle) toggle.classList.toggle('active', this.state.biometricsEnabled);
-    this.saveState();
-    this.showToast(`Biometrics ${this.state.biometricsEnabled ? 'Enabled' : 'Disabled'}`);
-},
-
-setLockTimeout(minutes) {
-    this.state.lockTimeoutMinutes = parseInt(minutes, 10);
-    this.saveState();
-    this.showToast(`Lock grace period set to ${minutes === '0' ? 'Immediate' : minutes + ' min'}`);
-},
-
-async triggerBiometricUnlock() {
-    try {
-        if (!window.PublicKeyCredential) return;
-        this.showToast("Authenticating with Face ID / Touch ID...");
-    } catch (err) {
-        console.warn("Biometric authentication skipped or cancelled:", err);
-    }
+    // Toggle bottom nav visibility silently
+    const nav = document.querySelector('.bottom-nav');
+    if (nav) nav.style.display = isLoggedIn ? 'flex' : 'none';
 },
 
 openEditNameModal() {
@@ -125,11 +93,9 @@ confirmEditName() {
     this.state.userName = name;
     this.saveState();
     this.closeModal('modal-edit-name');
-    
+
     const nameDisp = document.getElementById('profile-name-display');
-    const lockName = document.getElementById('lock-user-name');
     if (nameDisp) nameDisp.textContent = name;
-    if (lockName) lockName.textContent = name;
     this.showToast("Profile name updated!");
 },
 checkCycleReset() {
@@ -230,18 +196,10 @@ runSimulator() {
     }
 },
 updateSettingsUI() {
-    const pinToggle = document.getElementById('pin-lock-toggle');
-    const bioToggle = document.getElementById('biometrics-toggle');
-    const timeoutSelect = document.getElementById('lock-timeout-select');
-
-    if (pinToggle) pinToggle.classList.toggle('active', !!this.state.pinEnabled);
-    if (bioToggle) bioToggle.classList.toggle('active', !!this.state.biometricsEnabled);
-    if (timeoutSelect) timeoutSelect.value = String(this.state.lockTimeoutMinutes || 5);
 },
 init() {
     this.loadState();
     this.requestPersistentStorage();
-    this.state.enteredPin = '';
     this.state.balance = this.getCalculatedTotalBalance();
     this.checkCycleReset();
 
@@ -528,82 +486,6 @@ toggleTip() {
     }
 },
 
-pressPin(digit) {
-    if (this.state.enteredPin.length < 4) {
-        this.state.enteredPin += digit;
-        this.updatePinDots();
-        
-        if (this.state.enteredPin.length === 4) {
-            setTimeout(() => {
-                if (this.state.enteredPin === this.state.userPin) {
-                    this.state.enteredPin = '';
-                    this.updatePinDots();
-                    this.showScreen('home-screen');
-                    this.showToast(`Welcome back, ${this.state.userName}!`);
-                } else {
-                    this.triggerPinError();
-                }
-            }, 150);
-        }
-    }
-},
-
-clearPin() {
-    if (this.state.enteredPin.length > 0) {
-        this.state.enteredPin = this.state.enteredPin.slice(0, -1);
-        this.updatePinDots();
-    }
-},
-
-updatePinDots() {
-    const dots = document.querySelectorAll('.pin-dot');
-    const len = this.state.enteredPin.length;
-    dots.forEach((dot, idx) => {
-        if (idx < len) {
-            dot.classList.add('filled');
-        } else {
-            dot.classList.remove('filled', 'error');
-        }
-    });
-},
-
-triggerPinError() {
-    const dots = document.querySelectorAll('.pin-dot');
-    dots.forEach(dot => dot.classList.add('error'));
-    this.showToast("Incorrect PIN. Try again.");
-    setTimeout(() => {
-        this.state.enteredPin = '';
-        this.updatePinDots();
-    }, 500);
-},
-
-openForgotPinModal() {
-    const pInput = document.getElementById('forgot-pass-input');
-    const npInput = document.getElementById('forgot-new-pin');
-    if (pInput) pInput.value = '';
-    if (npInput) npInput.value = '';
-    this.openModal('modal-forgot-pin');
-},
-
-confirmResetPin() {
-    const pass = document.getElementById('forgot-pass-input').value;
-    const newPin = document.getElementById('forgot-new-pin').value.trim();
-
-    if (pass !== this.state.userPassword) {
-        this.showToast("⚠️ Incorrect account password.");
-        return;
-    }
-    if (!newPin || newPin.length !== 4 || isNaN(newPin)) {
-        this.showToast("⚠️ Please enter a valid 4-digit PIN.");
-        return;
-    }
-
-    this.state.userPin = newPin;
-    this.saveState();
-    this.closeModal('modal-forgot-pin');
-    this.showToast("PIN reset successfully!");
-},
-
 switchAuthTab(tab) {
     this.state.authTab = tab;
     document.getElementById('tab-signin')?.classList.toggle('active', tab === 'signin');
@@ -637,7 +519,7 @@ async handleAuthSubmit() {
                 this.saveState();
                 await this.fetchFirestoreData(res.user.uid);
                 this.evaluateLockRequirement();
-                this.showToast(`Welcome back, ${this.state.userName}! Please enter your PIN.`);
+                this.showToast(`Welcome back, ${this.state.userName}!`);
             } catch (err) {
                 this.showToast("⚠️ Sign In Error: " + err.message);
             }
@@ -646,7 +528,7 @@ async handleAuthSubmit() {
                 this.state.isLoggedIn = true;
                 this.saveState();
                 this.evaluateLockRequirement();
-                this.showToast(`Welcome back, ${this.state.userName}! Please enter your PIN.`);
+                this.showToast(`Welcome back, ${this.state.userName}!`);
             } else {
                 this.showToast("⚠️ Invalid email or password.");
             }
@@ -694,10 +576,8 @@ async logout() {
     }
 
     // 3. Reset state & navigate
-    this.state.enteredPin = '';
     this.state.isLoggedIn = false;
     this.saveState();
-    this.updatePinDots();
     this.showScreen('auth-screen');
     this.showToast("Logged out securely.");
 },

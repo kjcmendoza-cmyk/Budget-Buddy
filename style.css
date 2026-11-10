@@ -313,97 +313,21 @@ body {
             box-shadow: var(--shadow-md);
             transition: background-color 0.3s ease, border-color 0.3s ease;
         }
-
-        /* Lock Screen & Authentication */
-        .lock-logo {
+        .auth-logo-wrapper {
     width: 60px;
     height: 60px;
-    min-width: 60px;
-    min-height: 60px;
-    aspect-ratio: 1 / 1;
-    flex-shrink: 0;
     margin: 0 auto 12px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
-        .pin-display-container {
-            margin: 1.5rem 0;
-            text-align: center;
-        }
-        .pin-dots {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            margin-top: 10px;
-        }
-        .pin-dot {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            border: 2px solid var(--border-color);
-            background: transparent;
-            transition: all 0.2s ease;
-        }
-        .pin-dot.filled {
-            background: var(--primary-green);
-            border-color: var(--primary-green);
-            transform: scale(1.1);
-        }
-        .pin-dot.error {
-            background: var(--danger-red);
-            border-color: var(--danger-red);
-            animation: shake 0.3s ease;
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-6px); }
-            40%, 80% { transform: translateX(6px); }
-        }
 
-        .numpad-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            width: 100%;
-            max-width: 280px;
-            margin: 0 auto;
-        }
-        .numpad-btn {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            border: 1px solid var(--border-color);
-            background: var(--card-bg);
-            color: var(--text-dark);
-            font-size: 1.5rem;
-            font-weight: 700;
-            font-family: 'Nunito', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            margin: 0 auto;
-            transition: background 0.15s ease, transform 0.1s ease;
-        }
-        .numpad-btn:active {
-            background: var(--primary-green-light);
-            transform: scale(0.92);
-        }
-        .numpad-btn.action {
-            font-size: 1.1rem;
-            color: var(--text-gray);
-            border: none;
-            background: transparent;
-        }
-        .forgot-pin-link {
-            color: var(--primary-green);
-            font-weight: 700;
-            font-size: 0.875rem;
-            text-decoration: none;
-        }
-        .forgot-pin-link:hover { text-decoration: underline; }
-
+.auth-logo-img,
+.header-logo-img {
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    flex-shrink: 0;
+}
         .auth-tabs {
             display: flex;
             background: var(--card-bg);
@@ -2439,4 +2363,14 @@ body {
 }
 .preload .screen {
     transition: none !important;
+}
+body.preload .screen {
+    transition: none !important;
+    animation: none !important;
+}
+.lock-logo,
+.header-logo-img {
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    flex-shrink: 0;
 }
