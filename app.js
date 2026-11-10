@@ -67,8 +67,6 @@ Object.assign(app, {
 evaluateLockRequirement() {
     if (!this.state.isLoggedIn) {
         this.showScreen('auth-screen');
-    } else if (this.state.pinEnabled) {
-        this.showScreen('lock-screen');
     } else {
         this.showScreen('home-screen');
     }
@@ -256,14 +254,11 @@ init() {
     this.bindEvents();
     this.checkDueExpenses();
     this.recalculateDailyLimit();
-    this.updateHomeUI();
-    this.updateUpcomingUI();
-    this.updateSettingsUI();
     
-    // Directs user to Auth, Lock, or Home screen based on login status
+    // Evaluate screen first so we only render what the user actually sees
     this.evaluateLockRequirement();
 
-    // Remove preload class to enable smooth transitions for user interaction
+    // Lazy load non-visible screen initializations after first paint
     requestAnimationFrame(() => {
         document.body.classList.remove('preload');
     });
@@ -309,7 +304,7 @@ formatPeso(num) {
     if (target) target.classList.add('active');
         
     const nav = document.querySelector('.bottom-nav');
-    if (screenId === 'lock-screen' || screenId === 'auth-screen') {
+    if (screenId === 'auth-screen') {
         if (nav) nav.style.display = 'none';
         const lockName = document.getElementById('lock-user-name');
         if (lockName) lockName.textContent = this.state.userName || 'User';
