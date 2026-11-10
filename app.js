@@ -262,6 +262,11 @@ init() {
     
     // Directs user to Auth, Lock, or Home screen based on login status
     this.evaluateLockRequirement();
+
+    // Remove preload class to enable smooth transitions for user interaction
+    requestAnimationFrame(() => {
+        document.body.classList.remove('preload');
+    });
 },
 
 bindEvents() {

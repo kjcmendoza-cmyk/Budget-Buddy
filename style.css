@@ -2432,3 +2432,7 @@ body {
         border-top: 1px solid #24344d;
     }
 }
+/* style.css */
+.preload .screen {
+    transition: none !important;
+}

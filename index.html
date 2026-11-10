@@ -20,7 +20,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
 </head>
-<body>
+<body class="preload">
 
     <div id="app">
         <!-- Toast Notification -->
@@ -32,7 +32,7 @@
         <div id="lock-screen" class="screen active p-4 flex-col justify-between items-center text-center">
             <div class="lock-header mt-4" style="width:100%;">
                 <div class="lock-logo" style="background: transparent;">
-                    <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
+                    <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" width="60" height="60" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
                 </div>
                 <h2>BudgetBuddy</h2>
                 <p class="text-sm text-gray mt-2">Welcome back, <span id="lock-user-name" style="font-weight:700;">User</span></p>
@@ -76,7 +76,7 @@
                 <div>
                     <div class="text-center mt-4 mb-4">
                         <div class="lock-logo" style="background: transparent;">
-                            <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
+                            <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" width="60" height="60" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
                         </div>
                         <h2>BudgetBuddy</h2>
                         <p class="text-xs text-gray">Smart Spender Account Portal</p>
@@ -115,10 +115,10 @@
         <!-- ==============================
              SCREEN 1: HOME DASHBOARD
              ============================== -->
-        <div id="home-screen" class="screen active p-4">
+        <div id="home-screen" class="screen p-4">
             <header class="header-top">
                 <div class="flex items-center gap-3">
-                    <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" class="header-logo-img">
+                    <img src="BUDGET-BUDDDY.png" alt="Budget Buddy Logo" width="42" height="42" class="header-logo-img">
                     <div class="greeting">
                         <h1 id="home-greeting">Good morning 👋</h1>
                         <p>Let’s make today a smart spend!</p>
@@ -770,7 +770,7 @@
                 <i class="fa-solid fa-chevron-right text-gray"></i>
             </div>
             <!-- Hidden file input for restore -->
-            <input type="file" id="import-file-input" accept=".json" style="display: none;" onchange="app.importData(event)">
+            <input type="file" id="import-file-input" accept=".json" style="display: none;" onchange="app.importData(event)"> 
                 <div class="setting-item card flex justify-between items-center p-3" style="margin-bottom: 10px; padding: 1rem;" onclick="app.openModal('modal-confirm-reset')">
                     <div class="flex items-center gap-3">
                         <div class="qa-icon-wrapper" style="width: 40px; height: 40px; background: var(--danger-red-light); color: var(--danger-red);">
@@ -787,7 +787,7 @@
                         </div>
                         <span style="font-weight: 600; color: var(--danger-red);">Log Out</span>
                     </div>
-                </div>
+                </div> 
             </div>
         </div>
 
