@@ -260,7 +260,9 @@ init() {
 
     // Lazy load non-visible screen initializations after first paint
     requestAnimationFrame(() => {
-        document.body.classList.remove('preload');
+        requestAnimationFrame(() => {
+            document.body.classList.remove('preload');
+        });
     });
 },
 

@@ -316,17 +316,15 @@ body {
 
         /* Lock Screen & Authentication */
         .lock-logo {
-            width: 60px;
-            height: 60px;
-            background: var(--primary-green-light);
-            color: var(--primary-green);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            margin: 0 auto 12px;
-        }
+    width: 60px;
+    height: 60px;
+    aspect-ratio: 1 / 1;
+    flex-shrink: 0;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
         .pin-display-container {
             margin: 1.5rem 0;
             text-align: center;
@@ -431,12 +429,13 @@ body {
 
         /* Screen 1: Home Dashboard */
         .header-logo-img {
-    height: 42px;
     width: 42px;
+    height: 42px;
+    aspect-ratio: 1 / 1;
     border-radius: 12px;
     object-fit: cover;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
         .header-top {
     display: flex;
