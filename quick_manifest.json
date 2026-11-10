@@ -3,6 +3,7 @@
   "short_name": "Quick Log",
   "id": "/Budget-Buddy/quick.html",
   "start_url": "./quick.html",
+  "scope": "./quick.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#10b981",
