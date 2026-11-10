@@ -2376,8 +2376,53 @@ body.preload .screen {
     transition: none !important;
     animation: none !important;
 }
-.lock-logo {
-    aspect-ratio: 1 / 1;
+/* Auth Screen Visual Polish */
+.auth-header {
+    text-align: center;
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.auth-logo-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.auth-logo-img {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    object-fit: cover;
+}
+
+/* Fix Input Icon Color Clash (Purple to Brand Green) */
+#auth-screen .input-group i {
+    color: var(--primary-green);
+}
+/* Single Boot Splash Overlay */
+#splash-screen {
+    position: fixed;
+    inset: 0;
+    background-color: var(--bg-color, #f8fafc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.splash-logo {
+    width: 72px;
+    height: 72px;
     object-fit: contain;
-    flex-shrink: 0;
+    aspect-ratio: 1 / 1;
+}
+
+/* Hide splash screen after boot */
+body:not(.preload) #splash-screen {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
 }
