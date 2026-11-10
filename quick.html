@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Quick Log</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="BUDGET-BUDDDY.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Transparent viewport container */
+        body.widget-view {
+            background: rgba(15, 23, 42, 0.4) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Floating Frosted Glass Card */
+        .glass-widget-sheet {
+            width: 100%;
+            max-width: 414px;
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 28px 28px 0 0;
+            padding: 1.25rem 1.25rem 2rem 1.25rem;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-sizing: border-box;
+        }
+
+        /* Dark mode support for frosted glass */
+        body.dark-theme .glass-widget-sheet {
+            background: rgba(21, 30, 50, 0.85) !important;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sheet-drag-handle {
+            width: 36px;
+            height: 4px;
+            background: var(--text-light);
+            opacity: 0.5;
+            border-radius: 2px;
+            margin: 0 auto 12px auto;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="widget-view">
+
+    <div class="glass-widget-sheet" id="quick-sheet">
+        <!-- Visual Grab Handle -->
+        <div class="sheet-drag-handle"></div>
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-2">
+            <div>
+                <h2 style="font-size: 1.1rem; font-weight: 800;">Quick Log ⚡</h2>
+                <p class="text-xs text-gray" id="quick-date-subtitle">Today's Entry</p>
+            </div>
+            <a href="index.html" class="back-btn" style="width: 32px; height: 32px; text-decoration: none;">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+        </div>
+
+        <!-- Compact Live Info Bar -->
+        <div class="card p-2 flex justify-between items-center mb-3" style="background: rgba(255,255,255,0.5); border: 1px solid var(--border-color);">
+            <div>
+                <div class="text-xs text-gray" style="font-weight: 800;">REMAINING TODAY</div>
+                <div id="quick-val-remaining" style="font-size: 1.1rem; font-weight: 800; color: var(--primary-green-dark);">₱0</div>
+            </div>
+            <div style="text-align: right;">
+                <div class="text-xs text-gray" style="font-weight: 800;">SAFE / DAY</div>
+                <div id="quick-val-daily-limit" style="font-size: 1.1rem; font-weight: 800; color: var(--text-dark);">₱0</div>
+            </div>
+        </div>
+
+        <!-- Inputs -->
+        <div class="amount-input-area" style="margin: 0.75rem 0;">
+            <div class="amount-wrapper">
+                <span class="currency-symbol">₱</span>
+                <input type="number" id="quick-expense-amount" placeholder="0" inputmode="decimal" autofocus style="font-size: 2.2rem;">
+            </div>
+        </div>
+
+        <!-- Category Grid -->
+        <div class="category-grid" style="gap: 10px;">
+            <button class="cat-btn selected" data-cat="Food" onclick="selectCategory(this, 'Food')">
+                <div class="cat-icon" style="width: 42px; height: 42px;"><i class="fa-solid fa-burger"></i></div>
+                <span class="cat-label">Food</span>
+            </button>
+            <button class="cat-btn" data-cat="Transport" onclick="selectCategory(this, 'Transport')">
+                <div class="cat-icon" style="width: 42px; height: 42px;"><i class="fa-solid fa-car-side"></i></div>
+                <span class="cat-label">Transport</span>
+            </button>
+            <button class="cat-btn" data-cat="Coffee" onclick="selectCategory(this, 'Coffee')">
+                <div class="cat-icon" style="width: 42px; height: 42px;"><i class="fa-solid fa-mug-hot"></i></div>
+                <span class="cat-label">Coffee</span>
+            </button>
+            <button class="cat-btn" data-cat="Other" onclick="selectCategory(this, 'Other')">
+                <div class="cat-icon" style="width: 42px; height: 42px;"><i class="fa-solid fa-ellipsis"></i></div>
+                <span class="cat-label">Other</span>
+            </button>
+        </div>
+
+        <!-- Custom Expense Input Box (Appears when 'Other' is tapped) -->
+        <div id="quick-note-wrap" style="display: none; margin-top: 12px;">
+            <input type="text" id="quick-expense-note" class="generic-input" placeholder="What is this expense? (e.g. Laundry, Books)" style="margin-bottom: 0; padding: 10px 14px; font-size: 0.85rem; border-radius: 12px;">
+        </div>
+
+        <button class="btn-large btn-green mt-3" style="padding: 12px; margin-top: 1rem;" onclick="saveQuickExpense()">
+            Log & Done <i class="fa-solid fa-check"></i>
+        </button>
+    </div>
+
+    <!-- Calculations Helper Script -->
+    <script src="calculations.js"></script>
+
+    <!-- Embedded Quick Add Logic -->
+    <script>
+        let appState = {};
+        let selectedCategory = 'Food';
+
+        const categoryIcons = {
+            'Food': 'fa-burger',
+            'Transport': 'fa-car-side',
+            'Coffee': 'fa-mug-hot',
+            'Other': 'fa-ellipsis'
+        };
+
+        function formatPeso(num) {
+            if (isNaN(num) || num === null || num === undefined) return "₱0";
+            const cleanVal = Math.round((Number(num) + Number.EPSILON) * 100) / 100;
+            return "₱" + cleanVal.toLocaleString('en-PH', { 
+                minimumFractionDigits: cleanVal % 1 === 0 ? 0 : 2, 
+                maximumFractionDigits: 2 
+            });
+        }
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem('budget_app_state');
+                if (saved) {
+                    appState = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error("Failed to load local state:", e);
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem('budget_app_state', JSON.stringify(appState));
+            } catch (e) {
+                console.error("Failed to save state:", e);
+            }
+        }
+
+        function getTodayTotal() {
+            const todayKey = formatLocalDateKey(new Date());
+            const todayFormatted = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+            return (appState.recentExpenses || [])
+                .filter(e => e.rawDate === todayKey || e.date === todayFormatted)
+                .reduce((sum, e) => sum + (e.amount || 0), 0);
+        }
+
+        function recalculateMetrics() {
+            const daysLeft = getDaysLeft(appState.targetAllowanceDate) || 1; 
+            appState.remainingDays = daysLeft;
+            
+            const totalReserved = (appState.upcomingExpenses || [])
+                .filter(e => e.status === 'pending')
+                .reduce((sum, e) => safeAdd(sum, e.amount || 0), 0);
+
+            const spentToday = getTodayTotal();
+            const startOfDayBalance = safeAdd(appState.balance, spentToday);
+            const startOfDayAvailable = Math.max(0, safeSub(startOfDayBalance, totalReserved));
+            const startOfDayLimit = Math.round(startOfDayAvailable / daysLeft);
+
+            const currentAvailable = Math.max(0, safeSub(appState.balance, totalReserved));
+            const dynamicPace = Math.round(currentAvailable / daysLeft);
+
+            appState.startOfDayLimit = startOfDayLimit;
+
+            if (spentToday > startOfDayLimit) {
+                appState.dailyLimit = dynamicPace;
+            } else {
+                appState.dailyLimit = startOfDayLimit;
+            }
+
+            const remainingSafe = startOfDayLimit - spentToday;
+
+            const dailyLimitEl = document.getElementById('quick-val-daily-limit');
+            const remValEl = document.getElementById('quick-val-remaining');
+
+            if (dailyLimitEl) dailyLimitEl.textContent = formatPeso(appState.dailyLimit);
+            if (remValEl) {
+                remValEl.textContent = formatPeso(remainingSafe);
+                remValEl.style.color = remainingSafe < 0 ? "var(--danger-red)" : "var(--primary-green-dark)";
+            }
+        }
+
+        function selectCategory(btnEl, catName) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+            btnEl.classList.add('selected');
+            selectedCategory = catName;
+
+            const noteWrap = document.getElementById('quick-note-wrap');
+            const noteInput = document.getElementById('quick-expense-note');
+
+            if (catName === 'Other') {
+                if (noteWrap) noteWrap.style.display = 'block';
+                if (noteInput) {
+                    setTimeout(() => noteInput.focus(), 50);
+                }
+            } else {
+                if (noteWrap) noteWrap.style.display = 'none';
+            }
+        }
+
+        function saveQuickExpense() {
+            const amtInput = document.getElementById('quick-expense-amount');
+            const noteInput = document.getElementById('quick-expense-note');
+            const amount = parseFloat(amtInput.value);
+
+            if (isNaN(amount) || amount <= 0) {
+                alert("Please enter a valid amount.");
+                return;
+            }
+
+            const customNote = noteInput ? noteInput.value.trim() : '';
+            const expenseName = (selectedCategory === 'Other' && customNote) 
+                ? customNote 
+                : (customNote || selectedCategory);
+
+            const localIsoDate = formatLocalDateKey(new Date());
+
+            const newTx = {
+                id: Date.now(),
+                name: expenseName,
+                category: selectedCategory,
+                amount: amount,
+                icon: categoryIcons[selectedCategory] || 'fa-receipt',
+                color: "var(--primary-green)",
+                period: 'Today',
+                rawDate: localIsoDate,
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            };
+
+            if (!appState.recentExpenses) appState.recentExpenses = [];
+            appState.recentExpenses.unshift(newTx);
+
+            if (appState.accounts && appState.accounts.length > 0) {
+                appState.accounts[0].balance = Math.max(0, safeSub(appState.accounts[0].balance, amount));
+                appState.balance = appState.accounts.reduce((sum, acc) => safeAdd(sum, acc.balance || 0), 0);
+            } else {
+                appState.balance = Math.max(0, safeSub(appState.balance, amount));
+            }
+
+            recalculateMetrics();
+            saveState();
+
+            window.location.href = 'index.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+
+            if (appState.darkMode) {
+                document.body.classList.add('dark-theme');
+            }
+
+            const dateSub = document.getElementById('quick-date-subtitle');
+            if (dateSub) {
+                dateSub.textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            }
+
+            recalculateMetrics();
+        });
+    </script>
+</body>
+</html>
